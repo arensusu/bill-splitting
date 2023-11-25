@@ -1,7 +1,7 @@
 -- name: CreateUser :one
 INSERT INTO users (username, password)
 VALUES ($1, $2)
-RETURNING (id, username, created_at);
+RETURNING *;
 
 -- name: GetUser :one
 SELECT * FROM users
@@ -10,9 +10,9 @@ LIMIT 1;
 
 -- name: UpdateUser :one
 UPDATE users
-SET username = $2
+SET username = $2, password = $3
 WHERE id = $1
-RETURNING (id, username, created_at);
+RETURNING *;
 
 -- name: DeleteUser :exec
 DELETE FROM users

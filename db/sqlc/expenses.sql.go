@@ -49,7 +49,7 @@ DELETE FROM expenses
 WHERE id = $1
 `
 
-func (q *Queries) DeleteExpense(ctx context.Context, id int32) error {
+func (q *Queries) DeleteExpense(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteExpense, id)
 	return err
 }
@@ -59,7 +59,7 @@ SELECT id, group_id, payer_id, amount, description, date FROM expenses
 WHERE id = $1
 `
 
-func (q *Queries) GetExpense(ctx context.Context, id int32) (Expense, error) {
+func (q *Queries) GetExpense(ctx context.Context, id int64) (Expense, error) {
 	row := q.db.QueryRowContext(ctx, getExpense, id)
 	var i Expense
 	err := row.Scan(
@@ -81,7 +81,7 @@ RETURNING id, group_id, payer_id, amount, description, date
 `
 
 type UpdateExpenseParams struct {
-	ID          int32     `json:"id"`
+	ID          int64     `json:"id"`
 	GroupID     int32     `json:"group_id"`
 	PayerID     int32     `json:"payer_id"`
 	Amount      string    `json:"amount"`

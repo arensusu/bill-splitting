@@ -17,7 +17,7 @@ RETURNING id, payer_id, payee_id, amount, date
 `
 
 type CreateSettlementParams struct {
-	ID      int32     `json:"id"`
+	ID      int64     `json:"id"`
 	PayerID int32     `json:"payer_id"`
 	PayeeID int32     `json:"payee_id"`
 	Amount  string    `json:"amount"`
@@ -48,7 +48,7 @@ DELETE FROM settlements
 WHERE id = $1
 `
 
-func (q *Queries) DeleteSettlement(ctx context.Context, id int32) error {
+func (q *Queries) DeleteSettlement(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteSettlement, id)
 	return err
 }
@@ -59,7 +59,7 @@ FROM settlements
 WHERE id = $1
 `
 
-func (q *Queries) GetSettlement(ctx context.Context, id int32) (Settlement, error) {
+func (q *Queries) GetSettlement(ctx context.Context, id int64) (Settlement, error) {
 	row := q.db.QueryRowContext(ctx, getSettlement, id)
 	var i Settlement
 	err := row.Scan(
@@ -80,7 +80,7 @@ RETURNING id, payer_id, payee_id, amount, date
 `
 
 type UpdateSettlementParams struct {
-	ID      int32     `json:"id"`
+	ID      int64     `json:"id"`
 	PayerID int32     `json:"payer_id"`
 	PayeeID int32     `json:"payee_id"`
 	Amount  string    `json:"amount"`

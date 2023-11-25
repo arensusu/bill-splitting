@@ -12,7 +12,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (username, password)
 VALUES ($1, $2)
-RETURNING (id, username, created_at)
+RETURNING id, username, password, created_at
 `
 
 type CreateUserParams struct {
@@ -20,11 +20,16 @@ type CreateUserParams struct {
 	Password string `json:"password"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (interface{}, error) {
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.Password)
-	var column_1 interface{}
-	err := row.Scan(&column_1)
-	return column_1, err
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Password,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const deleteUser = `-- name: DeleteUser :exec
@@ -32,7 +37,7 @@ DELETE FROM users
 WHERE id = $1
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
+func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteUser, id)
 	return err
 }
@@ -43,7 +48,7 @@ WHERE id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
+func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUser, id)
 	var i User
 	err := row.Scan(
@@ -57,19 +62,25 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
 
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
-SET username = $2
+SET username = $2, password = $3
 WHERE id = $1
-RETURNING (id, username, created_at)
+RETURNING id, username, password, created_at
 `
 
 type UpdateUserParams struct {
-	ID       int32  `json:"id"`
+	ID       int64  `json:"id"`
 	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (interface{}, error) {
-	row := q.db.QueryRowContext(ctx, updateUser, arg.ID, arg.Username)
-	var column_1 interface{}
-	err := row.Scan(&column_1)
-	return column_1, err
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUser, arg.ID, arg.Username, arg.Password)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Password,
+		&i.CreatedAt,
+	)
+	return i, err
 }

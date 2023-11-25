@@ -9,7 +9,7 @@ import (
 )
 
 type Expense struct {
-	ID          int32     `json:"id"`
+	ID          int64     `json:"id"`
 	GroupID     int32     `json:"group_id"`
 	PayerID     int32     `json:"payer_id"`
 	Amount      string    `json:"amount"`
@@ -18,7 +18,7 @@ type Expense struct {
 }
 
 type Group struct {
-	ID        int32     `json:"id"`
+	ID        int64     `json:"id"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -30,7 +30,7 @@ type GroupMember struct {
 }
 
 type Settlement struct {
-	ID      int32     `json:"id"`
+	ID      int64     `json:"id"`
 	PayerID int32     `json:"payer_id"`
 	PayeeID int32     `json:"payee_id"`
 	Amount  string    `json:"amount"`
@@ -38,7 +38,7 @@ type Settlement struct {
 }
 
 type User struct {
-	ID        int32     `json:"id"`
+	ID        int64     `json:"id"`
 	Username  string    `json:"username"`
 	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"created_at"`

@@ -1,12 +1,12 @@
 CREATE TABLE "users" (
-  "id" int PRIMARY KEY,
+  "id" bigserial PRIMARY KEY,
   "username" varchar(255) UNIQUE NOT NULL,
   "password" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "groups" (
-  "id" int PRIMARY KEY,
+  "id" bigserial PRIMARY KEY,
   "name" varchar(255) UNIQUE NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
@@ -19,7 +19,7 @@ CREATE TABLE "group_members" (
 );
 
 CREATE TABLE "expenses" (
-  "id" int PRIMARY KEY,
+  "id" bigserial PRIMARY KEY,
   "group_id" int NOT NULL,
   "payer_id" int NOT NULL,
   "amount" decimal NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE "user_expenses" (
 );
 
 CREATE TABLE "settlements" (
-  "id" int PRIMARY KEY,
+  "id" bigserial PRIMARY KEY,
   "payer_id" int NOT NULL,
   "payee_id" int NOT NULL,
   "amount" decimal NOT NULL,

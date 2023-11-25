@@ -27,7 +27,7 @@ DELETE FROM groups
 WHERE id = $1
 `
 
-func (q *Queries) DeleteGroup(ctx context.Context, id int32) error {
+func (q *Queries) DeleteGroup(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteGroup, id)
 	return err
 }
@@ -39,7 +39,7 @@ WHERE id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetGroup(ctx context.Context, id int32) (Group, error) {
+func (q *Queries) GetGroup(ctx context.Context, id int64) (Group, error) {
 	row := q.db.QueryRowContext(ctx, getGroup, id)
 	var i Group
 	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
@@ -54,7 +54,7 @@ RETURNING id, name, created_at
 `
 
 type UpdateGroupParams struct {
-	ID   int32  `json:"id"`
+	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
 
