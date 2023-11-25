@@ -16,8 +16,8 @@ RETURNING group_id, user_id, created_at
 `
 
 type CreateGroupMemberParams struct {
-	GroupID int32 `json:"group_id"`
-	UserID  int32 `json:"user_id"`
+	GroupID int64 `json:"group_id"`
+	UserID  int64 `json:"user_id"`
 }
 
 func (q *Queries) CreateGroupMember(ctx context.Context, arg CreateGroupMemberParams) (GroupMember, error) {
@@ -33,8 +33,8 @@ WHERE group_id = $1 AND user_id = $2
 `
 
 type DeleteGroupMemberParams struct {
-	GroupID int32 `json:"group_id"`
-	UserID  int32 `json:"user_id"`
+	GroupID int64 `json:"group_id"`
+	UserID  int64 `json:"user_id"`
 }
 
 func (q *Queries) DeleteGroupMember(ctx context.Context, arg DeleteGroupMemberParams) error {
@@ -42,36 +42,20 @@ func (q *Queries) DeleteGroupMember(ctx context.Context, arg DeleteGroupMemberPa
 	return err
 }
 
-const getGroupMember = `-- name: GetGroupMember :many
+const getGroupMember = `-- name: GetGroupMember :one
 SELECT group_id, user_id, created_at
 FROM group_members
 WHERE group_id = $1 AND user_id = $2
 `
 
 type GetGroupMemberParams struct {
-	GroupID int32 `json:"group_id"`
-	UserID  int32 `json:"user_id"`
+	GroupID int64 `json:"group_id"`
+	UserID  int64 `json:"user_id"`
 }
 
-func (q *Queries) GetGroupMember(ctx context.Context, arg GetGroupMemberParams) ([]GroupMember, error) {
-	rows, err := q.db.QueryContext(ctx, getGroupMember, arg.GroupID, arg.UserID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GroupMember
-	for rows.Next() {
-		var i GroupMember
-		if err := rows.Scan(&i.GroupID, &i.UserID, &i.CreatedAt); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetGroupMember(ctx context.Context, arg GetGroupMemberParams) (GroupMember, error) {
+	row := q.db.QueryRowContext(ctx, getGroupMember, arg.GroupID, arg.UserID)
+	var i GroupMember
+	err := row.Scan(&i.GroupID, &i.UserID, &i.CreatedAt)
+	return i, err
 }

@@ -10,8 +10,8 @@ import (
 
 type Expense struct {
 	ID          int64     `json:"id"`
-	GroupID     int32     `json:"group_id"`
-	PayerID     int32     `json:"payer_id"`
+	GroupID     int64     `json:"group_id"`
+	PayerID     int64     `json:"payer_id"`
 	Amount      string    `json:"amount"`
 	Description string    `json:"description"`
 	Date        time.Time `json:"date"`
@@ -24,15 +24,15 @@ type Group struct {
 }
 
 type GroupMember struct {
-	GroupID   int32     `json:"group_id"`
-	UserID    int32     `json:"user_id"`
+	GroupID   int64     `json:"group_id"`
+	UserID    int64     `json:"user_id"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
 type Settlement struct {
 	ID      int64     `json:"id"`
-	PayerID int32     `json:"payer_id"`
-	PayeeID int32     `json:"payee_id"`
+	PayerID int64     `json:"payer_id"`
+	PayeeID int64     `json:"payee_id"`
 	Amount  string    `json:"amount"`
 	Date    time.Time `json:"date"`
 }
@@ -45,7 +45,7 @@ type User struct {
 }
 
 type UserExpense struct {
-	ExpenseID int32  `json:"expense_id"`
-	UserID    int32  `json:"user_id"`
+	ExpenseID int64  `json:"expense_id"`
+	UserID    int64  `json:"user_id"`
 	Share     string `json:"share"`
 }

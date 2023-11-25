@@ -12,32 +12,32 @@ CREATE TABLE "groups" (
 );
 
 CREATE TABLE "group_members" (
-  "group_id" int,
-  "user_id" int,
+  "group_id" bigint,
+  "user_id" bigint,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   PRIMARY KEY ("group_id", "user_id")
 );
 
 CREATE TABLE "expenses" (
   "id" bigserial PRIMARY KEY,
-  "group_id" int NOT NULL,
-  "payer_id" int NOT NULL,
+  "group_id" bigint NOT NULL,
+  "payer_id" bigint NOT NULL,
   "amount" decimal NOT NULL,
   "description" varchar(255) NOT NULL,
   "date" timestamptz NOT NULL
 );
 
 CREATE TABLE "user_expenses" (
-  "expense_id" int,
-  "user_id" int,
+  "expense_id" bigint,
+  "user_id" bigint,
   "share" decimal NOT NULL,
   PRIMARY KEY ("expense_id", "user_id")
 );
 
 CREATE TABLE "settlements" (
   "id" bigserial PRIMARY KEY,
-  "payer_id" int NOT NULL,
-  "payee_id" int NOT NULL,
+  "payer_id" bigint NOT NULL,
+  "payee_id" bigint NOT NULL,
   "amount" decimal NOT NULL,
   "date" timestamptz NOT NULL
   CHECK (payer_id != payee_id)

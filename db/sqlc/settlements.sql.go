@@ -18,8 +18,8 @@ RETURNING id, payer_id, payee_id, amount, date
 
 type CreateSettlementParams struct {
 	ID      int64     `json:"id"`
-	PayerID int32     `json:"payer_id"`
-	PayeeID int32     `json:"payee_id"`
+	PayerID int64     `json:"payer_id"`
+	PayeeID int64     `json:"payee_id"`
 	Amount  string    `json:"amount"`
 	Date    time.Time `json:"date"`
 }
@@ -81,8 +81,8 @@ RETURNING id, payer_id, payee_id, amount, date
 
 type UpdateSettlementParams struct {
 	ID      int64     `json:"id"`
-	PayerID int32     `json:"payer_id"`
-	PayeeID int32     `json:"payee_id"`
+	PayerID int64     `json:"payer_id"`
+	PayeeID int64     `json:"payee_id"`
 	Amount  string    `json:"amount"`
 	Date    time.Time `json:"date"`
 }
