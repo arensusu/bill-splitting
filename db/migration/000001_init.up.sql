@@ -22,7 +22,7 @@ CREATE TABLE "expenses" (
   "id" bigserial PRIMARY KEY,
   "group_id" bigint NOT NULL,
   "payer_id" bigint NOT NULL,
-  "amount" decimal NOT NULL,
+  "amount" bigint NOT NULL,
   "description" varchar(255) NOT NULL,
   "date" timestamptz NOT NULL
 );
@@ -30,7 +30,7 @@ CREATE TABLE "expenses" (
 CREATE TABLE "user_expenses" (
   "expense_id" bigint,
   "user_id" bigint,
-  "share" decimal NOT NULL,
+  "share" bigint NOT NULL,
   PRIMARY KEY ("expense_id", "user_id")
 );
 
@@ -38,7 +38,7 @@ CREATE TABLE "settlements" (
   "id" bigserial PRIMARY KEY,
   "payer_id" bigint NOT NULL,
   "payee_id" bigint NOT NULL,
-  "amount" decimal NOT NULL,
+  "amount" bigint NOT NULL,
   "date" timestamptz NOT NULL
   CHECK (payer_id != payee_id)
 );

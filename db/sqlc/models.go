@@ -12,7 +12,7 @@ type Expense struct {
 	ID          int64     `json:"id"`
 	GroupID     int64     `json:"group_id"`
 	PayerID     int64     `json:"payer_id"`
-	Amount      string    `json:"amount"`
+	Amount      int64     `json:"amount"`
 	Description string    `json:"description"`
 	Date        time.Time `json:"date"`
 }
@@ -33,7 +33,7 @@ type Settlement struct {
 	ID      int64     `json:"id"`
 	PayerID int64     `json:"payer_id"`
 	PayeeID int64     `json:"payee_id"`
-	Amount  string    `json:"amount"`
+	Amount  int64     `json:"amount"`
 	Date    time.Time `json:"date"`
 }
 
@@ -45,7 +45,7 @@ type User struct {
 }
 
 type UserExpense struct {
-	ExpenseID int64  `json:"expense_id"`
-	UserID    int64  `json:"user_id"`
-	Share     string `json:"share"`
+	ExpenseID int64 `json:"expense_id"`
+	UserID    int64 `json:"user_id"`
+	Share     int64 `json:"share"`
 }

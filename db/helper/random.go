@@ -19,3 +19,7 @@ func RandomString(n int) string {
 func RandomInt64(min, max int64) int64 {
 	return min + randGen.Int63n(max-min+1)
 }
+
+func RandomDate() time.Time {
+	return time.Now().AddDate(0, 0, randGen.Intn(365))
+}

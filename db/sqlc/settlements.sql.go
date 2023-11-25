@@ -20,7 +20,7 @@ type CreateSettlementParams struct {
 	ID      int64     `json:"id"`
 	PayerID int64     `json:"payer_id"`
 	PayeeID int64     `json:"payee_id"`
-	Amount  string    `json:"amount"`
+	Amount  int64     `json:"amount"`
 	Date    time.Time `json:"date"`
 }
 
@@ -83,7 +83,7 @@ type UpdateSettlementParams struct {
 	ID      int64     `json:"id"`
 	PayerID int64     `json:"payer_id"`
 	PayeeID int64     `json:"payee_id"`
-	Amount  string    `json:"amount"`
+	Amount  int64     `json:"amount"`
 	Date    time.Time `json:"date"`
 }
 

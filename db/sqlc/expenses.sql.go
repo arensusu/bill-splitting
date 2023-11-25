@@ -19,7 +19,7 @@ RETURNING id, group_id, payer_id, amount, description, date
 type CreateExpenseParams struct {
 	GroupID     int64     `json:"group_id"`
 	PayerID     int64     `json:"payer_id"`
-	Amount      string    `json:"amount"`
+	Amount      int64     `json:"amount"`
 	Description string    `json:"description"`
 	Date        time.Time `json:"date"`
 }
@@ -84,7 +84,7 @@ type UpdateExpenseParams struct {
 	ID          int64     `json:"id"`
 	GroupID     int64     `json:"group_id"`
 	PayerID     int64     `json:"payer_id"`
-	Amount      string    `json:"amount"`
+	Amount      int64     `json:"amount"`
 	Description string    `json:"description"`
 	Date        time.Time `json:"date"`
 }
