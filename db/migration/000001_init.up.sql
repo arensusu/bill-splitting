@@ -21,7 +21,7 @@ CREATE TABLE "group_members" (
 CREATE TABLE "expenses" (
   "id" int PRIMARY KEY,
   "group_id" int NOT NULL,
-  "paid_by_user_id" int NOT NULL,
+  "payer_id" int NOT NULL,
   "amount" decimal NOT NULL,
   "description" varchar(255) NOT NULL,
   "date" timestamptz NOT NULL
@@ -40,6 +40,7 @@ CREATE TABLE "settlements" (
   "payee_id" int NOT NULL,
   "amount" decimal NOT NULL,
   "date" timestamptz NOT NULL
+  CHECK (payer_id != payee_id)
 );
 
 ALTER TABLE "group_members" ADD FOREIGN KEY ("group_id") REFERENCES "groups" ("id");
@@ -48,7 +49,7 @@ ALTER TABLE "group_members" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id"
 
 ALTER TABLE "expenses" ADD FOREIGN KEY ("group_id") REFERENCES "groups" ("id");
 
-ALTER TABLE "expenses" ADD FOREIGN KEY ("paid_by_user_id") REFERENCES "users" ("id");
+ALTER TABLE "expenses" ADD FOREIGN KEY ("payer_id") REFERENCES "users" ("id");
 
 ALTER TABLE "user_expenses" ADD FOREIGN KEY ("expense_id") REFERENCES "expenses" ("id");
 

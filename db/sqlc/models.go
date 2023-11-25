@@ -9,12 +9,12 @@ import (
 )
 
 type Expense struct {
-	ID           int32     `json:"id"`
-	GroupID      int32     `json:"group_id"`
-	PaidByUserID int32     `json:"paid_by_user_id"`
-	Amount       string    `json:"amount"`
-	Description  string    `json:"description"`
-	Date         time.Time `json:"date"`
+	ID          int32     `json:"id"`
+	GroupID     int32     `json:"group_id"`
+	PayerID     int32     `json:"payer_id"`
+	Amount      string    `json:"amount"`
+	Description string    `json:"description"`
+	Date        time.Time `json:"date"`
 }
 
 type Group struct {
