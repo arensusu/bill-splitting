@@ -11,13 +11,12 @@ import (
 )
 
 const createSettlement = `-- name: CreateSettlement :one
-INSERT INTO settlements (id, payer_id, payee_id, amount, date)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO settlements (payer_id, payee_id, amount, date)
+VALUES ($1, $2, $3, $4)
 RETURNING id, payer_id, payee_id, amount, date
 `
 
 type CreateSettlementParams struct {
-	ID      int64     `json:"id"`
 	PayerID int64     `json:"payer_id"`
 	PayeeID int64     `json:"payee_id"`
 	Amount  int64     `json:"amount"`
@@ -26,7 +25,6 @@ type CreateSettlementParams struct {
 
 func (q *Queries) CreateSettlement(ctx context.Context, arg CreateSettlementParams) (Settlement, error) {
 	row := q.db.QueryRowContext(ctx, createSettlement,
-		arg.ID,
 		arg.PayerID,
 		arg.PayeeID,
 		arg.Amount,

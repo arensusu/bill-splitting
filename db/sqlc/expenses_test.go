@@ -11,10 +11,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomExpense(t *testing.T, groupID int64, payerID int64) db.Expense {
+func createRandomExpense(t *testing.T) db.Expense {
+	group := createRandomGroup(t)
+	user := createRandomUser(t)
 	param := db.CreateExpenseParams{
-		GroupID: groupID,
-		PayerID: payerID,
+		GroupID: group.ID,
+		PayerID: user.ID,
 		Amount:  helper.RandomInt64(1, 1000),
 		Date:    helper.RandomDate(),
 	}
@@ -24,8 +26,8 @@ func createRandomExpense(t *testing.T, groupID int64, payerID int64) db.Expense 
 	require.NotEmpty(t, expense)
 
 	require.NotZero(t, expense.ID)
-	require.Equal(t, groupID, expense.GroupID)
-	require.Equal(t, payerID, expense.PayerID)
+	require.Equal(t, group.ID, expense.GroupID)
+	require.Equal(t, user.ID, expense.PayerID)
 	require.Equal(t, param.Amount, expense.Amount)
 	require.WithinDuration(t, param.Date, expense.Date, time.Second)
 
@@ -33,15 +35,11 @@ func createRandomExpense(t *testing.T, groupID int64, payerID int64) db.Expense 
 }
 
 func TestCreateExpense(t *testing.T) {
-	group := createRandomGroup(t)
-	user := createRandomUser(t)
-	createRandomGroupMember(t, group.ID, user.ID)
+	createRandomExpense(t)
 }
 
 func TestGetExpense(t *testing.T) {
-	group := createRandomGroup(t)
-	user := createRandomUser(t)
-	expense1 := createRandomExpense(t, group.ID, user.ID)
+	expense1 := createRandomExpense(t)
 
 	expense2, err := testQueries.GetExpense(context.Background(), expense1.ID)
 
@@ -56,15 +54,13 @@ func TestGetExpense(t *testing.T) {
 }
 
 func TestUpdateExpense(t *testing.T) {
-	group := createRandomGroup(t)
-	user := createRandomUser(t)
-	expense := createRandomExpense(t, group.ID, user.ID)
+	expense := createRandomExpense(t)
 
 	newAmount := helper.RandomInt64(1, 1000)
 	param := db.UpdateExpenseParams{
 		ID:      expense.ID,
-		GroupID: group.ID,
-		PayerID: user.ID,
+		GroupID: expense.GroupID,
+		PayerID: expense.PayerID,
 		Amount:  newAmount,
 		Date:    expense.Date,
 	}
@@ -74,16 +70,14 @@ func TestUpdateExpense(t *testing.T) {
 	require.NotEmpty(t, newExpense)
 
 	require.Equal(t, expense.ID, newExpense.ID)
-	require.Equal(t, group.ID, newExpense.GroupID)
-	require.Equal(t, user.ID, newExpense.PayerID)
+	require.Equal(t, expense.GroupID, newExpense.GroupID)
+	require.Equal(t, expense.PayerID, newExpense.PayerID)
 	require.Equal(t, newAmount, newExpense.Amount)
 	require.WithinDuration(t, expense.Date, newExpense.Date, time.Second)
 }
 
 func TestDeleteExpense(t *testing.T) {
-	group := createRandomGroup(t)
-	user := createRandomUser(t)
-	expense1 := createRandomExpense(t, group.ID, user.ID)
+	expense1 := createRandomExpense(t)
 
 	err := testQueries.DeleteExpense(context.Background(), expense1.ID)
 

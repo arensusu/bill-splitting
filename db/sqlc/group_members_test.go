@@ -10,10 +10,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomGroupMember(t *testing.T, groupID int64, userID int64) db.GroupMember {
+func createRandomGroupMember(t *testing.T) db.GroupMember {
+	group := createRandomGroup(t)
+	user := createRandomUser(t)
 	param := db.CreateGroupMemberParams{
-		GroupID: groupID,
-		UserID:  userID,
+		GroupID: group.ID,
+		UserID:  user.ID,
 	}
 
 	groupMember, err := testQueries.CreateGroupMember(context.Background(), param)
@@ -21,28 +23,23 @@ func createRandomGroupMember(t *testing.T, groupID int64, userID int64) db.Group
 	require.NoError(t, err)
 	require.NotEmpty(t, groupMember)
 
-	require.Equal(t, groupID, groupMember.GroupID)
-	require.Equal(t, userID, groupMember.UserID)
+	require.Equal(t, group.ID, groupMember.GroupID)
+	require.Equal(t, user.ID, groupMember.UserID)
 	require.NotZero(t, groupMember.CreatedAt)
 
 	return groupMember
 }
 
 func TestCreateGroupMember(t *testing.T) {
-	group1 := createRandomGroup(t)
-	user1 := createRandomUser(t)
-
-	createRandomGroupMember(t, group1.ID, user1.ID)
+	createRandomGroupMember(t)
 }
 
 func TestGetGroupMember(t *testing.T) {
-	group1 := createRandomGroup(t)
-	user1 := createRandomUser(t)
-	groupMember1 := createRandomGroupMember(t, group1.ID, user1.ID)
+	groupMember1 := createRandomGroupMember(t)
 
 	param := db.GetGroupMemberParams{
-		GroupID: group1.ID,
-		UserID:  user1.ID,
+		GroupID: groupMember1.GroupID,
+		UserID:  groupMember1.UserID,
 	}
 	groupMember2, err := testQueries.GetGroupMember(context.Background(), param)
 
@@ -55,21 +52,19 @@ func TestGetGroupMember(t *testing.T) {
 }
 
 func TestDeleteGroupMember(t *testing.T) {
-	group1 := createRandomGroup(t)
-	user1 := createRandomUser(t)
-	createRandomGroupMember(t, group1.ID, user1.ID)
+	groupMember1 := createRandomGroupMember(t)
 
 	deleteParam := db.DeleteGroupMemberParams{
-		GroupID: group1.ID,
-		UserID:  user1.ID,
+		GroupID: groupMember1.GroupID,
+		UserID:  groupMember1.UserID,
 	}
 	err := testQueries.DeleteGroupMember(context.Background(), deleteParam)
 
 	require.NoError(t, err)
 
 	getParam := db.GetGroupMemberParams{
-		GroupID: group1.ID,
-		UserID:  user1.ID,
+		GroupID: groupMember1.GroupID,
+		UserID:  groupMember1.UserID,
 	}
 	groupMember2, err := testQueries.GetGroupMember(context.Background(), getParam)
 
