@@ -12,7 +12,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var testQueries *db.Queries
+var testStore *db.Store
 
 func TestMain(m *testing.M) {
 	err := godotenv.Load("../../.env")
@@ -32,6 +32,6 @@ func TestMain(m *testing.M) {
 		log.Fatal("cannot connect to db:", err)
 	}
 
-	testQueries = db.New(conn)
+	testStore = db.NewStore(conn)
 	os.Exit(m.Run())
 }

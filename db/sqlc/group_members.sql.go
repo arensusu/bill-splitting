@@ -59,3 +59,32 @@ func (q *Queries) GetGroupMember(ctx context.Context, arg GetGroupMemberParams) 
 	err := row.Scan(&i.GroupID, &i.UserID, &i.CreatedAt)
 	return i, err
 }
+
+const listGroupMembers = `-- name: ListGroupMembers :many
+SELECT group_id, user_id, created_at
+FROM group_members
+WHERE group_id = $1
+`
+
+func (q *Queries) ListGroupMembers(ctx context.Context, groupID int64) ([]GroupMember, error) {
+	rows, err := q.db.QueryContext(ctx, listGroupMembers, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GroupMember
+	for rows.Next() {
+		var i GroupMember
+		if err := rows.Scan(&i.GroupID, &i.UserID, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

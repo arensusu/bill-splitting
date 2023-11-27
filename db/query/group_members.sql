@@ -8,6 +8,11 @@ SELECT *
 FROM group_members
 WHERE group_id = $1 AND user_id = $2;
 
+-- name: ListGroupMembers :many
+SELECT *
+FROM group_members
+WHERE group_id = $1;
+
 -- name: DeleteGroupMember :exec
 DELETE FROM group_members
 WHERE group_id = $1 AND user_id = $2;

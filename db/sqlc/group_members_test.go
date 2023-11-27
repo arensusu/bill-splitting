@@ -18,7 +18,7 @@ func createRandomGroupMember(t *testing.T) db.GroupMember {
 		UserID:  user.ID,
 	}
 
-	groupMember, err := testQueries.CreateGroupMember(context.Background(), param)
+	groupMember, err := testStore.Queries.CreateGroupMember(context.Background(), param)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, groupMember)
@@ -41,7 +41,7 @@ func TestGetGroupMember(t *testing.T) {
 		GroupID: groupMember1.GroupID,
 		UserID:  groupMember1.UserID,
 	}
-	groupMember2, err := testQueries.GetGroupMember(context.Background(), param)
+	groupMember2, err := testStore.Queries.GetGroupMember(context.Background(), param)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, groupMember2)
@@ -58,7 +58,7 @@ func TestDeleteGroupMember(t *testing.T) {
 		GroupID: groupMember1.GroupID,
 		UserID:  groupMember1.UserID,
 	}
-	err := testQueries.DeleteGroupMember(context.Background(), deleteParam)
+	err := testStore.Queries.DeleteGroupMember(context.Background(), deleteParam)
 
 	require.NoError(t, err)
 
@@ -66,7 +66,7 @@ func TestDeleteGroupMember(t *testing.T) {
 		GroupID: groupMember1.GroupID,
 		UserID:  groupMember1.UserID,
 	}
-	groupMember2, err := testQueries.GetGroupMember(context.Background(), getParam)
+	groupMember2, err := testStore.Queries.GetGroupMember(context.Background(), getParam)
 
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())

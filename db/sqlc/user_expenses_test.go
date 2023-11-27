@@ -19,7 +19,7 @@ func createRandomUserExpense(t *testing.T) db.UserExpense {
 		UserID:    user.ID,
 		Share:     helper.RandomInt64(1, 100),
 	}
-	userExpense, err := testQueries.CreateUserExpense(context.Background(), param)
+	userExpense, err := testStore.Queries.CreateUserExpense(context.Background(), param)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, userExpense)
@@ -42,7 +42,7 @@ func TestGetUserExpense(t *testing.T) {
 		ExpenseID: userExpense1.ExpenseID,
 		UserID:    userExpense1.UserID,
 	}
-	userExpense2, err := testQueries.GetUserExpense(context.Background(), param)
+	userExpense2, err := testStore.Queries.GetUserExpense(context.Background(), param)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, userExpense2)
@@ -62,7 +62,7 @@ func TestUpdateUserExpense(t *testing.T) {
 		Share:     newShare,
 	}
 
-	userExpense2, err := testQueries.UpdateUserExpense(context.Background(), param)
+	userExpense2, err := testStore.Queries.UpdateUserExpense(context.Background(), param)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, userExpense2)
@@ -79,7 +79,7 @@ func TestDeleteUserExpense(t *testing.T) {
 		ExpenseID: userExpense1.ExpenseID,
 		UserID:    userExpense1.UserID,
 	}
-	err := testQueries.DeleteUserExpense(context.Background(), deleteParam)
+	err := testStore.Queries.DeleteUserExpense(context.Background(), deleteParam)
 
 	require.NoError(t, err)
 
@@ -87,7 +87,7 @@ func TestDeleteUserExpense(t *testing.T) {
 		ExpenseID: userExpense1.ExpenseID,
 		UserID:    userExpense1.UserID,
 	}
-	userExpense2, err := testQueries.GetUserExpense(context.Background(), getParam)
+	userExpense2, err := testStore.Queries.GetUserExpense(context.Background(), getParam)
 
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())

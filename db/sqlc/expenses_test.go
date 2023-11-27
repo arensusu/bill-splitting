@@ -20,7 +20,7 @@ func createRandomExpense(t *testing.T) db.Expense {
 		Amount:  helper.RandomInt64(1, 1000),
 		Date:    helper.RandomDate(),
 	}
-	expense, err := testQueries.CreateExpense(context.Background(), param)
+	expense, err := testStore.Queries.CreateExpense(context.Background(), param)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, expense)
@@ -41,7 +41,7 @@ func TestCreateExpense(t *testing.T) {
 func TestGetExpense(t *testing.T) {
 	expense1 := createRandomExpense(t)
 
-	expense2, err := testQueries.GetExpense(context.Background(), expense1.ID)
+	expense2, err := testStore.Queries.GetExpense(context.Background(), expense1.ID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, expense2)
@@ -64,7 +64,7 @@ func TestUpdateExpense(t *testing.T) {
 		Amount:  newAmount,
 		Date:    expense.Date,
 	}
-	newExpense, err := testQueries.UpdateExpense(context.Background(), param)
+	newExpense, err := testStore.Queries.UpdateExpense(context.Background(), param)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, newExpense)
@@ -79,11 +79,11 @@ func TestUpdateExpense(t *testing.T) {
 func TestDeleteExpense(t *testing.T) {
 	expense1 := createRandomExpense(t)
 
-	err := testQueries.DeleteExpense(context.Background(), expense1.ID)
+	err := testStore.Queries.DeleteExpense(context.Background(), expense1.ID)
 
 	require.NoError(t, err)
 
-	expense2, err := testQueries.GetExpense(context.Background(), expense1.ID)
+	expense2, err := testStore.Queries.GetExpense(context.Background(), expense1.ID)
 
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())

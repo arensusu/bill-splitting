@@ -23,7 +23,7 @@ func createRandomSettlement(t *testing.T) db.Settlement {
 		Amount:  helper.RandomInt64(1, 1000),
 		Date:    helper.RandomDate(),
 	}
-	settlement, err := testQueries.CreateSettlement(context.Background(), param)
+	settlement, err := testStore.Queries.CreateSettlement(context.Background(), param)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, settlement)
@@ -44,7 +44,7 @@ func TestCreateSettlement(t *testing.T) {
 func TestGetSettlement(t *testing.T) {
 	settlement1 := createRandomSettlement(t)
 
-	settlement2, err := testQueries.GetSettlement(context.Background(), settlement1.ID)
+	settlement2, err := testStore.Queries.GetSettlement(context.Background(), settlement1.ID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, settlement2)
@@ -71,7 +71,7 @@ func TestUpdateSettlement(t *testing.T) {
 		Date:    newDate,
 	}
 
-	settlement2, err := testQueries.UpdateSettlement(context.Background(), param)
+	settlement2, err := testStore.Queries.UpdateSettlement(context.Background(), param)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, settlement2)
@@ -86,11 +86,11 @@ func TestUpdateSettlement(t *testing.T) {
 func TestDeleteSettlement(t *testing.T) {
 	settlement1 := createRandomSettlement(t)
 
-	err := testQueries.DeleteSettlement(context.Background(), settlement1.ID)
+	err := testStore.Queries.DeleteSettlement(context.Background(), settlement1.ID)
 
 	require.NoError(t, err)
 
-	settlement2, err := testQueries.GetSettlement(context.Background(), settlement1.ID)
+	settlement2, err := testStore.Queries.GetSettlement(context.Background(), settlement1.ID)
 
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())
