@@ -26,12 +26,13 @@ func (s *Store) CreateExpenseTx(ctx context.Context, arg CreateExpenseTxParams) 
 	}
 	defer tx.Rollback()
 
-	group_members, err := s.ListGroupMembers(ctx, arg.GroupID)
+	q := New(tx)
+	group_members, err := q.ListGroupMembers(ctx, arg.GroupID)
 	if err != nil {
 		return nil, fmt.Errorf("create expense tx: %w", err)
 	}
 
-	expense, err := s.CreateExpense(ctx, CreateExpenseParams{
+	expense, err := q.CreateExpense(ctx, CreateExpenseParams{
 		PayerID:     arg.PayerID,
 		GroupID:     arg.GroupID,
 		Amount:      arg.Amount,
@@ -45,7 +46,7 @@ func (s *Store) CreateExpenseTx(ctx context.Context, arg CreateExpenseTxParams) 
 	share := arg.Amount / int64(len(group_members))
 	userExpenses := []UserExpense{}
 	for _, member := range group_members {
-		userExpense, err := s.CreateUserExpense(ctx, CreateUserExpenseParams{
+		userExpense, err := q.CreateUserExpense(ctx, CreateUserExpenseParams{
 			ExpenseID: expense.ID,
 			UserID:    member.UserID,
 			Share:     share,

@@ -26,6 +26,8 @@ func NewServer(store *db.Store) *Server {
 
 	router.POST("/expenses", server.createExpense)
 
+	router.POST("/settlements", server.createSettlement)
+
 	server.router = router
 	return server
 }

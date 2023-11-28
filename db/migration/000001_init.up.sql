@@ -35,11 +35,12 @@ CREATE TABLE "user_expenses" (
 );
 
 CREATE TABLE "settlements" (
-  "id" bigserial PRIMARY KEY,
+  "group_id" bigserial NOT NULL,
   "payer_id" bigint NOT NULL,
   "payee_id" bigint NOT NULL,
   "amount" bigint NOT NULL,
-  "date" timestamptz NOT NULL
+  "date" timestamptz NOT NULL,
+  PRIMARY KEY ("group_id", "payer_id", "payee_id"),
   CHECK (payer_id != payee_id)
 );
 
@@ -54,6 +55,8 @@ ALTER TABLE "expenses" ADD FOREIGN KEY ("payer_id") REFERENCES "users" ("id");
 ALTER TABLE "user_expenses" ADD FOREIGN KEY ("expense_id") REFERENCES "expenses" ("id");
 
 ALTER TABLE "user_expenses" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+
+ALTER TABLE "settlements" ADD FOREIGN KEY ("group_id") REFERENCES "groups" ("id");
 
 ALTER TABLE "settlements" ADD FOREIGN KEY ("payer_id") REFERENCES "users" ("id");
 

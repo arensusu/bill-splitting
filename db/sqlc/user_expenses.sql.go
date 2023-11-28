@@ -61,6 +61,35 @@ func (q *Queries) GetUserExpense(ctx context.Context, arg GetUserExpenseParams) 
 	return i, err
 }
 
+const listUserExpenses = `-- name: ListUserExpenses :many
+SELECT expense_id, user_id, share
+FROM user_expenses
+WHERE expense_id = $1
+`
+
+func (q *Queries) ListUserExpenses(ctx context.Context, expenseID int64) ([]UserExpense, error) {
+	rows, err := q.db.QueryContext(ctx, listUserExpenses, expenseID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []UserExpense
+	for rows.Next() {
+		var i UserExpense
+		if err := rows.Scan(&i.ExpenseID, &i.UserID, &i.Share); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateUserExpense = `-- name: UpdateUserExpense :one
 UPDATE user_expenses
 SET share = $3

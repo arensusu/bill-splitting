@@ -8,6 +8,11 @@ SELECT *
 FROM user_expenses
 WHERE expense_id = $1 and user_id = $2;
 
+-- name: ListUserExpenses :many
+SELECT *
+FROM user_expenses
+WHERE expense_id = $1;
+
 -- name: UpdateUserExpense :one
 UPDATE user_expenses
 SET share = $3

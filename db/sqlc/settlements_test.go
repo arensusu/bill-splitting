@@ -13,11 +13,13 @@ import (
 )
 
 func createRandomSettlement(t *testing.T) db.Settlement {
+	group := createRandomGroup(t)
 	payer := createRandomUser(t)
 	payee := createRandomUser(t)
 	fmt.Println(payer.ID, payee.ID)
 
 	param := db.CreateSettlementParams{
+		GroupID: group.ID,
 		PayerID: payer.ID,
 		PayeeID: payee.ID,
 		Amount:  helper.RandomInt64(1, 1000),
@@ -28,7 +30,7 @@ func createRandomSettlement(t *testing.T) db.Settlement {
 	require.NoError(t, err)
 	require.NotEmpty(t, settlement)
 
-	require.NotZero(t, settlement.ID)
+	require.Equal(t, group.ID, settlement.GroupID)
 	require.Equal(t, payer.ID, settlement.PayerID)
 	require.Equal(t, payee.ID, settlement.PayeeID)
 	require.Equal(t, param.Amount, settlement.Amount)
@@ -44,12 +46,16 @@ func TestCreateSettlement(t *testing.T) {
 func TestGetSettlement(t *testing.T) {
 	settlement1 := createRandomSettlement(t)
 
-	settlement2, err := testStore.Queries.GetSettlement(context.Background(), settlement1.ID)
+	settlement2, err := testStore.Queries.GetSettlement(context.Background(), db.GetSettlementParams{
+		GroupID: settlement1.GroupID,
+		PayerID: settlement1.PayerID,
+		PayeeID: settlement1.PayeeID,
+	})
 
 	require.NoError(t, err)
 	require.NotEmpty(t, settlement2)
 
-	require.Equal(t, settlement1.ID, settlement2.ID)
+	require.Equal(t, settlement1.GroupID, settlement2.GroupID)
 	require.Equal(t, settlement1.PayerID, settlement2.PayerID)
 	require.Equal(t, settlement1.PayeeID, settlement2.PayeeID)
 	require.Equal(t, settlement1.Amount, settlement2.Amount)
@@ -57,16 +63,14 @@ func TestGetSettlement(t *testing.T) {
 }
 
 func TestUpdateSettlement(t *testing.T) {
-	settlement := createRandomSettlement(t)
+	settlement1 := createRandomSettlement(t)
 
-	newPayerID := settlement.PayeeID
-	newPayeeID := settlement.PayerID
 	newAmount := helper.RandomInt64(1, 1000)
 	newDate := helper.RandomDate()
 	param := db.UpdateSettlementParams{
-		ID:      settlement.ID,
-		PayerID: newPayerID,
-		PayeeID: newPayeeID,
+		GroupID: settlement1.GroupID,
+		PayerID: settlement1.PayerID,
+		PayeeID: settlement1.PayeeID,
 		Amount:  newAmount,
 		Date:    newDate,
 	}
@@ -76,9 +80,9 @@ func TestUpdateSettlement(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, settlement2)
 
-	require.Equal(t, settlement.ID, settlement2.ID)
-	require.Equal(t, newPayerID, settlement2.PayerID)
-	require.Equal(t, newPayeeID, settlement2.PayeeID)
+	require.Equal(t, settlement1.GroupID, settlement2.GroupID)
+	require.Equal(t, settlement1.PayerID, settlement2.PayerID)
+	require.Equal(t, settlement1.PayeeID, settlement2.PayeeID)
 	require.Equal(t, newAmount, settlement2.Amount)
 	require.WithinDuration(t, newDate, settlement2.Date, time.Second)
 }
@@ -86,11 +90,19 @@ func TestUpdateSettlement(t *testing.T) {
 func TestDeleteSettlement(t *testing.T) {
 	settlement1 := createRandomSettlement(t)
 
-	err := testStore.Queries.DeleteSettlement(context.Background(), settlement1.ID)
+	err := testStore.Queries.DeleteSettlement(context.Background(), db.DeleteSettlementParams{
+		GroupID: settlement1.GroupID,
+		PayerID: settlement1.PayerID,
+		PayeeID: settlement1.PayeeID,
+	})
 
 	require.NoError(t, err)
 
-	settlement2, err := testStore.Queries.GetSettlement(context.Background(), settlement1.ID)
+	settlement2, err := testStore.Queries.GetSettlement(context.Background(), db.GetSettlementParams{
+		GroupID: settlement1.GroupID,
+		PayerID: settlement1.PayerID,
+		PayeeID: settlement1.PayeeID,
+	})
 
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())

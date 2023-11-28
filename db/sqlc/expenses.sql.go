@@ -55,7 +55,8 @@ func (q *Queries) DeleteExpense(ctx context.Context, id int64) error {
 }
 
 const getExpense = `-- name: GetExpense :one
-SELECT id, group_id, payer_id, amount, description, date FROM expenses
+SELECT id, group_id, payer_id, amount, description, date
+FROM expenses
 WHERE id = $1
 `
 
@@ -71,6 +72,42 @@ func (q *Queries) GetExpense(ctx context.Context, id int64) (Expense, error) {
 		&i.Date,
 	)
 	return i, err
+}
+
+const listGroupExpenses = `-- name: ListGroupExpenses :many
+SELECT id, group_id, payer_id, amount, description, date
+FROM expenses
+WHERE group_id = $1
+`
+
+func (q *Queries) ListGroupExpenses(ctx context.Context, groupID int64) ([]Expense, error) {
+	rows, err := q.db.QueryContext(ctx, listGroupExpenses, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Expense
+	for rows.Next() {
+		var i Expense
+		if err := rows.Scan(
+			&i.ID,
+			&i.GroupID,
+			&i.PayerID,
+			&i.Amount,
+			&i.Description,
+			&i.Date,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateExpense = `-- name: UpdateExpense :one

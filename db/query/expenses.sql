@@ -4,8 +4,14 @@ VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: GetExpense :one
-SELECT * FROM expenses
+SELECT *
+FROM expenses
 WHERE id = $1;
+
+-- name: ListGroupExpenses :many
+SELECT *
+FROM expenses
+WHERE group_id = $1;
 
 -- name: UpdateExpense :one
 UPDATE expenses

@@ -30,7 +30,7 @@ type GroupMember struct {
 }
 
 type Settlement struct {
-	ID      int64     `json:"id"`
+	GroupID int64     `json:"group_id"`
 	PayerID int64     `json:"payer_id"`
 	PayeeID int64     `json:"payee_id"`
 	Amount  int64     `json:"amount"`
