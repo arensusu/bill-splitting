@@ -1,6 +1,6 @@
 -- name: CreateSettlement :one
-INSERT INTO settlements (group_id, payer_id, payee_id, amount, date)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO settlements (group_id, payer_id, payee_id, amount)
+VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: GetSettlement :one
@@ -15,7 +15,7 @@ WHERE group_id = $1;
 
 -- name: UpdateSettlement :one
 UPDATE settlements
-SET amount = $4, date = $5
+SET amount = $4, is_confirmed = $5
 WHERE group_id = $1 AND payer_id = $2 AND payee_id = $3
 RETURNING *;
 

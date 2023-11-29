@@ -24,7 +24,8 @@ CREATE TABLE "expenses" (
   "payer_id" bigint NOT NULL,
   "amount" bigint NOT NULL,
   "description" varchar(255) NOT NULL,
-  "date" timestamptz NOT NULL
+  "date" timestamptz NOT NULL,
+  "is_settled" boolean NOT NULL DEFAULT false
 );
 
 CREATE TABLE "user_expenses" (
@@ -39,7 +40,7 @@ CREATE TABLE "settlements" (
   "payer_id" bigint NOT NULL,
   "payee_id" bigint NOT NULL,
   "amount" bigint NOT NULL,
-  "date" timestamptz NOT NULL,
+  "is_confirmed" boolean NOT NULL DEFAULT false,
   PRIMARY KEY ("group_id", "payer_id", "payee_id"),
   CHECK (payer_id != payee_id)
 );

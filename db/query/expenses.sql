@@ -13,9 +13,14 @@ SELECT *
 FROM expenses
 WHERE group_id = $1;
 
+-- name: ListNonSettledGroupExpenses :many
+SELECT *
+FROM expenses
+WHERE group_id = $1 AND is_settled = false;
+
 -- name: UpdateExpense :one
 UPDATE expenses
-SET group_id = $2, payer_id = $3, amount = $4, description = $5, date = $6
+SET group_id = $2, payer_id = $3, amount = $4, description = $5, date = $6, is_settled = $7
 WHERE id = $1
 RETURNING *;
 

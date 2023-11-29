@@ -15,6 +15,7 @@ type Expense struct {
 	Amount      int64     `json:"amount"`
 	Description string    `json:"description"`
 	Date        time.Time `json:"date"`
+	IsSettled   bool      `json:"is_settled"`
 }
 
 type Group struct {
@@ -30,11 +31,11 @@ type GroupMember struct {
 }
 
 type Settlement struct {
-	GroupID int64     `json:"group_id"`
-	PayerID int64     `json:"payer_id"`
-	PayeeID int64     `json:"payee_id"`
-	Amount  int64     `json:"amount"`
-	Date    time.Time `json:"date"`
+	GroupID     int64 `json:"group_id"`
+	PayerID     int64 `json:"payer_id"`
+	PayeeID     int64 `json:"payee_id"`
+	Amount      int64 `json:"amount"`
+	IsConfirmed bool  `json:"is_confirmed"`
 }
 
 type User struct {

@@ -7,21 +7,19 @@ package db
 
 import (
 	"context"
-	"time"
 )
 
 const createSettlement = `-- name: CreateSettlement :one
-INSERT INTO settlements (group_id, payer_id, payee_id, amount, date)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING group_id, payer_id, payee_id, amount, date
+INSERT INTO settlements (group_id, payer_id, payee_id, amount)
+VALUES ($1, $2, $3, $4)
+RETURNING group_id, payer_id, payee_id, amount, is_confirmed
 `
 
 type CreateSettlementParams struct {
-	GroupID int64     `json:"group_id"`
-	PayerID int64     `json:"payer_id"`
-	PayeeID int64     `json:"payee_id"`
-	Amount  int64     `json:"amount"`
-	Date    time.Time `json:"date"`
+	GroupID int64 `json:"group_id"`
+	PayerID int64 `json:"payer_id"`
+	PayeeID int64 `json:"payee_id"`
+	Amount  int64 `json:"amount"`
 }
 
 func (q *Queries) CreateSettlement(ctx context.Context, arg CreateSettlementParams) (Settlement, error) {
@@ -30,7 +28,6 @@ func (q *Queries) CreateSettlement(ctx context.Context, arg CreateSettlementPara
 		arg.PayerID,
 		arg.PayeeID,
 		arg.Amount,
-		arg.Date,
 	)
 	var i Settlement
 	err := row.Scan(
@@ -38,7 +35,7 @@ func (q *Queries) CreateSettlement(ctx context.Context, arg CreateSettlementPara
 		&i.PayerID,
 		&i.PayeeID,
 		&i.Amount,
-		&i.Date,
+		&i.IsConfirmed,
 	)
 	return i, err
 }
@@ -60,7 +57,7 @@ func (q *Queries) DeleteSettlement(ctx context.Context, arg DeleteSettlementPara
 }
 
 const getSettlement = `-- name: GetSettlement :one
-SELECT group_id, payer_id, payee_id, amount, date
+SELECT group_id, payer_id, payee_id, amount, is_confirmed
 FROM settlements
 WHERE group_id = $1 AND payer_id = $2 AND payee_id = $3
 `
@@ -79,13 +76,13 @@ func (q *Queries) GetSettlement(ctx context.Context, arg GetSettlementParams) (S
 		&i.PayerID,
 		&i.PayeeID,
 		&i.Amount,
-		&i.Date,
+		&i.IsConfirmed,
 	)
 	return i, err
 }
 
 const listGroupSettlements = `-- name: ListGroupSettlements :many
-SELECT group_id, payer_id, payee_id, amount, date
+SELECT group_id, payer_id, payee_id, amount, is_confirmed
 FROM settlements
 WHERE group_id = $1
 `
@@ -104,7 +101,7 @@ func (q *Queries) ListGroupSettlements(ctx context.Context, groupID int64) ([]Se
 			&i.PayerID,
 			&i.PayeeID,
 			&i.Amount,
-			&i.Date,
+			&i.IsConfirmed,
 		); err != nil {
 			return nil, err
 		}
@@ -121,17 +118,17 @@ func (q *Queries) ListGroupSettlements(ctx context.Context, groupID int64) ([]Se
 
 const updateSettlement = `-- name: UpdateSettlement :one
 UPDATE settlements
-SET amount = $4, date = $5
+SET amount = $4, is_confirmed = $5
 WHERE group_id = $1 AND payer_id = $2 AND payee_id = $3
-RETURNING group_id, payer_id, payee_id, amount, date
+RETURNING group_id, payer_id, payee_id, amount, is_confirmed
 `
 
 type UpdateSettlementParams struct {
-	GroupID int64     `json:"group_id"`
-	PayerID int64     `json:"payer_id"`
-	PayeeID int64     `json:"payee_id"`
-	Amount  int64     `json:"amount"`
-	Date    time.Time `json:"date"`
+	GroupID     int64 `json:"group_id"`
+	PayerID     int64 `json:"payer_id"`
+	PayeeID     int64 `json:"payee_id"`
+	Amount      int64 `json:"amount"`
+	IsConfirmed bool  `json:"is_confirmed"`
 }
 
 func (q *Queries) UpdateSettlement(ctx context.Context, arg UpdateSettlementParams) (Settlement, error) {
@@ -140,7 +137,7 @@ func (q *Queries) UpdateSettlement(ctx context.Context, arg UpdateSettlementPara
 		arg.PayerID,
 		arg.PayeeID,
 		arg.Amount,
-		arg.Date,
+		arg.IsConfirmed,
 	)
 	var i Settlement
 	err := row.Scan(
@@ -148,7 +145,7 @@ func (q *Queries) UpdateSettlement(ctx context.Context, arg UpdateSettlementPara
 		&i.PayerID,
 		&i.PayeeID,
 		&i.Amount,
-		&i.Date,
+		&i.IsConfirmed,
 	)
 	return i, err
 }

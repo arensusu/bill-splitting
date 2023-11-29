@@ -7,7 +7,6 @@ import (
 	"database/sql"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -23,7 +22,6 @@ func createRandomSettlement(t *testing.T) db.Settlement {
 		PayerID: payer.ID,
 		PayeeID: payee.ID,
 		Amount:  helper.RandomInt64(1, 1000),
-		Date:    helper.RandomDate(),
 	}
 	settlement, err := testStore.Queries.CreateSettlement(context.Background(), param)
 
@@ -34,7 +32,7 @@ func createRandomSettlement(t *testing.T) db.Settlement {
 	require.Equal(t, payer.ID, settlement.PayerID)
 	require.Equal(t, payee.ID, settlement.PayeeID)
 	require.Equal(t, param.Amount, settlement.Amount)
-	require.WithinDuration(t, param.Date, settlement.Date, time.Second)
+	require.False(t, settlement.IsConfirmed)
 
 	return settlement
 }
@@ -59,20 +57,20 @@ func TestGetSettlement(t *testing.T) {
 	require.Equal(t, settlement1.PayerID, settlement2.PayerID)
 	require.Equal(t, settlement1.PayeeID, settlement2.PayeeID)
 	require.Equal(t, settlement1.Amount, settlement2.Amount)
-	require.WithinDuration(t, settlement1.Date, settlement2.Date, time.Second)
+	require.Equal(t, settlement1.IsConfirmed, settlement2.IsConfirmed)
 }
 
 func TestUpdateSettlement(t *testing.T) {
 	settlement1 := createRandomSettlement(t)
 
 	newAmount := helper.RandomInt64(1, 1000)
-	newDate := helper.RandomDate()
+	newIsConfirmed := true
 	param := db.UpdateSettlementParams{
-		GroupID: settlement1.GroupID,
-		PayerID: settlement1.PayerID,
-		PayeeID: settlement1.PayeeID,
-		Amount:  newAmount,
-		Date:    newDate,
+		GroupID:     settlement1.GroupID,
+		PayerID:     settlement1.PayerID,
+		PayeeID:     settlement1.PayeeID,
+		Amount:      newAmount,
+		IsConfirmed: newIsConfirmed,
 	}
 
 	settlement2, err := testStore.Queries.UpdateSettlement(context.Background(), param)
@@ -84,7 +82,7 @@ func TestUpdateSettlement(t *testing.T) {
 	require.Equal(t, settlement1.PayerID, settlement2.PayerID)
 	require.Equal(t, settlement1.PayeeID, settlement2.PayeeID)
 	require.Equal(t, newAmount, settlement2.Amount)
-	require.WithinDuration(t, newDate, settlement2.Date, time.Second)
+	require.Equal(t, newIsConfirmed, settlement2.IsConfirmed)
 }
 
 func TestDeleteSettlement(t *testing.T) {
