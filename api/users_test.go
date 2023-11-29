@@ -5,6 +5,7 @@ import (
 	db "bill-splitting/db/sqlc"
 	"bill-splitting/helper"
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -30,19 +31,70 @@ func TestGetUserApi(t *testing.T) {
 
 	user := randomUser()
 
+	testCases := []struct {
+		name          string
+		userID        int64
+		buildStub     func(t *testing.T, mockStore *mockdb.MockStore)
+		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
+	}{
+		{
+			name:   "OK",
+			userID: user.ID,
+			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
+				mockStore.EXPECT().GetUser(gomock.Any(), gomock.Eq(user.ID)).Times(1).Return(user, nil)
+			},
+			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recoder.Code)
+				requireBodyMatchUser(t, user, recoder.Body)
+			},
+		},
+		{
+			name:   "NotFound",
+			userID: user.ID,
+			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
+				mockStore.EXPECT().GetUser(gomock.Any(), gomock.Eq(user.ID)).Times(1).Return(db.User{}, sql.ErrNoRows)
+			},
+			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, recoder.Code)
+			},
+		},
+		{
+			name:   "InternalError",
+			userID: user.ID,
+			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
+				mockStore.EXPECT().GetUser(gomock.Any(), gomock.Eq(user.ID)).Times(1).Return(db.User{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recoder.Code)
+			},
+		},
+		{
+			name:   "InvalidID",
+			userID: 0,
+			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
+				mockStore.EXPECT().GetUser(gomock.Any(), gomock.Any()).Times(0)
+			},
+			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recoder.Code)
+			},
+		},
+	}
+
 	mockStore := mockdb.NewMockStore(ctrl)
-	mockStore.EXPECT().GetUser(gomock.Any(), gomock.Eq(user.ID)).Times(1).Return(user, nil)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.buildStub(t, mockStore)
+			server := NewServer(mockStore)
+			recoder := httptest.NewRecorder()
 
-	server := NewServer(mockStore)
-	recoder := httptest.NewRecorder()
+			url := fmt.Sprintf("/users/%d", tc.userID)
+			request, err := http.NewRequest(http.MethodGet, url, nil)
+			require.NoError(t, err)
 
-	url := fmt.Sprintf("/users/%d", user.ID)
-	request, err := http.NewRequest(http.MethodGet, url, nil)
-	require.NoError(t, err)
-
-	server.router.ServeHTTP(recoder, request)
-	require.Equal(t, http.StatusOK, recoder.Code)
-	requireBodyMatchUser(t, user, recoder.Body)
+			server.router.ServeHTTP(recoder, request)
+			tc.checkResponse(t, recoder)
+		})
+	}
 }
 
 func requireBodyMatchUser(t *testing.T, user db.User, body *bytes.Buffer) {
