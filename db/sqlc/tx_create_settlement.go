@@ -23,7 +23,7 @@ func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (*Cre
 		return nil, fmt.Errorf("create settlements tx: %w", err)
 	}
 
-	expenses, err := q.ListNonSettledGroupExpenses(ctx, groupID)
+	expenses, err := q.ListNonSettledExpenses(ctx, groupID)
 	if err != nil {
 		return nil, fmt.Errorf("create settlements tx: %w", err)
 	}

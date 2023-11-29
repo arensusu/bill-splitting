@@ -76,14 +76,14 @@ func (q *Queries) GetExpense(ctx context.Context, id int64) (Expense, error) {
 	return i, err
 }
 
-const listGroupExpenses = `-- name: ListGroupExpenses :many
+const listExpenses = `-- name: ListExpenses :many
 SELECT id, group_id, payer_id, amount, description, date, is_settled
 FROM expenses
 WHERE group_id = $1
 `
 
-func (q *Queries) ListGroupExpenses(ctx context.Context, groupID int64) ([]Expense, error) {
-	rows, err := q.db.QueryContext(ctx, listGroupExpenses, groupID)
+func (q *Queries) ListExpenses(ctx context.Context, groupID int64) ([]Expense, error) {
+	rows, err := q.db.QueryContext(ctx, listExpenses, groupID)
 	if err != nil {
 		return nil, err
 	}
@@ -113,14 +113,14 @@ func (q *Queries) ListGroupExpenses(ctx context.Context, groupID int64) ([]Expen
 	return items, nil
 }
 
-const listNonSettledGroupExpenses = `-- name: ListNonSettledGroupExpenses :many
+const listNonSettledExpenses = `-- name: ListNonSettledExpenses :many
 SELECT id, group_id, payer_id, amount, description, date, is_settled
 FROM expenses
 WHERE group_id = $1 AND is_settled = false
 `
 
-func (q *Queries) ListNonSettledGroupExpenses(ctx context.Context, groupID int64) ([]Expense, error) {
-	rows, err := q.db.QueryContext(ctx, listNonSettledGroupExpenses, groupID)
+func (q *Queries) ListNonSettledExpenses(ctx context.Context, groupID int64) ([]Expense, error) {
+	rows, err := q.db.QueryContext(ctx, listNonSettledExpenses, groupID)
 	if err != nil {
 		return nil, err
 	}

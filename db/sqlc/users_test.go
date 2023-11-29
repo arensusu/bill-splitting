@@ -1,7 +1,6 @@
-package db_test
+package db
 
 import (
-	db "bill-splitting/db/sqlc"
 	"bill-splitting/helper"
 	"context"
 	"database/sql"
@@ -11,8 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomUser(t *testing.T) db.User {
-	param := db.CreateUserParams{
+func createRandomUser(t *testing.T) User {
+	param := CreateUserParams{
 		Username: helper.RandomString(10),
 		Password: helper.RandomString(10),
 	}
@@ -53,7 +52,7 @@ func TestUpdateUser(t *testing.T) {
 
 	newUsername := helper.RandomString(10)
 	newPassword := helper.RandomString(10)
-	param := db.UpdateUserParams{
+	param := UpdateUserParams{
 		ID:       user1.ID,
 		Username: newUsername,
 		Password: newPassword,

@@ -8,12 +8,12 @@ SELECT *
 FROM expenses
 WHERE id = $1;
 
--- name: ListGroupExpenses :many
+-- name: ListExpenses :many
 SELECT *
 FROM expenses
 WHERE group_id = $1;
 
--- name: ListNonSettledGroupExpenses :many
+-- name: ListNonSettledExpenses :many
 SELECT *
 FROM expenses
 WHERE group_id = $1 AND is_settled = false;

@@ -1,7 +1,6 @@
-package db_test
+package db
 
 import (
-	db "bill-splitting/db/sqlc"
 	"bill-splitting/helper"
 	"context"
 	"database/sql"
@@ -10,12 +9,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomSettlement(t *testing.T) db.Settlement {
+func createRandomSettlement(t *testing.T) Settlement {
 	group := createRandomGroup(t)
 	payer := createRandomUser(t)
 	payee := createRandomUser(t)
 
-	param := db.CreateSettlementParams{
+	param := CreateSettlementParams{
 		GroupID: group.ID,
 		PayerID: payer.ID,
 		PayeeID: payee.ID,
@@ -42,7 +41,7 @@ func TestCreateSettlement(t *testing.T) {
 func TestGetSettlement(t *testing.T) {
 	settlement1 := createRandomSettlement(t)
 
-	settlement2, err := testStore.GetSettlement(context.Background(), db.GetSettlementParams{
+	settlement2, err := testStore.GetSettlement(context.Background(), GetSettlementParams{
 		GroupID: settlement1.GroupID,
 		PayerID: settlement1.PayerID,
 		PayeeID: settlement1.PayeeID,
@@ -63,7 +62,7 @@ func TestUpdateSettlement(t *testing.T) {
 
 	newAmount := helper.RandomInt64(1, 1000)
 	newIsConfirmed := true
-	param := db.UpdateSettlementParams{
+	param := UpdateSettlementParams{
 		GroupID:     settlement1.GroupID,
 		PayerID:     settlement1.PayerID,
 		PayeeID:     settlement1.PayeeID,
@@ -86,7 +85,7 @@ func TestUpdateSettlement(t *testing.T) {
 func TestDeleteSettlement(t *testing.T) {
 	settlement1 := createRandomSettlement(t)
 
-	err := testStore.DeleteSettlement(context.Background(), db.DeleteSettlementParams{
+	err := testStore.DeleteSettlement(context.Background(), DeleteSettlementParams{
 		GroupID: settlement1.GroupID,
 		PayerID: settlement1.PayerID,
 		PayeeID: settlement1.PayeeID,
@@ -94,7 +93,7 @@ func TestDeleteSettlement(t *testing.T) {
 
 	require.NoError(t, err)
 
-	settlement2, err := testStore.GetSettlement(context.Background(), db.GetSettlementParams{
+	settlement2, err := testStore.GetSettlement(context.Background(), GetSettlementParams{
 		GroupID: settlement1.GroupID,
 		PayerID: settlement1.PayerID,
 		PayeeID: settlement1.PayeeID,

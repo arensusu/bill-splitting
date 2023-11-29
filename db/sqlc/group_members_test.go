@@ -1,7 +1,6 @@
-package db_test
+package db
 
 import (
-	db "bill-splitting/db/sqlc"
 	"context"
 	"database/sql"
 	"testing"
@@ -10,10 +9,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomGroupMember(t *testing.T) db.GroupMember {
+func createRandomGroupMember(t *testing.T) GroupMember {
 	group := createRandomGroup(t)
 	user := createRandomUser(t)
-	param := db.CreateGroupMemberParams{
+	param := CreateGroupMemberParams{
 		GroupID: group.ID,
 		UserID:  user.ID,
 	}
@@ -37,7 +36,7 @@ func TestCreateGroupMember(t *testing.T) {
 func TestGetGroupMember(t *testing.T) {
 	groupMember1 := createRandomGroupMember(t)
 
-	param := db.GetGroupMemberParams{
+	param := GetGroupMemberParams{
 		GroupID: groupMember1.GroupID,
 		UserID:  groupMember1.UserID,
 	}
@@ -54,7 +53,7 @@ func TestGetGroupMember(t *testing.T) {
 func TestDeleteGroupMember(t *testing.T) {
 	groupMember1 := createRandomGroupMember(t)
 
-	deleteParam := db.DeleteGroupMemberParams{
+	deleteParam := DeleteGroupMemberParams{
 		GroupID: groupMember1.GroupID,
 		UserID:  groupMember1.UserID,
 	}
@@ -62,7 +61,7 @@ func TestDeleteGroupMember(t *testing.T) {
 
 	require.NoError(t, err)
 
-	getParam := db.GetGroupMemberParams{
+	getParam := GetGroupMemberParams{
 		GroupID: groupMember1.GroupID,
 		UserID:  groupMember1.UserID,
 	}

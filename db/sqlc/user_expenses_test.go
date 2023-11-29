@@ -1,7 +1,6 @@
-package db_test
+package db
 
 import (
-	db "bill-splitting/db/sqlc"
 	"bill-splitting/helper"
 	"context"
 	"database/sql"
@@ -10,11 +9,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomUserExpense(t *testing.T) db.UserExpense {
+func createRandomUserExpense(t *testing.T) UserExpense {
 	user := createRandomUser(t)
 	expense := createRandomExpense(t)
 
-	param := db.CreateUserExpenseParams{
+	param := CreateUserExpenseParams{
 		ExpenseID: expense.ID,
 		UserID:    user.ID,
 		Share:     helper.RandomInt64(1, 100),
@@ -38,7 +37,7 @@ func TestCreateUserExpense(t *testing.T) {
 func TestGetUserExpense(t *testing.T) {
 	userExpense1 := createRandomUserExpense(t)
 
-	param := db.GetUserExpenseParams{
+	param := GetUserExpenseParams{
 		ExpenseID: userExpense1.ExpenseID,
 		UserID:    userExpense1.UserID,
 	}
@@ -56,7 +55,7 @@ func TestUpdateUserExpense(t *testing.T) {
 	userExpense1 := createRandomUserExpense(t)
 
 	newShare := helper.RandomInt64(1, 100)
-	param := db.UpdateUserExpenseParams{
+	param := UpdateUserExpenseParams{
 		ExpenseID: userExpense1.ExpenseID,
 		UserID:    userExpense1.UserID,
 		Share:     newShare,
@@ -75,7 +74,7 @@ func TestUpdateUserExpense(t *testing.T) {
 func TestDeleteUserExpense(t *testing.T) {
 	userExpense1 := createRandomUserExpense(t)
 
-	deleteParam := db.DeleteUserExpenseParams{
+	deleteParam := DeleteUserExpenseParams{
 		ExpenseID: userExpense1.ExpenseID,
 		UserID:    userExpense1.UserID,
 	}
@@ -83,7 +82,7 @@ func TestDeleteUserExpense(t *testing.T) {
 
 	require.NoError(t, err)
 
-	getParam := db.GetUserExpenseParams{
+	getParam := GetUserExpenseParams{
 		ExpenseID: userExpense1.ExpenseID,
 		UserID:    userExpense1.UserID,
 	}

@@ -1,7 +1,6 @@
-package db_test
+package db
 
 import (
-	db "bill-splitting/db/sqlc"
 	"bill-splitting/helper"
 	"context"
 	"database/sql"
@@ -11,10 +10,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomExpense(t *testing.T) db.Expense {
+func createRandomExpense(t *testing.T) Expense {
 	group := createRandomGroup(t)
 	user := createRandomUser(t)
-	param := db.CreateExpenseParams{
+	param := CreateExpenseParams{
 		GroupID: group.ID,
 		PayerID: user.ID,
 		Amount:  helper.RandomInt64(1, 1000),
@@ -57,7 +56,7 @@ func TestUpdateExpense(t *testing.T) {
 	expense := createRandomExpense(t)
 
 	newAmount := helper.RandomInt64(1, 1000)
-	param := db.UpdateExpenseParams{
+	param := UpdateExpenseParams{
 		ID:      expense.ID,
 		GroupID: expense.GroupID,
 		PayerID: expense.PayerID,
@@ -88,4 +87,21 @@ func TestDeleteExpense(t *testing.T) {
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, expense2)
+}
+
+func TestListExpenses(t *testing.T) {
+	var lastExpense Expense
+	for i := 0; i < 10; i++ {
+		lastExpense = createRandomExpense(t)
+	}
+
+	expenses, err := testStore.ListExpenses(context.Background(), lastExpense.GroupID)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, expenses)
+
+	for _, expense := range expenses {
+		require.NotEmpty(t, expense)
+		require.Equal(t, lastExpense.GroupID, expense.GroupID)
+	}
 }

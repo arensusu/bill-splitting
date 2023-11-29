@@ -1,7 +1,6 @@
-package db_test
+package db
 
 import (
-	db "bill-splitting/db/sqlc"
 	"bill-splitting/helper"
 	"context"
 	"database/sql"
@@ -11,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomGroup(t *testing.T) db.Group {
+func createRandomGroup(t *testing.T) Group {
 	name := helper.RandomString(10)
 
 	group, err := testStore.CreateGroup(context.Background(), name)
@@ -46,7 +45,7 @@ func TestUpdateGroup(t *testing.T) {
 	group1 := createRandomGroup(t)
 
 	newName := helper.RandomString(10)
-	param := db.UpdateGroupParams{
+	param := UpdateGroupParams{
 		ID:   group1.ID,
 		Name: newName,
 	}

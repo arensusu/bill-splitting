@@ -1,7 +1,6 @@
-package db_test
+package db
 
 import (
-	db "bill-splitting/db/sqlc"
 	"database/sql"
 	"fmt"
 	"log"
@@ -12,7 +11,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var testStore db.Store
+var testStore Store
 
 func TestMain(m *testing.M) {
 	err := godotenv.Load("../../.env")
@@ -32,6 +31,6 @@ func TestMain(m *testing.M) {
 		log.Fatal("cannot connect to db:", err)
 	}
 
-	testStore = db.NewStore(conn)
+	testStore = NewStore(conn)
 	os.Exit(m.Run())
 }
