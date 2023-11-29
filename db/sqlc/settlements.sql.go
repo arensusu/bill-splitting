@@ -93,7 +93,7 @@ func (q *Queries) ListGroupSettlements(ctx context.Context, groupID int64) ([]Se
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Settlement
+	items := []Settlement{}
 	for rows.Next() {
 		var i Settlement
 		if err := rows.Scan(

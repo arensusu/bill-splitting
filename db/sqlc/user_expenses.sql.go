@@ -73,7 +73,7 @@ func (q *Queries) ListUserExpenses(ctx context.Context, expenseID int64) ([]User
 		return nil, err
 	}
 	defer rows.Close()
-	var items []UserExpense
+	items := []UserExpense{}
 	for rows.Next() {
 		var i UserExpense
 		if err := rows.Scan(&i.ExpenseID, &i.UserID, &i.Share); err != nil {

@@ -1,11 +1,10 @@
 package db_test
 
 import (
-	"bill-splitting/db/helper"
 	db "bill-splitting/db/sqlc"
+	"bill-splitting/helper"
 	"context"
 	"database/sql"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,7 +14,6 @@ func createRandomSettlement(t *testing.T) db.Settlement {
 	group := createRandomGroup(t)
 	payer := createRandomUser(t)
 	payee := createRandomUser(t)
-	fmt.Println(payer.ID, payee.ID)
 
 	param := db.CreateSettlementParams{
 		GroupID: group.ID,
@@ -23,7 +21,7 @@ func createRandomSettlement(t *testing.T) db.Settlement {
 		PayeeID: payee.ID,
 		Amount:  helper.RandomInt64(1, 1000),
 	}
-	settlement, err := testStore.Queries.CreateSettlement(context.Background(), param)
+	settlement, err := testStore.CreateSettlement(context.Background(), param)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, settlement)
@@ -44,7 +42,7 @@ func TestCreateSettlement(t *testing.T) {
 func TestGetSettlement(t *testing.T) {
 	settlement1 := createRandomSettlement(t)
 
-	settlement2, err := testStore.Queries.GetSettlement(context.Background(), db.GetSettlementParams{
+	settlement2, err := testStore.GetSettlement(context.Background(), db.GetSettlementParams{
 		GroupID: settlement1.GroupID,
 		PayerID: settlement1.PayerID,
 		PayeeID: settlement1.PayeeID,
@@ -73,7 +71,7 @@ func TestUpdateSettlement(t *testing.T) {
 		IsConfirmed: newIsConfirmed,
 	}
 
-	settlement2, err := testStore.Queries.UpdateSettlement(context.Background(), param)
+	settlement2, err := testStore.UpdateSettlement(context.Background(), param)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, settlement2)
@@ -88,7 +86,7 @@ func TestUpdateSettlement(t *testing.T) {
 func TestDeleteSettlement(t *testing.T) {
 	settlement1 := createRandomSettlement(t)
 
-	err := testStore.Queries.DeleteSettlement(context.Background(), db.DeleteSettlementParams{
+	err := testStore.DeleteSettlement(context.Background(), db.DeleteSettlementParams{
 		GroupID: settlement1.GroupID,
 		PayerID: settlement1.PayerID,
 		PayeeID: settlement1.PayeeID,
@@ -96,7 +94,7 @@ func TestDeleteSettlement(t *testing.T) {
 
 	require.NoError(t, err)
 
-	settlement2, err := testStore.Queries.GetSettlement(context.Background(), db.GetSettlementParams{
+	settlement2, err := testStore.GetSettlement(context.Background(), db.GetSettlementParams{
 		GroupID: settlement1.GroupID,
 		PayerID: settlement1.PayerID,
 		PayeeID: settlement1.PayeeID,

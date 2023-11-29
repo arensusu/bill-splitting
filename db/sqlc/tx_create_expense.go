@@ -19,7 +19,7 @@ type CreateExpenseTxResult struct {
 	UserExpenses []UserExpense `json:"userExpenses"`
 }
 
-func (s *Store) CreateExpenseTx(ctx context.Context, arg CreateExpenseTxParams) (*CreateExpenseTxResult, error) {
+func (s *SQLStore) CreateExpenseTx(ctx context.Context, arg CreateExpenseTxParams) (*CreateExpenseTxResult, error) {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err

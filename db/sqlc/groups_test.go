@@ -1,8 +1,8 @@
 package db_test
 
 import (
-	"bill-splitting/db/helper"
 	db "bill-splitting/db/sqlc"
+	"bill-splitting/helper"
 	"context"
 	"database/sql"
 	"testing"
@@ -14,7 +14,7 @@ import (
 func createRandomGroup(t *testing.T) db.Group {
 	name := helper.RandomString(10)
 
-	group, err := testStore.Queries.CreateGroup(context.Background(), name)
+	group, err := testStore.CreateGroup(context.Background(), name)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, group)
@@ -32,7 +32,7 @@ func TestCreateGroup(t *testing.T) {
 func TestGetGroup(t *testing.T) {
 	group1 := createRandomGroup(t)
 
-	group2, err := testStore.Queries.GetGroup(context.Background(), group1.ID)
+	group2, err := testStore.GetGroup(context.Background(), group1.ID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, group2)
@@ -50,7 +50,7 @@ func TestUpdateGroup(t *testing.T) {
 		ID:   group1.ID,
 		Name: newName,
 	}
-	group2, err := testStore.Queries.UpdateGroup(context.Background(), param)
+	group2, err := testStore.UpdateGroup(context.Background(), param)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, group2)
@@ -63,11 +63,11 @@ func TestUpdateGroup(t *testing.T) {
 func TestDeleteGroup(t *testing.T) {
 	group1 := createRandomGroup(t)
 
-	err := testStore.Queries.DeleteGroup(context.Background(), group1.ID)
+	err := testStore.DeleteGroup(context.Background(), group1.ID)
 
 	require.NoError(t, err)
 
-	group2, err := testStore.Queries.GetGroup(context.Background(), group1.ID)
+	group2, err := testStore.GetGroup(context.Background(), group1.ID)
 
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())

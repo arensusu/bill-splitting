@@ -88,7 +88,7 @@ func (q *Queries) ListGroupExpenses(ctx context.Context, groupID int64) ([]Expen
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Expense
+	items := []Expense{}
 	for rows.Next() {
 		var i Expense
 		if err := rows.Scan(
@@ -125,7 +125,7 @@ func (q *Queries) ListNonSettledGroupExpenses(ctx context.Context, groupID int64
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Expense
+	items := []Expense{}
 	for rows.Next() {
 		var i Expense
 		if err := rows.Scan(

@@ -10,7 +10,7 @@ type CreateSettlementTxResult struct {
 	Settlements []Settlement `json:"settlements"`
 }
 
-func (s *Store) CreateSettlementsTx(ctx context.Context, groupID int64) (*CreateSettlementTxResult, error) {
+func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (*CreateSettlementTxResult, error) {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err

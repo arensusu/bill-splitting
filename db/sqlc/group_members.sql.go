@@ -72,7 +72,7 @@ func (q *Queries) ListGroupMembers(ctx context.Context, groupID int64) ([]GroupM
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GroupMember
+	items := []GroupMember{}
 	for rows.Next() {
 		var i GroupMember
 		if err := rows.Scan(&i.GroupID, &i.UserID, &i.CreatedAt); err != nil {

@@ -2,6 +2,7 @@ package api
 
 import (
 	db "bill-splitting/db/sqlc"
+	"database/sql"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -44,6 +45,10 @@ func (s *Server) getUser(c *gin.Context) {
 
 	user, err := s.store.GetUser(c, req.ID)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

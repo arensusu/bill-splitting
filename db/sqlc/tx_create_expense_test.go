@@ -1,8 +1,8 @@
 package db_test
 
 import (
-	"bill-splitting/db/helper"
 	db "bill-splitting/db/sqlc"
+	"bill-splitting/helper"
 	"context"
 	"testing"
 	"time"
@@ -17,7 +17,7 @@ func TestCreateExpenseTx(t *testing.T) {
 		users = append(users, createRandomUser(t))
 	}
 	for _, user := range users {
-		testStore.Queries.CreateGroupMember(context.Background(), db.CreateGroupMemberParams{
+		testStore.CreateGroupMember(context.Background(), db.CreateGroupMemberParams{
 			GroupID: group.ID,
 			UserID:  user.ID,
 		})

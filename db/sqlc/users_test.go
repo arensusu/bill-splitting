@@ -1,8 +1,8 @@
 package db_test
 
 import (
-	"bill-splitting/db/helper"
 	db "bill-splitting/db/sqlc"
+	"bill-splitting/helper"
 	"context"
 	"database/sql"
 	"testing"
@@ -17,7 +17,7 @@ func createRandomUser(t *testing.T) db.User {
 		Password: helper.RandomString(10),
 	}
 
-	user, err := testStore.Queries.CreateUser(context.Background(), param)
+	user, err := testStore.CreateUser(context.Background(), param)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, user)
@@ -37,7 +37,7 @@ func TestCreateUser(t *testing.T) {
 func TestGetUser(t *testing.T) {
 	user1 := createRandomUser(t)
 
-	user2, err := testStore.Queries.GetUser(context.Background(), user1.ID)
+	user2, err := testStore.GetUser(context.Background(), user1.ID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, user2)
@@ -59,7 +59,7 @@ func TestUpdateUser(t *testing.T) {
 		Password: newPassword,
 	}
 
-	user2, err := testStore.Queries.UpdateUser(context.Background(), param)
+	user2, err := testStore.UpdateUser(context.Background(), param)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, user2)
@@ -73,11 +73,11 @@ func TestUpdateUser(t *testing.T) {
 func TestDeleteUser(t *testing.T) {
 	user1 := createRandomUser(t)
 
-	err := testStore.Queries.DeleteUser(context.Background(), user1.ID)
+	err := testStore.DeleteUser(context.Background(), user1.ID)
 
 	require.NoError(t, err)
 
-	user2, err := testStore.Queries.GetUser(context.Background(), user1.ID)
+	user2, err := testStore.GetUser(context.Background(), user1.ID)
 
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())

@@ -12,7 +12,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var testStore *db.Store
+var testStore db.Store
 
 func TestMain(m *testing.M) {
 	err := godotenv.Load("../../.env")
