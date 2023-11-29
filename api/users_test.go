@@ -25,11 +25,80 @@ func randomUser() db.User {
 	}
 }
 
-func TestGetUserApi(t *testing.T) {
+func TestCreateUserAPI(t *testing.T) {
+	user := randomUser()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	testCases := []struct {
+		name          string
+		body          createUserRequest
+		buildStub     func(t *testing.T, mockStore *mockdb.MockStore)
+		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			body: createUserRequest{Username: user.Username, Password: user.Password},
+			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
+				param := db.CreateUserParams{
+					Username: user.Username,
+					Password: user.Password,
+				}
+				mockStore.EXPECT().CreateUser(gomock.Any(), gomock.Eq(param)).Times(1).Return(user, nil)
+			},
+			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recoder.Code)
+				requireBodyMatchUser(t, user, recoder.Body)
+			},
+		},
+		{
+			name: "InternalError",
+			body: createUserRequest{Username: user.Username, Password: user.Password},
+			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
+				mockStore.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(1).Return(db.User{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recoder.Code)
+			},
+		},
+		{
+			name: "InvalidUsername",
+			body: createUserRequest{Username: "", Password: user.Password},
+			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
+				mockStore.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(0)
+			},
+			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recoder.Code)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockStore := mockdb.NewMockStore(ctrl)
+			tc.buildStub(t, mockStore)
+
+			server := NewServer(mockStore)
+			recorder := httptest.NewRecorder()
+
+			data, err := json.Marshal(tc.body)
+			require.NoError(t, err)
+
+			req, err := http.NewRequest(http.MethodPost, "/users", bytes.NewReader(data))
+			require.NoError(t, err)
+
+			server.router.ServeHTTP(recorder, req)
+			tc.checkResponse(t, recorder)
+		})
+	}
+}
+
+func TestGetUserAPI(t *testing.T) {
 	user := randomUser()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
 	testCases := []struct {
 		name          string
