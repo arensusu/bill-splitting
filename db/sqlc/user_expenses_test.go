@@ -92,3 +92,20 @@ func TestDeleteUserExpense(t *testing.T) {
 	require.EqualError(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, userExpense2)
 }
+
+func TestListUserExpenses(t *testing.T) {
+	var lastUserExpense UserExpense
+	for i := 0; i < 10; i++ {
+		lastUserExpense = createRandomUserExpense(t)
+	}
+
+	userExpenses, err := testStore.ListUserExpenses(context.Background(), lastUserExpense.ExpenseID)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, userExpenses)
+
+	for _, userExpense := range userExpenses {
+		require.NotEmpty(t, userExpense)
+		require.Equal(t, lastUserExpense.ExpenseID, userExpense.ExpenseID)
+	}
+}
