@@ -105,3 +105,35 @@ func TestListExpenses(t *testing.T) {
 		require.Equal(t, lastExpense.GroupID, expense.GroupID)
 	}
 }
+
+func TestListNonSettledExpenses(t *testing.T) {
+	var lastExpense Expense
+	for i := 0; i < 10; i++ {
+		lastExpense = createRandomExpense(t)
+	}
+
+	expenses1, err := testStore.ListNonSettledExpenses(context.Background(), lastExpense.GroupID)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, expenses1)
+
+	for _, expense := range expenses1 {
+		require.NotEmpty(t, expense)
+		require.Equal(t, lastExpense.GroupID, expense.GroupID)
+	}
+
+	_, err = testStore.UpdateExpense(context.Background(), UpdateExpenseParams{
+		ID:        lastExpense.ID,
+		GroupID:   lastExpense.GroupID,
+		PayerID:   lastExpense.PayerID,
+		Amount:    lastExpense.Amount,
+		Date:      lastExpense.Date,
+		IsSettled: true,
+	})
+	require.NoError(t, err)
+
+	expenses2, err := testStore.ListNonSettledExpenses(context.Background(), lastExpense.GroupID)
+
+	require.NoError(t, err)
+	require.Equal(t, len(expenses1)-1, len(expenses2))
+}
