@@ -103,3 +103,20 @@ func TestDeleteSettlement(t *testing.T) {
 	require.EqualError(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, settlement2)
 }
+
+func TestListSettlements(t *testing.T) {
+	var lastSettlement Settlement
+	for i := 0; i < 10; i++ {
+		lastSettlement = createRandomSettlement(t)
+	}
+
+	settlements, err := testStore.ListSettlements(context.Background(), lastSettlement.GroupID)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, settlements)
+
+	for _, settlement := range settlements {
+		require.NotEmpty(t, settlement)
+		require.Equal(t, lastSettlement.GroupID, settlement.GroupID)
+	}
+}

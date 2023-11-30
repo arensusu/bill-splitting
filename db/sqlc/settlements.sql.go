@@ -81,14 +81,14 @@ func (q *Queries) GetSettlement(ctx context.Context, arg GetSettlementParams) (S
 	return i, err
 }
 
-const listGroupSettlements = `-- name: ListGroupSettlements :many
+const listSettlements = `-- name: ListSettlements :many
 SELECT group_id, payer_id, payee_id, amount, is_confirmed
 FROM settlements
 WHERE group_id = $1
 `
 
-func (q *Queries) ListGroupSettlements(ctx context.Context, groupID int64) ([]Settlement, error) {
-	rows, err := q.db.QueryContext(ctx, listGroupSettlements, groupID)
+func (q *Queries) ListSettlements(ctx context.Context, groupID int64) ([]Settlement, error) {
+	rows, err := q.db.QueryContext(ctx, listSettlements, groupID)
 	if err != nil {
 		return nil, err
 	}

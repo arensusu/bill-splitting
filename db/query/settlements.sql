@@ -8,7 +8,7 @@ SELECT *
 FROM settlements
 WHERE group_id = $1 AND payer_id = $2 AND payee_id = $3;
 
--- name: ListGroupSettlements :many
+-- name: ListSettlements :many
 SELECT *
 FROM settlements
 WHERE group_id = $1;

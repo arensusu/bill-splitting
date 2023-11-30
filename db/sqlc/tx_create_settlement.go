@@ -124,7 +124,7 @@ func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (*Cre
 	}
 
 	if len(settlements) == 0 {
-		settlements, err = s.ListGroupSettlements(ctx, groupID)
+		settlements, err = s.ListSettlements(ctx, groupID)
 		if err != nil {
 			return nil, fmt.Errorf("create settlements tx: %w", err)
 		}
