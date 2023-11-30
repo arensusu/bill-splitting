@@ -19,18 +19,6 @@ func (s *Server) createGroupMember(ctx *gin.Context) {
 		return
 	}
 
-	_, err := s.store.GetUser(ctx, req.UserID)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	_, err = s.store.GetGroup(ctx, req.GroupID)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
 	member, err := s.store.CreateGroupMember(ctx, db.CreateGroupMemberParams{
 		GroupID: req.GroupID,
 		UserID:  req.UserID,
