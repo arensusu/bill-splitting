@@ -2,6 +2,8 @@ package api
 
 import (
 	db "bill-splitting/db/sqlc"
+	"database/sql"
+	"errors"
 	"net/http"
 	"time"
 
@@ -23,14 +25,16 @@ func (s *Server) createExpense(c *gin.Context) {
 		return
 	}
 
-	_, err := s.store.GetGroup(c, req.GroupID)
+	_, err := s.store.GetGroupMember(c, db.GetGroupMemberParams{
+		GroupID: req.GroupID,
+		UserID:  req.PayerID,
+	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusForbidden, gin.H{"error": errors.New("user is not a member of the group")})
+			return
+		}
 
-	_, err = s.store.GetUser(c, req.PayerID)
-	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -48,4 +52,24 @@ func (s *Server) createExpense(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, expenseTx)
+}
+
+type listExpensesRequest struct {
+	GroupID int64 `uri:"groupId" binding:"required"`
+}
+
+func (s *Server) listExpenses(c *gin.Context) {
+	var req listExpensesRequest
+	if err := c.ShouldBindUri(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	expenses, err := s.store.ListExpenses(c, req.GroupID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, expenses)
 }

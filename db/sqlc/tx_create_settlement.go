@@ -67,7 +67,6 @@ func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (*Cre
 		}
 	}
 
-	var settlements []Settlement
 	for payerID, payees := range settleAmounts {
 		for payeeID, amount := range payees {
 			if amount == 0 {
@@ -85,12 +84,11 @@ func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (*Cre
 				PayeeID: payeeID,
 			})
 
-			var settlement Settlement
 			if err != nil {
 				if err != sql.ErrNoRows {
 					return nil, fmt.Errorf("create settlements tx: %w", err)
 				} else {
-					settlement, err = q.CreateSettlement(ctx, CreateSettlementParams{
+					_, err = q.CreateSettlement(ctx, CreateSettlementParams{
 						GroupID: groupID,
 						PayerID: payerID,
 						PayeeID: payeeID,
@@ -104,7 +102,7 @@ func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (*Cre
 				if !(prevSettlement.IsConfirmed) {
 					amount += prevSettlement.Amount
 				}
-				settlement, err = q.UpdateSettlement(ctx, UpdateSettlementParams{
+				_, err = q.UpdateSettlement(ctx, UpdateSettlementParams{
 					GroupID: groupID,
 					PayerID: payerID,
 					PayeeID: payeeID,
@@ -114,8 +112,6 @@ func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (*Cre
 					return nil, fmt.Errorf("create settlements tx: %w", err)
 				}
 			}
-
-			settlements = append(settlements, settlement)
 		}
 	}
 
@@ -123,11 +119,9 @@ func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (*Cre
 		return nil, fmt.Errorf("create settlements tx: %w", err)
 	}
 
-	if len(settlements) == 0 {
-		settlements, err = s.ListSettlements(ctx, groupID)
-		if err != nil {
-			return nil, fmt.Errorf("create settlements tx: %w", err)
-		}
+	settlements, err := s.ListSettlements(ctx, groupID)
+	if err != nil {
+		return nil, fmt.Errorf("create settlements tx: %w", err)
 	}
 
 	return &CreateSettlementTxResult{
