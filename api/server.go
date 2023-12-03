@@ -27,7 +27,7 @@ func NewServer(store db.Store) *Server {
 	router.POST("/expenses", server.createExpense)
 	router.GET("/expenses/:groupId", server.listExpenses)
 
-	router.POST("/settlements", server.createSettlement)
+	router.PUT("/settlements", server.replaceSettlement)
 
 	server.router = router
 	return server

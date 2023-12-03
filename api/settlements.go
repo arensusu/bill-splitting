@@ -6,12 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type createSettlementRequest struct {
+type replaceSettlementRequest struct {
 	GroupID int64 `json:"groupId" binding:"required"`
 }
 
-func (s *Server) createSettlement(c *gin.Context) {
-	var req createSettlementRequest
+func (s *Server) replaceSettlement(c *gin.Context) {
+	var req replaceSettlementRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
