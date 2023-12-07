@@ -26,6 +26,7 @@ type Querier interface {
 	GetGroupMember(ctx context.Context, arg GetGroupMemberParams) (GroupMember, error)
 	GetSettlement(ctx context.Context, arg GetSettlementParams) (Settlement, error)
 	GetUser(ctx context.Context, id int64) (User, error)
+	GetUserByUsername(ctx context.Context, username string) (User, error)
 	GetUserExpense(ctx context.Context, arg GetUserExpenseParams) (UserExpense, error)
 	ListExpenses(ctx context.Context, groupID int64) ([]Expense, error)
 	ListGroupMembers(ctx context.Context, groupID int64) ([]GroupMember, error)

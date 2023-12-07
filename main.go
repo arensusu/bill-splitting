@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+	authSecret := os.Getenv("AUTH_SECRET")
 	dbDriver := "postgres"
 	dbHost := os.Getenv("DATABASE_HOST")
 	dbPort := os.Getenv("DATABASE_PORT")
@@ -26,6 +27,6 @@ func main() {
 	}
 
 	store := db.NewStore(conn)
-	server := api.NewServer(store)
+	server := api.NewServer(store, authSecret)
 	server.Start("0.0.0.0:8080")
 }

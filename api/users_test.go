@@ -79,7 +79,7 @@ func TestCreateUserAPI(t *testing.T) {
 			mockStore := mockdb.NewMockStore(ctrl)
 			tc.buildStub(t, mockStore)
 
-			server := NewServer(mockStore)
+			server := newTestServer(t, mockStore)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)
@@ -153,7 +153,7 @@ func TestGetUserAPI(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.buildStub(t, mockStore)
-			server := NewServer(mockStore)
+			server := newTestServer(t, mockStore)
 			recoder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/users/%d", tc.userID)

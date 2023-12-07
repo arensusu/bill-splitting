@@ -2,18 +2,26 @@ package api
 
 import (
 	db "bill-splitting/db/sqlc"
+	"bill-splitting/token"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	store  db.Store
-	router *gin.Engine
+	store      db.Store
+	router     *gin.Engine
+	tokenMaker *token.JWTMaker
 }
 
-func NewServer(store db.Store) *Server {
-	server := &Server{store: store}
+func NewServer(store db.Store, secretKey string) *Server {
+	tokenMaker := token.NewJWTMaker(secretKey)
+	server := &Server{
+		store:      store,
+		tokenMaker: tokenMaker,
+	}
 	router := gin.Default()
+
+	router.POST("/login", server.loginUser)
 
 	router.POST("/users", server.createUser)
 	router.GET("/users/:id", server.getUser)

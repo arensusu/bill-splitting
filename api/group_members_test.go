@@ -102,7 +102,7 @@ func TestCreateGroupMember(t *testing.T) {
 			mockStore := mockdb.NewMockStore(ctrl)
 			tc.buildStub(t, mockStore)
 
-			server := NewServer(mockStore)
+			server := newTestServer(t, mockStore)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)
@@ -175,7 +175,7 @@ func TestListGroupMembers(t *testing.T) {
 			mockStore := mockdb.NewMockStore(ctrl)
 			tc.buildStub(t, mockStore)
 
-			server := NewServer(mockStore)
+			server := newTestServer(t, mockStore)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/group-members/%d", tc.groupID)
