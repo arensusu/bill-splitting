@@ -1,6 +1,8 @@
 package api
 
 import (
+	db "bill-splitting/db/sqlc"
+	"bill-splitting/token"
 	"database/sql"
 	"net/http"
 
@@ -18,7 +20,11 @@ func (s *Server) createGroup(c *gin.Context) {
 		return
 	}
 
-	user, err := s.store.CreateGroup(c, req.Name)
+	payload := c.MustGet("payload").(*token.JWTPayload)
+	user, err := s.store.CreateGroupTx(c, db.CreateGroupTxParams{
+		Name:   req.Name,
+		UserID: payload.UserID,
+	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

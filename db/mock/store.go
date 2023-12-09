@@ -55,10 +55,10 @@ func (mr *MockStoreMockRecorder) CreateExpense(arg0, arg1 any) *gomock.Call {
 }
 
 // CreateExpenseTx mocks base method.
-func (m *MockStore) CreateExpenseTx(arg0 context.Context, arg1 db.CreateExpenseTxParams) (*db.CreateExpenseTxResult, error) {
+func (m *MockStore) CreateExpenseTx(arg0 context.Context, arg1 db.CreateExpenseTxParams) (db.CreateExpenseTxResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateExpenseTx", arg0, arg1)
-	ret0, _ := ret[0].(*db.CreateExpenseTxResult)
+	ret0, _ := ret[0].(db.CreateExpenseTxResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -99,6 +99,21 @@ func (mr *MockStoreMockRecorder) CreateGroupMember(arg0, arg1 any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGroupMember", reflect.TypeOf((*MockStore)(nil).CreateGroupMember), arg0, arg1)
 }
 
+// CreateGroupTx mocks base method.
+func (m *MockStore) CreateGroupTx(arg0 context.Context, arg1 db.CreateGroupTxParams) (db.Group, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateGroupTx", arg0, arg1)
+	ret0, _ := ret[0].(db.Group)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateGroupTx indicates an expected call of CreateGroupTx.
+func (mr *MockStoreMockRecorder) CreateGroupTx(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGroupTx", reflect.TypeOf((*MockStore)(nil).CreateGroupTx), arg0, arg1)
+}
+
 // CreateSettlement mocks base method.
 func (m *MockStore) CreateSettlement(arg0 context.Context, arg1 db.CreateSettlementParams) (db.Settlement, error) {
 	m.ctrl.T.Helper()
@@ -115,10 +130,10 @@ func (mr *MockStoreMockRecorder) CreateSettlement(arg0, arg1 any) *gomock.Call {
 }
 
 // CreateSettlementsTx mocks base method.
-func (m *MockStore) CreateSettlementsTx(arg0 context.Context, arg1 int64) (*db.CreateSettlementTxResult, error) {
+func (m *MockStore) CreateSettlementsTx(arg0 context.Context, arg1 int64) (db.CreateSettlementTxResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateSettlementsTx", arg0, arg1)
-	ret0, _ := ret[0].(*db.CreateSettlementTxResult)
+	ret0, _ := ret[0].(db.CreateSettlementTxResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

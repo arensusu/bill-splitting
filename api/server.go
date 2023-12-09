@@ -22,7 +22,6 @@ func NewServer(store db.Store, secretKey string) *Server {
 	router := gin.Default()
 
 	router.POST("/users", server.createUser)
-	router.GET("/users/:id", server.getUser)
 	router.POST("/users/login", server.loginUser)
 
 	authRouter := router.Group("/").Use(authMiddleware(server.tokenMaker))
@@ -30,8 +29,8 @@ func NewServer(store db.Store, secretKey string) *Server {
 	authRouter.POST("/groups", server.createGroup)
 	authRouter.GET("/groups/:id", server.getGroup)
 
-	authRouter.POST("/group-members", server.createGroupMember)
-	authRouter.GET("/group-members/:groupId", server.listGroupMembers)
+	authRouter.POST("/groups/members", server.createGroupMember)
+	authRouter.GET("/groups/members/:groupId", server.listGroupMembers)
 
 	authRouter.POST("/expenses", server.createExpense)
 	authRouter.GET("/expenses/:groupId", server.listExpenses)

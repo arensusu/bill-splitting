@@ -16,13 +16,13 @@ func NewJWTMaker(secretKey string) *JWTMaker {
 }
 
 type JWTPayload struct {
-	Username string `json:"username"`
+	UserID int64 `json:"userId"`
 	jwt.RegisteredClaims
 }
 
-func (jwtMaker *JWTMaker) CreateToken(username string, duration time.Duration) (string, error) {
+func (jwtMaker *JWTMaker) CreateToken(userID int64, duration time.Duration) (string, error) {
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, &JWTPayload{
-		Username: username,
+		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

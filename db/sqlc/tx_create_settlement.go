@@ -10,29 +10,29 @@ type CreateSettlementTxResult struct {
 	Settlements []Settlement `json:"settlements"`
 }
 
-func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (*CreateSettlementTxResult, error) {
+func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (CreateSettlementTxResult, error) {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, err
+		return CreateSettlementTxResult{}, err
 	}
 	defer tx.Rollback()
 
 	q := New(tx)
 	_, err = q.GetGroup(ctx, groupID)
 	if err != nil {
-		return nil, fmt.Errorf("create settlements tx: %w", err)
+		return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
 	}
 
 	expenses, err := q.ListNonSettledExpenses(ctx, groupID)
 	if err != nil {
-		return nil, fmt.Errorf("create settlements tx: %w", err)
+		return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
 	}
 
 	settleAmounts := map[int64]map[int64]int64{}
 	for _, expense := range expenses {
 		userExpenses, err := q.ListUserExpenses(ctx, expense.ID)
 		if err != nil {
-			return nil, fmt.Errorf("create settlements tx: %w", err)
+			return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
 		}
 
 		for _, userExpense := range userExpenses {
@@ -63,7 +63,7 @@ func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (*Cre
 			IsSettled:   true,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("create settlements tx: %w", err)
+			return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
 		}
 	}
 
@@ -86,7 +86,7 @@ func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (*Cre
 
 			if err != nil {
 				if err != sql.ErrNoRows {
-					return nil, fmt.Errorf("create settlements tx: %w", err)
+					return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
 				} else {
 					_, err = q.CreateSettlement(ctx, CreateSettlementParams{
 						GroupID: groupID,
@@ -95,7 +95,7 @@ func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (*Cre
 						Amount:  amount,
 					})
 					if err != nil {
-						return nil, fmt.Errorf("create settlements tx: %w", err)
+						return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
 					}
 				}
 			} else {
@@ -109,22 +109,22 @@ func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (*Cre
 					Amount:  amount,
 				})
 				if err != nil {
-					return nil, fmt.Errorf("create settlements tx: %w", err)
+					return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
 				}
 			}
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
-		return nil, fmt.Errorf("create settlements tx: %w", err)
+		return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
 	}
 
 	settlements, err := s.ListSettlements(ctx, groupID)
 	if err != nil {
-		return nil, fmt.Errorf("create settlements tx: %w", err)
+		return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
 	}
 
-	return &CreateSettlementTxResult{
+	return CreateSettlementTxResult{
 		Settlements: settlements,
 	}, nil
 }

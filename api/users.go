@@ -17,6 +17,7 @@ type createUserRequest struct {
 }
 
 type createUserResponse struct {
+	ID        int64     `json:"id"`
 	Username  string    `json:"username"`
 	CreatedAt time.Time `json:"createdAt"`
 }
@@ -43,33 +44,10 @@ func (s *Server) createUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, createUserResponse{
+		ID:        user.ID,
 		Username:  user.Username,
 		CreatedAt: user.CreatedAt,
 	})
-}
-
-type getUserRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
-}
-
-func (s *Server) getUser(c *gin.Context) {
-	var req getUserRequest
-	if err := c.ShouldBindUri(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	user, err := s.store.GetUser(c, req.ID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, user)
 }
 
 type loginUserRequest struct {
@@ -104,7 +82,7 @@ func (s *Server) loginUser(c *gin.Context) {
 		return
 	}
 
-	token, err := s.tokenMaker.CreateToken(user.Username, time.Hour)
+	token, err := s.tokenMaker.CreateToken(user.ID, time.Hour)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -112,6 +90,10 @@ func (s *Server) loginUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, loginUserResponse{
 		Token: token,
-		User:  createUserResponse{Username: user.Username, CreatedAt: user.CreatedAt},
+		User: createUserResponse{
+			ID:        user.ID,
+			Username:  user.Username,
+			CreatedAt: user.CreatedAt,
+		},
 	})
 }

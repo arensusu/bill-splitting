@@ -19,17 +19,17 @@ type CreateExpenseTxResult struct {
 	UserExpenses []UserExpense `json:"userExpenses"`
 }
 
-func (s *SQLStore) CreateExpenseTx(ctx context.Context, arg CreateExpenseTxParams) (*CreateExpenseTxResult, error) {
+func (s *SQLStore) CreateExpenseTx(ctx context.Context, arg CreateExpenseTxParams) (CreateExpenseTxResult, error) {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, err
+		return CreateExpenseTxResult{}, err
 	}
 	defer tx.Rollback()
 
 	q := New(tx)
 	group_members, err := q.ListGroupMembers(ctx, arg.GroupID)
 	if err != nil {
-		return nil, fmt.Errorf("create expense tx: %w", err)
+		return CreateExpenseTxResult{}, fmt.Errorf("create expense tx: %w", err)
 	}
 
 	expense, err := q.CreateExpense(ctx, CreateExpenseParams{
@@ -40,7 +40,7 @@ func (s *SQLStore) CreateExpenseTx(ctx context.Context, arg CreateExpenseTxParam
 		Date:        arg.Date,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("create expense tx: %w", err)
+		return CreateExpenseTxResult{}, fmt.Errorf("create expense tx: %w", err)
 	}
 
 	share := arg.Amount / int64(len(group_members))
@@ -52,16 +52,16 @@ func (s *SQLStore) CreateExpenseTx(ctx context.Context, arg CreateExpenseTxParam
 			Share:     share,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("create expense tx: %w", err)
+			return CreateExpenseTxResult{}, fmt.Errorf("create expense tx: %w", err)
 		}
 		userExpenses = append(userExpenses, userExpense)
 	}
 
 	if err = tx.Commit(); err != nil {
-		return nil, fmt.Errorf("create expense tx: %w", err)
+		return CreateExpenseTxResult{}, fmt.Errorf("create expense tx: %w", err)
 	}
 
-	return &CreateExpenseTxResult{
+	return CreateExpenseTxResult{
 		Expense:      expense,
 		UserExpenses: userExpenses,
 	}, nil
