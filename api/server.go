@@ -21,21 +21,22 @@ func NewServer(store db.Store, secretKey string) *Server {
 	}
 	router := gin.Default()
 
-	router.POST("/login", server.loginUser)
-
 	router.POST("/users", server.createUser)
 	router.GET("/users/:id", server.getUser)
+	router.POST("/users/login", server.loginUser)
 
-	router.POST("/groups", server.createGroup)
-	router.GET("/groups/:id", server.getGroup)
+	authRouter := router.Group("/").Use(authMiddleware(server.tokenMaker))
 
-	router.POST("/group-members", server.createGroupMember)
-	router.GET("/group-members/:groupId", server.listGroupMembers)
+	authRouter.POST("/groups", server.createGroup)
+	authRouter.GET("/groups/:id", server.getGroup)
 
-	router.POST("/expenses", server.createExpense)
-	router.GET("/expenses/:groupId", server.listExpenses)
+	authRouter.POST("/group-members", server.createGroupMember)
+	authRouter.GET("/group-members/:groupId", server.listGroupMembers)
 
-	router.PUT("/settlements", server.replaceSettlement)
+	authRouter.POST("/expenses", server.createExpense)
+	authRouter.GET("/expenses/:groupId", server.listExpenses)
+
+	authRouter.PUT("/settlements", server.replaceSettlement)
 
 	server.router = router
 	return server

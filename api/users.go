@@ -3,15 +3,22 @@ package api
 import (
 	db "bill-splitting/db/sqlc"
 	"database/sql"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type createUserRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
+}
+
+type createUserResponse struct {
+	Username  string    `json:"username"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 func (s *Server) createUser(c *gin.Context) {
@@ -21,16 +28,24 @@ func (s *Server) createUser(c *gin.Context) {
 		return
 	}
 
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("failed to hash password: %w", err)})
+	}
+
 	user, err := s.store.CreateUser(c, db.CreateUserParams{
 		Username: req.Username,
-		Password: req.Password,
+		Password: string(hashedPassword),
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, createUserResponse{
+		Username:  user.Username,
+		CreatedAt: user.CreatedAt,
+	})
 }
 
 type getUserRequest struct {
@@ -63,8 +78,8 @@ type loginUserRequest struct {
 }
 
 type loginUserResponse struct {
-	Token    string `json:"token"`
-	Username string `json:"username"`
+	Token string             `json:"token"`
+	User  createUserResponse `json:"user"`
 }
 
 func (s *Server) loginUser(c *gin.Context) {
@@ -84,8 +99,8 @@ func (s *Server) loginUser(c *gin.Context) {
 		return
 	}
 
-	if user.Password != req.Password {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -96,7 +111,7 @@ func (s *Server) loginUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, loginUserResponse{
-		Token:    token,
-		Username: user.Username,
+		Token: token,
+		User:  createUserResponse{Username: user.Username, CreatedAt: user.CreatedAt},
 	})
 }
