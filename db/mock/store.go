@@ -393,6 +393,21 @@ func (mr *MockStoreMockRecorder) ListGroupMembers(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListGroupMembers", reflect.TypeOf((*MockStore)(nil).ListGroupMembers), arg0, arg1)
 }
 
+// ListGroups mocks base method.
+func (m *MockStore) ListGroups(arg0 context.Context, arg1 int64) ([]db.ListGroupsRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListGroups", arg0, arg1)
+	ret0, _ := ret[0].([]db.ListGroupsRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListGroups indicates an expected call of ListGroups.
+func (mr *MockStoreMockRecorder) ListGroups(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListGroups", reflect.TypeOf((*MockStore)(nil).ListGroups), arg0, arg1)
+}
+
 // ListNonSettledExpenses mocks base method.
 func (m *MockStore) ListNonSettledExpenses(arg0 context.Context, arg1 int64) ([]db.Expense, error) {
 	m.ctrl.T.Helper()

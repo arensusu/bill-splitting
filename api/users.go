@@ -57,6 +57,7 @@ type loginUserRequest struct {
 
 type loginUserResponse struct {
 	Token string             `json:"token"`
+	Exp   time.Time          `json:"exp"`
 	User  createUserResponse `json:"user"`
 }
 
@@ -82,7 +83,7 @@ func (s *Server) loginUser(c *gin.Context) {
 		return
 	}
 
-	token, err := s.tokenMaker.CreateToken(user.ID, time.Hour)
+	token, payload, err := s.tokenMaker.CreateToken(user.ID, time.Hour)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -90,6 +91,7 @@ func (s *Server) loginUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, loginUserResponse{
 		Token: token,
+		Exp:   payload.ExpiresAt.Time,
 		User: createUserResponse{
 			ID:        user.ID,
 			Username:  user.Username,

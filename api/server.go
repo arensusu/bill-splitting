@@ -4,6 +4,7 @@ import (
 	db "bill-splitting/db/sqlc"
 	"bill-splitting/token"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,6 +22,10 @@ func NewServer(store db.Store, secretKey string) *Server {
 	}
 	router := gin.Default()
 
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://node-dev:3000"}
+	router.Use(cors.New(config))
+
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
 
@@ -28,6 +33,7 @@ func NewServer(store db.Store, secretKey string) *Server {
 
 	authRouter.POST("/groups", server.createGroup)
 	authRouter.GET("/groups/:id", server.getGroup)
+	authRouter.GET("/groups", server.listGroups)
 
 	authRouter.POST("/groups/members", server.createGroupMember)
 	authRouter.GET("/groups/members/:groupId", server.listGroupMembers)

@@ -56,3 +56,19 @@ func (s *Server) getGroup(c *gin.Context) {
 
 	c.JSON(http.StatusOK, user)
 }
+
+func (s *Server) listGroups(c *gin.Context) {
+	payload := c.MustGet("payload").(*token.JWTPayload)
+
+	groups, err := s.store.ListGroups(c, payload.UserID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, groups)
+}

@@ -9,6 +9,11 @@ FROM groups
 WHERE id = $1
 LIMIT 1;
 
+-- name: ListGroups :many
+SELECT id, name
+FROM groups, (SELECT group_id FROM group_members WHERE user_id = $1) AS group_members
+WHERE groups.id = group_members.group_id;
+
 -- name: UpdateGroup :one
 UPDATE groups
 SET name = $2

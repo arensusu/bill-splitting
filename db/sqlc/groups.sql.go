@@ -46,6 +46,40 @@ func (q *Queries) GetGroup(ctx context.Context, id int64) (Group, error) {
 	return i, err
 }
 
+const listGroups = `-- name: ListGroups :many
+SELECT id, name
+FROM groups, (SELECT group_id FROM group_members WHERE user_id = $1) AS group_members
+WHERE groups.id = group_members.group_id
+`
+
+type ListGroupsRow struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
+func (q *Queries) ListGroups(ctx context.Context, userID int64) ([]ListGroupsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listGroups, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListGroupsRow{}
+	for rows.Next() {
+		var i ListGroupsRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateGroup = `-- name: UpdateGroup :one
 UPDATE groups
 SET name = $2

@@ -30,6 +30,7 @@ type Querier interface {
 	GetUserExpense(ctx context.Context, arg GetUserExpenseParams) (UserExpense, error)
 	ListExpenses(ctx context.Context, groupID int64) ([]Expense, error)
 	ListGroupMembers(ctx context.Context, groupID int64) ([]GroupMember, error)
+	ListGroups(ctx context.Context, userID int64) ([]ListGroupsRow, error)
 	ListNonSettledExpenses(ctx context.Context, groupID int64) ([]Expense, error)
 	ListSettlements(ctx context.Context, groupID int64) ([]Settlement, error)
 	ListUserExpenses(ctx context.Context, expenseID int64) ([]UserExpense, error)
