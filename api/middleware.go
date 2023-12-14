@@ -2,7 +2,6 @@ package api
 
 import (
 	"bill-splitting/token"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -40,7 +39,6 @@ func authMiddleware(tokenMaker *token.JWTMaker) gin.HandlerFunc {
 			return
 		}
 
-		fmt.Println(payload)
 		c.Set("payload", payload)
 		c.Next()
 	}

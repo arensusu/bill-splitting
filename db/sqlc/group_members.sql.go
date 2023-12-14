@@ -61,21 +61,26 @@ func (q *Queries) GetGroupMember(ctx context.Context, arg GetGroupMemberParams) 
 }
 
 const listGroupMembers = `-- name: ListGroupMembers :many
-SELECT group_id, user_id, created_at
-FROM group_members
-WHERE group_id = $1
+SELECT users.id, users.username
+FROM (SELECT group_id, user_id, created_at FROM group_members WHERE group_id = $1) AS group_members, users
+WHERE group_members.user_id = users.id
 `
 
-func (q *Queries) ListGroupMembers(ctx context.Context, groupID int64) ([]GroupMember, error) {
+type ListGroupMembersRow struct {
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+}
+
+func (q *Queries) ListGroupMembers(ctx context.Context, groupID int64) ([]ListGroupMembersRow, error) {
 	rows, err := q.db.QueryContext(ctx, listGroupMembers, groupID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []GroupMember{}
+	items := []ListGroupMembersRow{}
 	for rows.Next() {
-		var i GroupMember
-		if err := rows.Scan(&i.GroupID, &i.UserID, &i.CreatedAt); err != nil {
+		var i ListGroupMembersRow
+		if err := rows.Scan(&i.ID, &i.Username); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

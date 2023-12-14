@@ -48,7 +48,7 @@ func (s *SQLStore) CreateExpenseTx(ctx context.Context, arg CreateExpenseTxParam
 	for _, member := range group_members {
 		userExpense, err := q.CreateUserExpense(ctx, CreateUserExpenseParams{
 			ExpenseID: expense.ID,
-			UserID:    member.UserID,
+			UserID:    member.ID,
 			Share:     share,
 		})
 		if err != nil {
