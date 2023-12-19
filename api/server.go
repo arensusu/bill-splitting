@@ -42,6 +42,7 @@ func NewServer(store db.Store, secretKey string) *Server {
 	authRouter.GET("/expenses/:groupId", server.listExpenses)
 
 	authRouter.PUT("/settlements", server.replaceSettlement)
+	authRouter.DELETE("/settlements", server.completeSettlement)
 
 	server.router = router
 	return server

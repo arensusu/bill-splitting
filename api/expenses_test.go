@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -18,7 +17,6 @@ import (
 
 func TestCreateExpenseAPI(t *testing.T) {
 	group := randomGroup()
-	user := randomUser()
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -33,10 +31,9 @@ func TestCreateExpenseAPI(t *testing.T) {
 			name: "OK",
 			body: createExpenseRequest{
 				GroupID:     group.ID,
-				PayerID:     user.ID,
 				Amount:      100,
 				Description: "test",
-				Date:        time.Now(),
+				Date:        "2022-01-01",
 			},
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().GetGroupMember(gomock.Any(), gomock.Any()).Times(1).Return(db.GroupMember{}, nil)
@@ -50,10 +47,9 @@ func TestCreateExpenseAPI(t *testing.T) {
 			name: "InternalErrorOfGetGroupMember",
 			body: createExpenseRequest{
 				GroupID:     group.ID,
-				PayerID:     user.ID,
 				Amount:      100,
 				Description: "test",
-				Date:        time.Now(),
+				Date:        "2022-01-01",
 			},
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().GetGroupMember(gomock.Any(), gomock.Any()).Times(1).Return(db.GroupMember{}, sql.ErrConnDone)
@@ -66,10 +62,9 @@ func TestCreateExpenseAPI(t *testing.T) {
 			name: "Forbidden",
 			body: createExpenseRequest{
 				GroupID:     group.ID,
-				PayerID:     user.ID,
 				Amount:      100,
 				Description: "test",
-				Date:        time.Now(),
+				Date:        "2022-01-01",
 			},
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().GetGroupMember(gomock.Any(), gomock.Any()).Times(1).Return(db.GroupMember{}, sql.ErrNoRows)
@@ -82,10 +77,9 @@ func TestCreateExpenseAPI(t *testing.T) {
 			name: "InternalErrorOfCreateExpenseTx",
 			body: createExpenseRequest{
 				GroupID:     group.ID,
-				PayerID:     user.ID,
 				Amount:      100,
 				Description: "test",
-				Date:        time.Now(),
+				Date:        "2022-01-01",
 			},
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().GetGroupMember(gomock.Any(), gomock.Any()).Times(1).Return(db.GroupMember{}, nil)
@@ -99,10 +93,9 @@ func TestCreateExpenseAPI(t *testing.T) {
 			name: "BadRequest",
 			body: createExpenseRequest{
 				GroupID:     0,
-				PayerID:     user.ID,
 				Amount:      100,
 				Description: "test",
-				Date:        time.Now(),
+				Date:        "2022-01-01",
 			},
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().GetGroupMember(gomock.Any(), gomock.Any()).Times(0)
