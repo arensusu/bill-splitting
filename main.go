@@ -2,6 +2,7 @@ package main
 
 import (
 	"bill-splitting/api"
+	"bill-splitting/auth"
 	db "bill-splitting/db/sqlc"
 	"database/sql"
 	"fmt"
@@ -25,6 +26,8 @@ func main() {
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
+
+	auth.NewAuth()
 
 	store := db.NewStore(conn)
 	server := api.NewServer(store, authSecret)

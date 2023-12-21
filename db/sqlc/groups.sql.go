@@ -57,7 +57,7 @@ type ListGroupsRow struct {
 	Name string `json:"name"`
 }
 
-func (q *Queries) ListGroups(ctx context.Context, userID int64) ([]ListGroupsRow, error) {
+func (q *Queries) ListGroups(ctx context.Context, userID string) ([]ListGroupsRow, error) {
 	rows, err := q.db.QueryContext(ctx, listGroups, userID)
 	if err != nil {
 		return nil, err

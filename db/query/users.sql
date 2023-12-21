@@ -1,5 +1,5 @@
 -- name: CreateUser :one
-INSERT INTO users (username, password)
+INSERT INTO users (id, username)
 VALUES ($1, $2)
 RETURNING *;
 
@@ -15,7 +15,7 @@ LIMIT 1;
 
 -- name: UpdateUser :one
 UPDATE users
-SET username = $2, password = $3
+SET username = $2
 WHERE id = $1
 RETURNING *;
 

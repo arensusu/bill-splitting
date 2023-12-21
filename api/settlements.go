@@ -28,9 +28,9 @@ func (s *Server) replaceSettlement(c *gin.Context) {
 }
 
 type completeSettlementRequest struct {
-	GroupID int64 `json:"groupId" binding:"required"`
-	PayerID int64 `json:"payerId" binding:"required"`
-	PayeeID int64 `json:"payeeId" binding:"required"`
+	GroupID int64  `json:"groupId" binding:"required"`
+	PayerID string `json:"payerId" binding:"required"`
+	PayeeID string `json:"payeeId" binding:"required"`
 }
 
 func (s *Server) completeSettlement(c *gin.Context) {

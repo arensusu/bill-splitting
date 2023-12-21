@@ -16,10 +16,10 @@ RETURNING group_id, payer_id, payee_id, amount, is_confirmed
 `
 
 type CreateSettlementParams struct {
-	GroupID int64 `json:"group_id"`
-	PayerID int64 `json:"payer_id"`
-	PayeeID int64 `json:"payee_id"`
-	Amount  int64 `json:"amount"`
+	GroupID int64  `json:"group_id"`
+	PayerID string `json:"payer_id"`
+	PayeeID string `json:"payee_id"`
+	Amount  int64  `json:"amount"`
 }
 
 func (q *Queries) CreateSettlement(ctx context.Context, arg CreateSettlementParams) (Settlement, error) {
@@ -46,9 +46,9 @@ WHERE group_id = $1 AND payer_id = $2 AND payee_id = $3
 `
 
 type DeleteSettlementParams struct {
-	GroupID int64 `json:"group_id"`
-	PayerID int64 `json:"payer_id"`
-	PayeeID int64 `json:"payee_id"`
+	GroupID int64  `json:"group_id"`
+	PayerID string `json:"payer_id"`
+	PayeeID string `json:"payee_id"`
 }
 
 func (q *Queries) DeleteSettlement(ctx context.Context, arg DeleteSettlementParams) error {
@@ -63,9 +63,9 @@ WHERE group_id = $1 AND payer_id = $2 AND payee_id = $3
 `
 
 type GetSettlementParams struct {
-	GroupID int64 `json:"group_id"`
-	PayerID int64 `json:"payer_id"`
-	PayeeID int64 `json:"payee_id"`
+	GroupID int64  `json:"group_id"`
+	PayerID string `json:"payer_id"`
+	PayeeID string `json:"payee_id"`
 }
 
 func (q *Queries) GetSettlement(ctx context.Context, arg GetSettlementParams) (Settlement, error) {
@@ -124,11 +124,11 @@ RETURNING group_id, payer_id, payee_id, amount, is_confirmed
 `
 
 type UpdateSettlementParams struct {
-	GroupID     int64 `json:"group_id"`
-	PayerID     int64 `json:"payer_id"`
-	PayeeID     int64 `json:"payee_id"`
-	Amount      int64 `json:"amount"`
-	IsConfirmed bool  `json:"is_confirmed"`
+	GroupID     int64  `json:"group_id"`
+	PayerID     string `json:"payer_id"`
+	PayeeID     string `json:"payee_id"`
+	Amount      int64  `json:"amount"`
+	IsConfirmed bool   `json:"is_confirmed"`
 }
 
 func (q *Queries) UpdateSettlement(ctx context.Context, arg UpdateSettlementParams) (Settlement, error) {

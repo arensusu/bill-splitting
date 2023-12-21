@@ -28,7 +28,7 @@ func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (Crea
 		return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
 	}
 
-	settleAmounts := map[int64]map[int64]int64{}
+	settleAmounts := map[string]map[string]int64{}
 	for _, expense := range expenses {
 		userExpenses, err := q.ListUserExpenses(ctx, expense.ID)
 		if err != nil {
@@ -42,12 +42,12 @@ func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (Crea
 
 			if userExpense.UserID < expense.PayerID {
 				if _, ok := settleAmounts[userExpense.UserID]; !ok {
-					settleAmounts[userExpense.UserID] = map[int64]int64{expense.PayerID: 0}
+					settleAmounts[userExpense.UserID] = map[string]int64{expense.PayerID: 0}
 				}
 				settleAmounts[userExpense.UserID][expense.PayerID] += userExpense.Share
 			} else {
 				if _, ok := settleAmounts[expense.PayerID]; !ok {
-					settleAmounts[expense.PayerID] = map[int64]int64{userExpense.UserID: 0}
+					settleAmounts[expense.PayerID] = map[string]int64{userExpense.UserID: 0}
 				}
 				settleAmounts[expense.PayerID][userExpense.UserID] -= userExpense.Share
 			}

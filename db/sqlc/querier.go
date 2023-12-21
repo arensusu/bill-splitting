@@ -19,18 +19,18 @@ type Querier interface {
 	DeleteGroup(ctx context.Context, id int64) error
 	DeleteGroupMember(ctx context.Context, arg DeleteGroupMemberParams) error
 	DeleteSettlement(ctx context.Context, arg DeleteSettlementParams) error
-	DeleteUser(ctx context.Context, id int64) error
+	DeleteUser(ctx context.Context, id string) error
 	DeleteUserExpense(ctx context.Context, arg DeleteUserExpenseParams) error
 	GetExpense(ctx context.Context, id int64) (Expense, error)
 	GetGroup(ctx context.Context, id int64) (Group, error)
 	GetGroupMember(ctx context.Context, arg GetGroupMemberParams) (GroupMember, error)
 	GetSettlement(ctx context.Context, arg GetSettlementParams) (Settlement, error)
-	GetUser(ctx context.Context, id int64) (User, error)
+	GetUser(ctx context.Context, id string) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	GetUserExpense(ctx context.Context, arg GetUserExpenseParams) (UserExpense, error)
 	ListExpenses(ctx context.Context, groupID int64) ([]Expense, error)
 	ListGroupMembers(ctx context.Context, groupID int64) ([]ListGroupMembersRow, error)
-	ListGroups(ctx context.Context, userID int64) ([]ListGroupsRow, error)
+	ListGroups(ctx context.Context, userID string) ([]ListGroupsRow, error)
 	ListNonSettledExpenses(ctx context.Context, groupID int64) ([]Expense, error)
 	ListSettlements(ctx context.Context, groupID int64) ([]Settlement, error)
 	ListUserExpenses(ctx context.Context, expenseID int64) ([]UserExpense, error)

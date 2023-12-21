@@ -16,8 +16,8 @@ RETURNING group_id, user_id, created_at
 `
 
 type CreateGroupMemberParams struct {
-	GroupID int64 `json:"group_id"`
-	UserID  int64 `json:"user_id"`
+	GroupID int64  `json:"group_id"`
+	UserID  string `json:"user_id"`
 }
 
 func (q *Queries) CreateGroupMember(ctx context.Context, arg CreateGroupMemberParams) (GroupMember, error) {
@@ -33,8 +33,8 @@ WHERE group_id = $1 AND user_id = $2
 `
 
 type DeleteGroupMemberParams struct {
-	GroupID int64 `json:"group_id"`
-	UserID  int64 `json:"user_id"`
+	GroupID int64  `json:"group_id"`
+	UserID  string `json:"user_id"`
 }
 
 func (q *Queries) DeleteGroupMember(ctx context.Context, arg DeleteGroupMemberParams) error {
@@ -49,8 +49,8 @@ WHERE group_id = $1 AND user_id = $2
 `
 
 type GetGroupMemberParams struct {
-	GroupID int64 `json:"group_id"`
-	UserID  int64 `json:"user_id"`
+	GroupID int64  `json:"group_id"`
+	UserID  string `json:"user_id"`
 }
 
 func (q *Queries) GetGroupMember(ctx context.Context, arg GetGroupMemberParams) (GroupMember, error) {
@@ -67,7 +67,7 @@ WHERE group_members.user_id = users.id
 `
 
 type ListGroupMembersRow struct {
-	ID       int64  `json:"id"`
+	ID       string `json:"id"`
 	Username string `json:"username"`
 }
 

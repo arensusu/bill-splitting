@@ -16,9 +16,9 @@ RETURNING expense_id, user_id, share
 `
 
 type CreateUserExpenseParams struct {
-	ExpenseID int64 `json:"expense_id"`
-	UserID    int64 `json:"user_id"`
-	Share     int64 `json:"share"`
+	ExpenseID int64  `json:"expense_id"`
+	UserID    string `json:"user_id"`
+	Share     int64  `json:"share"`
 }
 
 func (q *Queries) CreateUserExpense(ctx context.Context, arg CreateUserExpenseParams) (UserExpense, error) {
@@ -34,8 +34,8 @@ WHERE expense_id = $1 and user_id = $2
 `
 
 type DeleteUserExpenseParams struct {
-	ExpenseID int64 `json:"expense_id"`
-	UserID    int64 `json:"user_id"`
+	ExpenseID int64  `json:"expense_id"`
+	UserID    string `json:"user_id"`
 }
 
 func (q *Queries) DeleteUserExpense(ctx context.Context, arg DeleteUserExpenseParams) error {
@@ -50,8 +50,8 @@ WHERE expense_id = $1 and user_id = $2
 `
 
 type GetUserExpenseParams struct {
-	ExpenseID int64 `json:"expense_id"`
-	UserID    int64 `json:"user_id"`
+	ExpenseID int64  `json:"expense_id"`
+	UserID    string `json:"user_id"`
 }
 
 func (q *Queries) GetUserExpense(ctx context.Context, arg GetUserExpenseParams) (UserExpense, error) {
@@ -98,9 +98,9 @@ RETURNING expense_id, user_id, share
 `
 
 type UpdateUserExpenseParams struct {
-	ExpenseID int64 `json:"expense_id"`
-	UserID    int64 `json:"user_id"`
-	Share     int64 `json:"share"`
+	ExpenseID int64  `json:"expense_id"`
+	UserID    string `json:"user_id"`
+	Share     int64  `json:"share"`
 }
 
 func (q *Queries) UpdateUserExpense(ctx context.Context, arg UpdateUserExpenseParams) (UserExpense, error) {

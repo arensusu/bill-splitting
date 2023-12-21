@@ -16,11 +16,11 @@ func NewJWTMaker(secretKey string) *JWTMaker {
 }
 
 type JWTPayload struct {
-	UserID int64 `json:"userId"`
+	UserID string `json:"userId"`
 	jwt.RegisteredClaims
 }
 
-func (jwtMaker *JWTMaker) CreateToken(userID int64, duration time.Duration) (string, JWTPayload, error) {
+func (jwtMaker *JWTMaker) CreateToken(userID string, duration time.Duration) (string, JWTPayload, error) {
 	payload := JWTPayload{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{

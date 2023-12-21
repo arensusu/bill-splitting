@@ -11,7 +11,7 @@ import (
 type Expense struct {
 	ID          int64     `json:"id"`
 	GroupID     int64     `json:"group_id"`
-	PayerID     int64     `json:"payer_id"`
+	PayerID     string    `json:"payer_id"`
 	Amount      int64     `json:"amount"`
 	Description string    `json:"description"`
 	Date        time.Time `json:"date"`
@@ -26,27 +26,26 @@ type Group struct {
 
 type GroupMember struct {
 	GroupID   int64     `json:"group_id"`
-	UserID    int64     `json:"user_id"`
+	UserID    string    `json:"user_id"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
 type Settlement struct {
-	GroupID     int64 `json:"group_id"`
-	PayerID     int64 `json:"payer_id"`
-	PayeeID     int64 `json:"payee_id"`
-	Amount      int64 `json:"amount"`
-	IsConfirmed bool  `json:"is_confirmed"`
+	GroupID     int64  `json:"group_id"`
+	PayerID     string `json:"payer_id"`
+	PayeeID     string `json:"payee_id"`
+	Amount      int64  `json:"amount"`
+	IsConfirmed bool   `json:"is_confirmed"`
 }
 
 type User struct {
-	ID        int64     `json:"id"`
+	ID        string    `json:"id"`
 	Username  string    `json:"username"`
-	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
 type UserExpense struct {
-	ExpenseID int64 `json:"expense_id"`
-	UserID    int64 `json:"user_id"`
-	Share     int64 `json:"share"`
+	ExpenseID int64  `json:"expense_id"`
+	UserID    string `json:"user_id"`
+	Share     int64  `json:"share"`
 }

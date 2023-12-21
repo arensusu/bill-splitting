@@ -4,7 +4,7 @@ import "context"
 
 type CreateGroupTxParams struct {
 	Name   string `json:"name"`
-	UserID int64  `json:"userId"`
+	UserID string `json:"userId"`
 }
 
 func (s *SQLStore) CreateGroupTx(ctx context.Context, arg CreateGroupTxParams) (Group, error) {

@@ -13,7 +13,6 @@ import (
 func createRandomUser(t *testing.T) User {
 	param := CreateUserParams{
 		Username: helper.RandomString(10),
-		Password: helper.RandomString(10),
 	}
 
 	user, err := testStore.CreateUser(context.Background(), param)
@@ -23,7 +22,6 @@ func createRandomUser(t *testing.T) User {
 
 	require.NotZero(t, user.ID)
 	require.Equal(t, param.Username, user.Username)
-	require.Equal(t, param.Password, user.Password)
 	require.NotZero(t, user.CreatedAt)
 
 	return user
@@ -43,7 +41,6 @@ func TestGetUser(t *testing.T) {
 
 	require.Equal(t, user1.ID, user2.ID)
 	require.Equal(t, user1.Username, user2.Username)
-	require.Equal(t, user1.Password, user2.Password)
 	require.WithinDuration(t, user1.CreatedAt, user2.CreatedAt, time.Second)
 }
 
@@ -51,11 +48,9 @@ func TestUpdateUser(t *testing.T) {
 	user1 := createRandomUser(t)
 
 	newUsername := helper.RandomString(10)
-	newPassword := helper.RandomString(10)
 	param := UpdateUserParams{
 		ID:       user1.ID,
 		Username: newUsername,
-		Password: newPassword,
 	}
 
 	user2, err := testStore.UpdateUser(context.Background(), param)
@@ -65,7 +60,6 @@ func TestUpdateUser(t *testing.T) {
 
 	require.Equal(t, user1.ID, user2.ID)
 	require.Equal(t, newUsername, user2.Username)
-	require.Equal(t, newPassword, user2.Password)
 	require.WithinDuration(t, user1.CreatedAt, user2.CreatedAt, time.Second)
 }
 

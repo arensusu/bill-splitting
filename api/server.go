@@ -26,8 +26,8 @@ func NewServer(store db.Store, secretKey string) *Server {
 	config.AllowOrigins = []string{"http://node-dev:3000"}
 	router.Use(cors.New(config))
 
-	router.POST("/users", server.createUser)
-	router.POST("/users/login", server.loginUser)
+	router.GET("/auth/:provider", server.auth)
+	router.GET("/auth/:provider/callback", server.authCallback)
 
 	authRouter := router.Group("/").Use(authMiddleware(server.tokenMaker))
 

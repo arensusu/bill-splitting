@@ -8,8 +8,8 @@ import (
 )
 
 type createGroupMemberRequest struct {
-	GroupID int64 `json:"groupId" binding:"required"`
-	UserID  int64 `json:"userId" binding:"required"`
+	GroupID int64  `json:"groupId" binding:"required"`
+	UserID  string `json:"userId" binding:"required"`
 }
 
 func (s *Server) createGroupMember(ctx *gin.Context) {

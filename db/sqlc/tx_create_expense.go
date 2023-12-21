@@ -7,7 +7,7 @@ import (
 )
 
 type CreateExpenseTxParams struct {
-	PayerID     int64     `json:"payerId"`
+	PayerID     string    `json:"payerId"`
 	GroupID     int64     `json:"groupId"`
 	Amount      int64     `json:"amount"`
 	Description string    `json:"description"`

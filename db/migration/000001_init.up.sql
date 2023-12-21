@@ -1,7 +1,6 @@
 CREATE TABLE "users" (
-  "id" bigserial PRIMARY KEY,
-  "username" varchar(255) UNIQUE NOT NULL,
-  "password" varchar NOT NULL,
+  "id" varchar PRIMARY KEY,
+  "username" varchar UNIQUE NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 
@@ -13,7 +12,7 @@ CREATE TABLE "groups" (
 
 CREATE TABLE "group_members" (
   "group_id" bigint,
-  "user_id" bigint,
+  "user_id" varchar,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   PRIMARY KEY ("group_id", "user_id")
 );
@@ -21,7 +20,7 @@ CREATE TABLE "group_members" (
 CREATE TABLE "expenses" (
   "id" bigserial PRIMARY KEY,
   "group_id" bigint NOT NULL,
-  "payer_id" bigint NOT NULL,
+  "payer_id" varchar NOT NULL,
   "amount" bigint NOT NULL,
   "description" varchar(255) NOT NULL,
   "date" timestamptz NOT NULL,
@@ -30,15 +29,15 @@ CREATE TABLE "expenses" (
 
 CREATE TABLE "user_expenses" (
   "expense_id" bigint,
-  "user_id" bigint,
+  "user_id" varchar,
   "share" bigint NOT NULL,
   PRIMARY KEY ("expense_id", "user_id")
 );
 
 CREATE TABLE "settlements" (
   "group_id" bigserial NOT NULL,
-  "payer_id" bigint NOT NULL,
-  "payee_id" bigint NOT NULL,
+  "payer_id" varchar NOT NULL,
+  "payee_id" varchar NOT NULL,
   "amount" bigint NOT NULL,
   "is_confirmed" boolean NOT NULL DEFAULT false,
   PRIMARY KEY ("group_id", "payer_id", "payee_id"),
