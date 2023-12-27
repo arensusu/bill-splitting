@@ -84,6 +84,21 @@ func (mr *MockStoreMockRecorder) CreateGroup(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGroup", reflect.TypeOf((*MockStore)(nil).CreateGroup), arg0, arg1)
 }
 
+// CreateGroupInvitation mocks base method.
+func (m *MockStore) CreateGroupInvitation(arg0 context.Context, arg1 db.CreateGroupInvitationParams) (db.GroupInvitation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateGroupInvitation", arg0, arg1)
+	ret0, _ := ret[0].(db.GroupInvitation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateGroupInvitation indicates an expected call of CreateGroupInvitation.
+func (mr *MockStoreMockRecorder) CreateGroupInvitation(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGroupInvitation", reflect.TypeOf((*MockStore)(nil).CreateGroupInvitation), arg0, arg1)
+}
+
 // CreateGroupMember mocks base method.
 func (m *MockStore) CreateGroupMember(arg0 context.Context, arg1 db.CreateGroupMemberParams) (db.GroupMember, error) {
 	m.ctrl.T.Helper()
@@ -202,6 +217,20 @@ func (mr *MockStoreMockRecorder) DeleteGroup(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGroup", reflect.TypeOf((*MockStore)(nil).DeleteGroup), arg0, arg1)
 }
 
+// DeleteGroupInvitation mocks base method.
+func (m *MockStore) DeleteGroupInvitation(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteGroupInvitation", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteGroupInvitation indicates an expected call of DeleteGroupInvitation.
+func (mr *MockStoreMockRecorder) DeleteGroupInvitation(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGroupInvitation", reflect.TypeOf((*MockStore)(nil).DeleteGroupInvitation), arg0, arg1)
+}
+
 // DeleteGroupMember mocks base method.
 func (m *MockStore) DeleteGroupMember(arg0 context.Context, arg1 db.DeleteGroupMemberParams) error {
 	m.ctrl.T.Helper()
@@ -286,6 +315,21 @@ func (m *MockStore) GetGroup(arg0 context.Context, arg1 int64) (db.Group, error)
 func (mr *MockStoreMockRecorder) GetGroup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroup", reflect.TypeOf((*MockStore)(nil).GetGroup), arg0, arg1)
+}
+
+// GetGroupInvitation mocks base method.
+func (m *MockStore) GetGroupInvitation(arg0 context.Context, arg1 string) (db.GroupInvitation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGroupInvitation", arg0, arg1)
+	ret0, _ := ret[0].(db.GroupInvitation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGroupInvitation indicates an expected call of GetGroupInvitation.
+func (mr *MockStoreMockRecorder) GetGroupInvitation(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupInvitation", reflect.TypeOf((*MockStore)(nil).GetGroupInvitation), arg0, arg1)
 }
 
 // GetGroupMember mocks base method.

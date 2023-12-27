@@ -11,11 +11,11 @@ import (
 	"github.com/markbates/goth/gothic"
 )
 
-type loginUserResponse struct {
-	Token string    `json:"token"`
-	Exp   time.Time `json:"exp"`
-	User  db.User   `json:"user"`
-}
+// type loginUserResponse struct {
+// 	Token string    `json:"token"`
+// 	Exp   time.Time `json:"exp"`
+// 	User  db.User   `json:"user"`
+// }
 
 func (s *Server) auth(ctx *gin.Context) {
 	gothic.GetProviderName = func(r *http.Request) (string, error) { return ctx.Param("provider"), nil }
@@ -40,39 +40,34 @@ func (s *Server) authCallback(ctx *gin.Context) {
 	}
 
 	user, err := s.store.GetUser(ctx, gotUser.UserID)
-	if err == nil {
-		ctx.JSON(http.StatusOK, user)
-		return
+	if err != nil {
+		if err != sql.ErrNoRows {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		username := gotUser.Name
+		if username == "" {
+			username = gotUser.NickName
+		}
+
+		user, err = s.store.CreateUser(ctx, db.CreateUserParams{
+			ID:       gotUser.UserID,
+			Username: username,
+		})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
 	}
 
-	if err != sql.ErrNoRows {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	username := gotUser.Name
-	if username == "" {
-		username = gotUser.NickName
-	}
-
-	user, err = s.store.CreateUser(ctx, db.CreateUserParams{
-		ID:       gotUser.UserID,
-		Username: username,
-	})
+	token, _, err := s.tokenMaker.CreateToken(user.ID, time.Hour)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	token, payload, err := s.tokenMaker.CreateToken(user.ID, time.Hour)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, loginUserResponse{
-		Token: token,
-		Exp:   payload.ExpiresAt.Time,
-		User:  user,
-	})
+	ctx.SetCookie("token", token, 5*60, "/", "localhost", false, true)
+	ctx.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000/login")
 }

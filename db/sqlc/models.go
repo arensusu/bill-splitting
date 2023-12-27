@@ -24,6 +24,12 @@ type Group struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type GroupInvitation struct {
+	Code      string    `json:"code"`
+	GroupID   int64     `json:"group_id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type GroupMember struct {
 	GroupID   int64     `json:"group_id"`
 	UserID    string    `json:"user_id"`

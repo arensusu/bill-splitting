@@ -10,6 +10,12 @@ CREATE TABLE "groups" (
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 
+CREATE TABLE "group_invitations" (
+  "code" varchar PRIMARY KEY,
+  "group_id" bigint NOT NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now())
+);
+
 CREATE TABLE "group_members" (
   "group_id" bigint,
   "user_id" varchar,
@@ -43,6 +49,8 @@ CREATE TABLE "settlements" (
   PRIMARY KEY ("group_id", "payer_id", "payee_id"),
   CHECK (payer_id != payee_id)
 );
+
+ALTER TABLE "group_invitations" ADD FOREIGN KEY ("group_id") REFERENCES "groups" ("id");
 
 ALTER TABLE "group_members" ADD FOREIGN KEY ("group_id") REFERENCES "groups" ("id");
 

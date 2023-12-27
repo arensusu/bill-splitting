@@ -23,7 +23,7 @@ func NewServer(store db.Store, secretKey string) *Server {
 	router := gin.Default()
 
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://node-dev:3000"}
+	config.AllowOrigins = []string{"http://node-dev:3000", "http://localhost:3000"}
 	router.Use(cors.New(config))
 
 	router.GET("/auth/:provider", server.auth)
@@ -34,6 +34,8 @@ func NewServer(store db.Store, secretKey string) *Server {
 	authRouter.POST("/groups", server.createGroup)
 	authRouter.GET("/groups/:id", server.getGroup)
 	authRouter.GET("/groups", server.listGroups)
+
+	authRouter.POST("/groups/invite", server.createGroupInvitation)
 
 	authRouter.POST("/groups/members", server.createGroupMember)
 	authRouter.GET("/groups/members/:groupId", server.listGroupMembers)
