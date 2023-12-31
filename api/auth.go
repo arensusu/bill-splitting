@@ -59,7 +59,6 @@ func (s *Server) authCallback(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-
 	}
 
 	token, _, err := s.tokenMaker.CreateToken(user.ID, time.Hour)
@@ -68,6 +67,6 @@ func (s *Server) authCallback(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("token", token, 5*60, "/", "localhost", false, true)
+	ctx.SetCookie("token", token, int(time.Hour.Seconds()), "/", "localhost", false, true)
 	ctx.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000/login")
 }

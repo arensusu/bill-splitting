@@ -51,3 +51,28 @@ func (s *Server) createGroupInvitation(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, invite)
 }
+
+type getGroupInvitationRequest struct {
+	Code string `uri:"code" binding:"required"`
+}
+
+func (s *Server) getGroupInvitation(ctx *gin.Context) {
+	var req getGroupInvitationRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	invite, err := s.store.GetGroupInvitation(ctx, req.Code)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": errors.New("invalid code")})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, invite)
+}

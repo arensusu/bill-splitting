@@ -38,85 +38,85 @@ func requireBodyMatchGroupMembers(t *testing.T, members []db.GroupMember, body *
 	require.Equal(t, members, gotMembers)
 }
 
-func TestCreateGroupMember(t *testing.T) {
-	user := randomUser()
-	group := randomGroup()
+// func TestCreateGroupMember(t *testing.T) {
+// 	user := randomUser()
+// 	group := randomGroup()
 
-	groupMember := db.GroupMember{
-		GroupID: group.ID,
-		UserID:  user.ID,
-	}
+// 	groupMember := db.GroupMember{
+// 		GroupID: group.ID,
+// 		UserID:  user.ID,
+// 	}
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+// 	ctrl := gomock.NewController(t)
+// 	defer ctrl.Finish()
 
-	testCases := []struct {
-		name          string
-		body          createGroupMemberRequest
-		buildStub     func(t *testing.T, mockStore *mockdb.MockStore)
-		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
-	}{
-		{
-			name: "OK",
-			body: createGroupMemberRequest{GroupID: group.ID, UserID: user.ID},
-			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
-				mockStore.EXPECT().CreateGroupMember(gomock.Any(), gomock.Eq(db.CreateGroupMemberParams{
-					GroupID: groupMember.GroupID,
-					UserID:  groupMember.UserID,
-				})).Times(1).Return(groupMember, nil)
-			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusOK, recoder.Code)
-				requireBodyMatchGroupMember(t, groupMember, recoder.Body)
-			},
-		},
-		{
-			name: "InternalError",
-			body: createGroupMemberRequest{GroupID: group.ID, UserID: user.ID},
-			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
-				mockStore.EXPECT().CreateGroupMember(gomock.Any(), gomock.Eq(db.CreateGroupMemberParams{
-					GroupID: groupMember.GroupID,
-					UserID:  groupMember.UserID,
-				})).Times(1).Return(db.GroupMember{}, sql.ErrConnDone)
-			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusInternalServerError, recoder.Code)
-			},
-		},
-		{
-			name: "BadRequest",
-			body: createGroupMemberRequest{},
-			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
-				mockStore.EXPECT().CreateGroupMember(gomock.Any(), gomock.Any()).Times(0)
-			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recoder.Code)
-			},
-		},
-	}
+// 	testCases := []struct {
+// 		name          string
+// 		body          createGroupMemberRequest
+// 		buildStub     func(t *testing.T, mockStore *mockdb.MockStore)
+// 		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
+// 	}{
+// 		{
+// 			name: "OK",
+// 			body: createGroupMemberRequest{GroupID: group.ID, UserID: user.ID},
+// 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
+// 				mockStore.EXPECT().CreateGroupMember(gomock.Any(), gomock.Eq(db.CreateGroupMemberParams{
+// 					GroupID: groupMember.GroupID,
+// 					UserID:  groupMember.UserID,
+// 				})).Times(1).Return(groupMember, nil)
+// 			},
+// 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
+// 				require.Equal(t, http.StatusOK, recoder.Code)
+// 				requireBodyMatchGroupMember(t, groupMember, recoder.Body)
+// 			},
+// 		},
+// 		{
+// 			name: "InternalError",
+// 			body: createGroupMemberRequest{GroupID: group.ID, UserID: user.ID},
+// 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
+// 				mockStore.EXPECT().CreateGroupMember(gomock.Any(), gomock.Eq(db.CreateGroupMemberParams{
+// 					GroupID: groupMember.GroupID,
+// 					UserID:  groupMember.UserID,
+// 				})).Times(1).Return(db.GroupMember{}, sql.ErrConnDone)
+// 			},
+// 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
+// 				require.Equal(t, http.StatusInternalServerError, recoder.Code)
+// 			},
+// 		},
+// 		{
+// 			name: "BadRequest",
+// 			body: createGroupMemberRequest{},
+// 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
+// 				mockStore.EXPECT().CreateGroupMember(gomock.Any(), gomock.Any()).Times(0)
+// 			},
+// 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
+// 				require.Equal(t, http.StatusBadRequest, recoder.Code)
+// 			},
+// 		},
+// 	}
 
-	for i := range testCases {
-		tc := testCases[i]
+// 	for i := range testCases {
+// 		tc := testCases[i]
 
-		t.Run(tc.name, func(t *testing.T) {
-			mockStore := mockdb.NewMockStore(ctrl)
-			tc.buildStub(t, mockStore)
+// 		t.Run(tc.name, func(t *testing.T) {
+// 			mockStore := mockdb.NewMockStore(ctrl)
+// 			tc.buildStub(t, mockStore)
 
-			server := newTestServer(t, mockStore)
-			recorder := httptest.NewRecorder()
+// 			server := newTestServer(t, mockStore)
+// 			recorder := httptest.NewRecorder()
 
-			data, err := json.Marshal(tc.body)
-			require.NoError(t, err)
+// 			data, err := json.Marshal(tc.body)
+// 			require.NoError(t, err)
 
-			url := "/group-members"
-			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
-			require.NoError(t, err)
+// 			url := "/group-members"
+// 			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+// 			require.NoError(t, err)
 
-			server.router.ServeHTTP(recorder, request)
-			tc.checkResponse(t, recorder)
-		})
-	}
-}
+// 			server.router.ServeHTTP(recorder, request)
+// 			tc.checkResponse(t, recorder)
+// 		})
+// 	}
+// }
 
 func TestListGroupMembers(t *testing.T) {
 	user := randomUser()

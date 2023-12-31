@@ -2,6 +2,7 @@ package api
 
 import (
 	db "bill-splitting/db/sqlc"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -28,14 +29,15 @@ func (s *Server) replaceSettlement(c *gin.Context) {
 }
 
 type completeSettlementRequest struct {
-	GroupID int64  `json:"groupId" binding:"required"`
-	PayerID string `json:"payerId" binding:"required"`
-	PayeeID string `json:"payeeId" binding:"required"`
+	GroupID int64  `uri:"groupId" binding:"required"`
+	PayerID string `uri:"payerId" binding:"required"`
+	PayeeID string `uri:"payeeId" binding:"required"`
 }
 
 func (s *Server) completeSettlement(c *gin.Context) {
 	var req completeSettlementRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindUri(&req); err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

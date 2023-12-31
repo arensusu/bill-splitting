@@ -36,6 +36,7 @@ func NewServer(store db.Store, secretKey string) *Server {
 	authRouter.GET("/groups", server.listGroups)
 
 	authRouter.POST("/groups/invite", server.createGroupInvitation)
+	authRouter.GET("/groups/invite/:code", server.getGroupInvitation)
 
 	authRouter.POST("/groups/members", server.createGroupMember)
 	authRouter.GET("/groups/members/:groupId", server.listGroupMembers)
@@ -44,7 +45,7 @@ func NewServer(store db.Store, secretKey string) *Server {
 	authRouter.GET("/expenses/:groupId", server.listExpenses)
 
 	authRouter.PUT("/settlements", server.replaceSettlement)
-	authRouter.DELETE("/settlements", server.completeSettlement)
+	authRouter.DELETE("/settlements/:groupId/:payerId/:payeeId", server.completeSettlement)
 
 	server.router = router
 	return server

@@ -2,14 +2,16 @@ package api
 
 import (
 	db "bill-splitting/db/sqlc"
+	"bill-splitting/token"
+	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 type createGroupMemberRequest struct {
-	GroupID int64  `json:"groupId" binding:"required"`
-	UserID  string `json:"userId" binding:"required"`
+	Code string `json:"code" binding:"required"`
 }
 
 func (s *Server) createGroupMember(ctx *gin.Context) {
@@ -19,9 +21,28 @@ func (s *Server) createGroupMember(ctx *gin.Context) {
 		return
 	}
 
+	invite, err := s.store.GetGroupInvitation(ctx, req.Code)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": errors.New("invalid code")})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = s.store.DeleteGroupInvitation(ctx, req.Code)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	payload := ctx.MustGet("payload").(*token.JWTPayload)
+
 	member, err := s.store.CreateGroupMember(ctx, db.CreateGroupMemberParams{
-		GroupID: req.GroupID,
-		UserID:  req.UserID,
+		GroupID: invite.GroupID,
+		UserID:  payload.UserID,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
