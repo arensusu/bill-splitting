@@ -1,12 +1,13 @@
 
 FROM golang:latest AS builder
 WORKDIR /app
-COPY . .
+COPY backend/ .
 RUN go build -o main main.go
 
-FROM alpine:latest
+FROM golang:latest
 WORKDIR /app
 COPY --from=builder /app/main .
+COPY .env .
 
 EXPOSE 8080
 CMD ["/app/main"]

@@ -1,0 +1,25 @@
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_NAME}
+    ports:
+      - ${DATABASE_PORT}:${DATABASE_PORT}
+  api:
+    build:
+      context: .
+      dockerfile: backend.dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    command: ["/app/main"]
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend.dockerfile
+    ports:
+      - "3000:3000"
