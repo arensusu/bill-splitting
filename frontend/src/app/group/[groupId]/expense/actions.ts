@@ -15,7 +15,7 @@ const createExpense = async (id: string, formData: FormData) => {
         description: formData.get("description"),
     };
 
-    const response = await fetch("http://golang-dev:8080/expenses", {
+    const response = await fetch(`${process.env.ENDPOINT}/expenses`, {
         cache: "no-store",
         method: "POST",
         headers: {

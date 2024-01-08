@@ -10,6 +10,6 @@ export default async function LoginForm() {
   }
 
   return (
-    <Button variant="contained" href="http://localhost:8080/auth/line">Login</Button>
+    <Button variant="contained" href="${process.env.ENDPOINT}/auth/line">Login</Button>
   )
 }

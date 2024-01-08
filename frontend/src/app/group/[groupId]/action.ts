@@ -4,7 +4,7 @@ import getToken from "@/app/actions";
 
 const getGroupName = async (id: string) => {
     const token = await getToken();
-    const res = await fetch(`http://golang-dev:8080/groups/${id}`, {
+    const res = await fetch(`${process.env.ENDPOINT}/groups/${id}`, {
         cache: "no-store",
         method: "GET",
         headers: {
@@ -19,7 +19,7 @@ const getGroupName = async (id: string) => {
 
 const getGroupMembers = async (id: string) => {
     const token = await getToken();
-    const res = await fetch(`http://golang-dev:8080/groups/members/${id}`, {
+    const res = await fetch(`${process.env.ENDPOINT}/groups/members/${id}`, {
         cache: "no-store",
         method: "GET",
         headers: {
@@ -34,7 +34,7 @@ const getGroupMembers = async (id: string) => {
 
 const getGroupExpenses = async (id: string) => {
     const token = await getToken();
-    const res = await fetch(`http://golang-dev:8080/expenses/${id}`, {
+    const res = await fetch(`${process.env.ENDPOINT}/expenses/${id}`, {
         cache: "no-store",
         method: "GET",
         headers: {

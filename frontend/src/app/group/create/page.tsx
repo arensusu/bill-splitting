@@ -9,7 +9,7 @@ export default function CreateGroupForm() {
             <div>
                 <TextField label="name" name="name"/>
             </div>
-            <Button>Create</Button>
+            <Button type="submit">Create</Button>
         </form>
     )
 }

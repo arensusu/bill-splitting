@@ -12,7 +12,7 @@ const createGroup = async (formData: FormData) => {
         name: formData.get("name"),
     };
 
-    const response = await fetch("http://golang-dev:8080/groups", {
+    const response = await fetch(`${process.env.ENDPOINT}/groups`, {
         cache: "no-store",
         method: "POST",
         headers: {

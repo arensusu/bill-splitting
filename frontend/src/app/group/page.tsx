@@ -9,7 +9,7 @@ const GroupPage = async () => {
         redirect("/login");
     }
 
-    const res = await fetch("http://golang-dev:8080/groups", {
+    const res = await fetch(`${process.env.ENDPOINT}/groups`, {
         cache: "no-store",
         method: "GET",
         headers: {

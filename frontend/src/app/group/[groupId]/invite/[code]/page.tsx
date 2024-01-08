@@ -7,7 +7,7 @@ export default async function AcceptedGroupInvitePage({ params }: { params: { co
         redirect("/login");
     }
 
-    const res = await fetch(`http://golang-dev:8080/groups/members`, {
+    const res = await fetch(`${process.env.ENDPOINT}/groups/members`, {
         cache: "no-store",
         method: "POST",
         headers: {
