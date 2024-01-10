@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -67,6 +68,7 @@ func (s *Server) authCallback(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("token", token, int(time.Hour.Seconds()), "/", "localhost", false, true)
-	ctx.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000/login")
+	endpoint := os.Getenv("ENDPOINT")
+	ctx.SetCookie("token", token, int(time.Hour.Seconds()), "/", endpoint, false, true)
+	ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s/login", endpoint))
 }
