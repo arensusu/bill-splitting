@@ -7,7 +7,7 @@ export default async function AcceptedGroupInvitePage({ params }: { params: { co
         redirect("/login");
     }
 
-    const res = await fetch(`${process.env.ENDPOINT}/groups/members`, {
+    const res = await fetch(`${process.env.ENDPOINT}/api/groups/members`, {
         cache: "no-store",
         method: "POST",
         headers: {

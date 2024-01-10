@@ -13,7 +13,7 @@ const settleUp = async (id: string) => {
         groupId: parseInt(id),
     };
     
-    const response = await fetch(`${process.env.ENDPOINT}/settlements`, {
+    const response = await fetch(`${process.env.ENDPOINT}/api/settlements`, {
         cache: "no-store",
         method: "PUT",
         headers: {
@@ -33,7 +33,7 @@ const settleUp = async (id: string) => {
 const comfirmSettlement = async (groupId: string, payerId: string, payeeId: string) => {
     const token = await getToken();
 
-    const response = await fetch(`${process.env.ENDPOINT}/settlements/${parseInt(groupId)}/${payerId}/${payeeId}`, {
+    const response = await fetch(`${process.env.ENDPOINT}/api/settlements/${parseInt(groupId)}/${payerId}/${payeeId}`, {
         cache: "no-store",
         method: "DELETE",
         headers: {

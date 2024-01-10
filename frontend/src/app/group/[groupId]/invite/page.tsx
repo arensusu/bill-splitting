@@ -7,7 +7,7 @@ export default async function GroupInvitePage({ params }: { params: { groupId: s
         redirect("/login");
     }
 
-    const res = await fetch(`${process.env.ENDPOINT}/groups/invite`, {
+    const res = await fetch(`${process.env.ENDPOINT}/api/groups/invite`, {
         cache: "no-store",
         method: "POST",
         headers: {
@@ -20,7 +20,7 @@ export default async function GroupInvitePage({ params }: { params: { groupId: s
     
     return (
         <>
-            <h1>{data.error ? data.error : `http://localhost:3000/group/${params.groupId}/invite/${data.code}`}</h1>
+            <h1>{data.error ? data.error : `${process.env.ENDPOINT}/group/${params.groupId}/invite/${data.code}`}</h1>
         </>
     )
 }
