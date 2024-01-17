@@ -8,6 +8,8 @@ services:
       - POSTGRES_DB=${DATABASE_NAME}
     ports:
       - ${DATABASE_PORT}:5432
+    volumes:
+        - db-data:/var/lib/postgresql/data
   api:
     build:
       context: .
@@ -25,3 +27,5 @@ services:
       - "3000:3000"
     environment:
       - ENDPOINT=${ENDPOINT}
+volumes:
+  db-data:
