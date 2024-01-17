@@ -27,5 +27,16 @@ services:
       - "3000:3000"
     environment:
       - ENDPOINT=${ENDPOINT}
+    depends_on:
+      - api
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx.dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+
 volumes:
   db-data:

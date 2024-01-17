@@ -8,8 +8,8 @@ RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/
 FROM golang:latest
 WORKDIR /app
 COPY --from=builder /app/main .
-COPY --from=builder /app/migrate.linux-amd64 ./migrate
-COPY db/migration ./migration
+COPY --from=builder /app/migrate ./migrate
+COPY backend/db/migration ./migration
 COPY .env .
 COPY start.sh .
 RUN chmod +x start.sh
