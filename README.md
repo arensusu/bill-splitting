@@ -3,6 +3,19 @@ Bill Splitting 是一種財務管理工具，旨在簡化和自動化在多個�
 
 網站: http://arensusu.ddns.net/
 
+## 專案技術
+- Golang：後端開發語言
+- Gin：The fastest full-featured web framework for Go
+- Postgres：The World's Most Advanced Open Source Relational Database
+- sqlc：A SQL compiler
+- jwt-go：A go implementation of JSON Web Tokens
+- goth：Multi-Provider Authentication for Go
+- testify：A toolkit with common assertions and mocks that plays nicely with the standard library
+- mock：GoMock is a mocking framework for the Go programming language.
+- Next.js：前端框架
+- docker
+- AWS Lightsail
+
 ## 功能
 - **記錄支出**：用戶能夠輸入每筆支出的細節，包括金額、日期和支出類別。
 - **分攤費用**：系統會根據預設的規則或用戶的指定，自動計算每個人的應付分攤金額。
