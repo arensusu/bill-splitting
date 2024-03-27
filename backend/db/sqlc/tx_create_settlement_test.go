@@ -3,6 +3,7 @@ package db
 import (
 	"bill-splitting/helper"
 	"context"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -14,19 +15,21 @@ func TestCreateSettlementTx(t *testing.T) {
 	for i := 0; i < 5; i += 1 {
 		users = append(users, createRandomUser(t))
 	}
+
+	members := []Member{}
 	for _, user := range users {
-		testStore.CreateGroupMember(context.Background(), CreateGroupMemberParams{
+		member, _ := testStore.CreateMember(context.Background(), CreateMemberParams{
 			GroupID: group.ID,
 			UserID:  user.ID,
 		})
+		members = append(members, member)
 	}
 
-	for i := range users {
-		testStore.CreateExpenseTx(context.Background(), CreateExpenseTxParams{
-			GroupID: group.ID,
-			PayerID: users[i].ID,
-			Amount:  helper.RandomInt64(1, 1000),
-			Date:    helper.RandomDate(),
+	for _, member := range members {
+		testStore.CreateExpense(context.Background(), CreateExpenseParams{
+			MemberID: member.ID,
+			Amount:   strconv.FormatInt(helper.RandomInt64(1, 1000), 10),
+			Date:     helper.RandomDate(),
 		})
 	}
 

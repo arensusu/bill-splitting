@@ -12,13 +12,13 @@ import (
 const createGroup = `-- name: CreateGroup :one
 INSERT INTO groups (name)
 VALUES ($1)
-RETURNING id, name, created_at
+RETURNING id, name
 `
 
 func (q *Queries) CreateGroup(ctx context.Context, name string) (Group, error) {
 	row := q.db.QueryRowContext(ctx, createGroup, name)
 	var i Group
-	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	err := row.Scan(&i.ID, &i.Name)
 	return i, err
 }
 
@@ -27,45 +27,40 @@ DELETE FROM groups
 WHERE id = $1
 `
 
-func (q *Queries) DeleteGroup(ctx context.Context, id int64) error {
+func (q *Queries) DeleteGroup(ctx context.Context, id int32) error {
 	_, err := q.db.ExecContext(ctx, deleteGroup, id)
 	return err
 }
 
 const getGroup = `-- name: GetGroup :one
-SELECT id, name, created_at
+SELECT id, name
 FROM groups
 WHERE id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetGroup(ctx context.Context, id int64) (Group, error) {
+func (q *Queries) GetGroup(ctx context.Context, id int32) (Group, error) {
 	row := q.db.QueryRowContext(ctx, getGroup, id)
 	var i Group
-	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	err := row.Scan(&i.ID, &i.Name)
 	return i, err
 }
 
 const listGroups = `-- name: ListGroups :many
 SELECT id, name
-FROM groups, (SELECT group_id FROM group_members WHERE user_id = $1) AS group_members
+FROM groups, (SELECT group_id FROM members WHERE user_id = $1) AS group_members
 WHERE groups.id = group_members.group_id
 `
 
-type ListGroupsRow struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
-}
-
-func (q *Queries) ListGroups(ctx context.Context, userID string) ([]ListGroupsRow, error) {
+func (q *Queries) ListGroups(ctx context.Context, userID string) ([]Group, error) {
 	rows, err := q.db.QueryContext(ctx, listGroups, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ListGroupsRow{}
+	items := []Group{}
 	for rows.Next() {
-		var i ListGroupsRow
+		var i Group
 		if err := rows.Scan(&i.ID, &i.Name); err != nil {
 			return nil, err
 		}
@@ -84,17 +79,17 @@ const updateGroup = `-- name: UpdateGroup :one
 UPDATE groups
 SET name = $2
 WHERE id = $1
-RETURNING id, name, created_at
+RETURNING id, name
 `
 
 type UpdateGroupParams struct {
-	ID   int64  `json:"id"`
+	ID   int32  `json:"id"`
 	Name string `json:"name"`
 }
 
 func (q *Queries) UpdateGroup(ctx context.Context, arg UpdateGroupParams) (Group, error) {
 	row := q.db.QueryRowContext(ctx, updateGroup, arg.ID, arg.Name)
 	var i Group
-	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	err := row.Scan(&i.ID, &i.Name)
 	return i, err
 }

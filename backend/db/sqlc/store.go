@@ -8,8 +8,7 @@ import (
 type Store interface {
 	Querier
 	CreateGroupTx(ctx context.Context, arg CreateGroupTxParams) (Group, error)
-	CreateExpenseTx(ctx context.Context, arg CreateExpenseTxParams) (CreateExpenseTxResult, error)
-	CreateSettlementsTx(ctx context.Context, groupID int64) (CreateSettlementTxResult, error)
+	CreateSettlementsTx(ctx context.Context, groupID int32) ([]Settlement, error)
 }
 
 type SQLStore struct {

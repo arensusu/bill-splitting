@@ -12,7 +12,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (id, username)
 VALUES ($1, $2)
-RETURNING id, username, created_at
+RETURNING id, username
 `
 
 type CreateUserParams struct {
@@ -23,7 +23,7 @@ type CreateUserParams struct {
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, createUser, arg.ID, arg.Username)
 	var i User
-	err := row.Scan(&i.ID, &i.Username, &i.CreatedAt)
+	err := row.Scan(&i.ID, &i.Username)
 	return i, err
 }
 
@@ -38,7 +38,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id string) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, username, created_at FROM users
+SELECT id, username FROM users
 WHERE id = $1
 LIMIT 1
 `
@@ -46,12 +46,12 @@ LIMIT 1
 func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUser, id)
 	var i User
-	err := row.Scan(&i.ID, &i.Username, &i.CreatedAt)
+	err := row.Scan(&i.ID, &i.Username)
 	return i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, created_at FROM users
+SELECT id, username FROM users
 WHERE username = $1
 LIMIT 1
 `
@@ -59,7 +59,7 @@ LIMIT 1
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUserByUsername, username)
 	var i User
-	err := row.Scan(&i.ID, &i.Username, &i.CreatedAt)
+	err := row.Scan(&i.ID, &i.Username)
 	return i, err
 }
 
@@ -67,7 +67,7 @@ const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET username = $2
 WHERE id = $1
-RETURNING id, username, created_at
+RETURNING id, username
 `
 
 type UpdateUserParams struct {
@@ -78,6 +78,6 @@ type UpdateUserParams struct {
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, updateUser, arg.ID, arg.Username)
 	var i User
-	err := row.Scan(&i.ID, &i.Username, &i.CreatedAt)
+	err := row.Scan(&i.ID, &i.Username)
 	return i, err
 }

@@ -4,66 +4,68 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 )
 
-type CreateSettlementTxResult struct {
-	Settlements []Settlement `json:"settlements"`
-}
-
-func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (CreateSettlementTxResult, error) {
+func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int32) ([]Settlement, error) {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
-		return CreateSettlementTxResult{}, err
+		return []Settlement{}, err
 	}
 	defer tx.Rollback()
 
 	q := New(tx)
 	_, err = q.GetGroup(ctx, groupID)
 	if err != nil {
-		return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
+		return []Settlement{}, fmt.Errorf("create settlements tx: %w", err)
 	}
 
 	expenses, err := q.ListNonSettledExpenses(ctx, groupID)
 	if err != nil {
-		return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
+		return []Settlement{}, fmt.Errorf("create settlements tx: %w", err)
 	}
 
-	settleAmounts := map[string]map[string]int64{}
-	for _, expense := range expenses {
-		userExpenses, err := q.ListUserExpenses(ctx, expense.ID)
-		if err != nil {
-			return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
-		}
+	members, err := q.ListMembersOfGroup(ctx, groupID)
+	if err != nil {
+		return []Settlement{}, fmt.Errorf("create settlements tx: %w", err)
+	}
 
-		for _, userExpense := range userExpenses {
-			if expense.PayerID == userExpense.UserID {
+	settleAmounts := map[int32]map[int32]int64{}
+	for _, expense := range expenses {
+		expenseAmount, err := strconv.ParseInt(expense.Amount, 10, 64)
+		if err != nil {
+			return []Settlement{}, fmt.Errorf("create settlements tx: %w", err)
+		}
+		share := expenseAmount / int64(len(members))
+
+		for _, member := range members {
+			if expense.MemberID == member.ID {
 				continue
 			}
 
-			if userExpense.UserID < expense.PayerID {
-				if _, ok := settleAmounts[userExpense.UserID]; !ok {
-					settleAmounts[userExpense.UserID] = map[string]int64{expense.PayerID: 0}
+			if member.ID < expense.MemberID {
+				if _, ok := settleAmounts[member.ID]; !ok {
+					settleAmounts[member.ID] = map[int32]int64{expense.MemberID: 0}
 				}
-				settleAmounts[userExpense.UserID][expense.PayerID] += userExpense.Share
+				settleAmounts[member.ID][expense.MemberID] += share
 			} else {
-				if _, ok := settleAmounts[expense.PayerID]; !ok {
-					settleAmounts[expense.PayerID] = map[string]int64{userExpense.UserID: 0}
+				if _, ok := settleAmounts[expense.MemberID]; !ok {
+					settleAmounts[expense.MemberID] = map[int32]int64{member.ID: 0}
 				}
-				settleAmounts[expense.PayerID][userExpense.UserID] -= userExpense.Share
+				settleAmounts[expense.MemberID][member.ID] -= share
 			}
 		}
 
 		_, err = q.UpdateExpense(ctx, UpdateExpenseParams{
 			ID:          expense.ID,
-			GroupID:     expense.GroupID,
-			PayerID:     expense.PayerID,
+			MemberID:    expense.MemberID,
 			Amount:      expense.Amount,
 			Description: expense.Description,
 			Date:        expense.Date,
 			IsSettled:   true,
 		})
 		if err != nil {
-			return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
+			return []Settlement{}, fmt.Errorf("create settlements tx: %w", err)
 		}
 	}
 
@@ -79,52 +81,49 @@ func (s *SQLStore) CreateSettlementsTx(ctx context.Context, groupID int64) (Crea
 			}
 
 			prevSettlement, err := q.GetSettlement(ctx, GetSettlementParams{
-				GroupID: groupID,
 				PayerID: payerID,
 				PayeeID: payeeID,
 			})
 
 			if err != nil {
 				if err != sql.ErrNoRows {
-					return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
+					return []Settlement{}, fmt.Errorf("create settlements tx: %w", err)
 				} else {
 					_, err = q.CreateSettlement(ctx, CreateSettlementParams{
-						GroupID: groupID,
 						PayerID: payerID,
 						PayeeID: payeeID,
-						Amount:  amount,
+						Amount:  strconv.FormatInt(amount, 10),
 					})
 					if err != nil {
-						return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
+						return []Settlement{}, fmt.Errorf("create settlements tx: %w", err)
 					}
 				}
 			} else {
-				if !(prevSettlement.IsConfirmed) {
-					amount += prevSettlement.Amount
+				prevAmount, err := strconv.ParseInt(prevSettlement.Amount, 10, 64)
+				if err != nil {
+					return []Settlement{}, fmt.Errorf("create settlements tx: %w", err)
 				}
+				amount += prevAmount
 				_, err = q.UpdateSettlement(ctx, UpdateSettlementParams{
-					GroupID: groupID,
 					PayerID: payerID,
 					PayeeID: payeeID,
-					Amount:  amount,
+					Amount:  strconv.FormatInt(amount, 10),
 				})
 				if err != nil {
-					return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
+					return []Settlement{}, fmt.Errorf("create settlements tx: %w", err)
 				}
 			}
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
-		return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
+		return []Settlement{}, fmt.Errorf("create settlements tx: %w", err)
 	}
 
 	settlements, err := s.ListSettlements(ctx, groupID)
 	if err != nil {
-		return CreateSettlementTxResult{}, fmt.Errorf("create settlements tx: %w", err)
+		return []Settlement{}, fmt.Errorf("create settlements tx: %w", err)
 	}
 
-	return CreateSettlementTxResult{
-		Settlements: settlements,
-	}, nil
+	return settlements, nil
 }

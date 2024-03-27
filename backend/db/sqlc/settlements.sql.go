@@ -10,84 +10,64 @@ import (
 )
 
 const createSettlement = `-- name: CreateSettlement :one
-INSERT INTO settlements (group_id, payer_id, payee_id, amount)
-VALUES ($1, $2, $3, $4)
-RETURNING group_id, payer_id, payee_id, amount, is_confirmed
+INSERT INTO settlements (payer_id, payee_id, amount)
+VALUES ($1, $2, $3)
+RETURNING payer_id, payee_id, amount
 `
 
 type CreateSettlementParams struct {
-	GroupID int64  `json:"group_id"`
-	PayerID string `json:"payer_id"`
-	PayeeID string `json:"payee_id"`
-	Amount  int64  `json:"amount"`
+	PayerID int32  `json:"payer_id"`
+	PayeeID int32  `json:"payee_id"`
+	Amount  string `json:"amount"`
 }
 
 func (q *Queries) CreateSettlement(ctx context.Context, arg CreateSettlementParams) (Settlement, error) {
-	row := q.db.QueryRowContext(ctx, createSettlement,
-		arg.GroupID,
-		arg.PayerID,
-		arg.PayeeID,
-		arg.Amount,
-	)
+	row := q.db.QueryRowContext(ctx, createSettlement, arg.PayerID, arg.PayeeID, arg.Amount)
 	var i Settlement
-	err := row.Scan(
-		&i.GroupID,
-		&i.PayerID,
-		&i.PayeeID,
-		&i.Amount,
-		&i.IsConfirmed,
-	)
+	err := row.Scan(&i.PayerID, &i.PayeeID, &i.Amount)
 	return i, err
 }
 
 const deleteSettlement = `-- name: DeleteSettlement :exec
 DELETE FROM settlements
-WHERE group_id = $1 AND payer_id = $2 AND payee_id = $3
+WHERE payer_id = $1 AND payee_id = $2
 `
 
 type DeleteSettlementParams struct {
-	GroupID int64  `json:"group_id"`
-	PayerID string `json:"payer_id"`
-	PayeeID string `json:"payee_id"`
+	PayerID int32 `json:"payer_id"`
+	PayeeID int32 `json:"payee_id"`
 }
 
 func (q *Queries) DeleteSettlement(ctx context.Context, arg DeleteSettlementParams) error {
-	_, err := q.db.ExecContext(ctx, deleteSettlement, arg.GroupID, arg.PayerID, arg.PayeeID)
+	_, err := q.db.ExecContext(ctx, deleteSettlement, arg.PayerID, arg.PayeeID)
 	return err
 }
 
 const getSettlement = `-- name: GetSettlement :one
-SELECT group_id, payer_id, payee_id, amount, is_confirmed
+SELECT payer_id, payee_id, amount
 FROM settlements
-WHERE group_id = $1 AND payer_id = $2 AND payee_id = $3
+WHERE payer_id = $1 AND payee_id = $2
 `
 
 type GetSettlementParams struct {
-	GroupID int64  `json:"group_id"`
-	PayerID string `json:"payer_id"`
-	PayeeID string `json:"payee_id"`
+	PayerID int32 `json:"payer_id"`
+	PayeeID int32 `json:"payee_id"`
 }
 
 func (q *Queries) GetSettlement(ctx context.Context, arg GetSettlementParams) (Settlement, error) {
-	row := q.db.QueryRowContext(ctx, getSettlement, arg.GroupID, arg.PayerID, arg.PayeeID)
+	row := q.db.QueryRowContext(ctx, getSettlement, arg.PayerID, arg.PayeeID)
 	var i Settlement
-	err := row.Scan(
-		&i.GroupID,
-		&i.PayerID,
-		&i.PayeeID,
-		&i.Amount,
-		&i.IsConfirmed,
-	)
+	err := row.Scan(&i.PayerID, &i.PayeeID, &i.Amount)
 	return i, err
 }
 
 const listSettlements = `-- name: ListSettlements :many
-SELECT group_id, payer_id, payee_id, amount, is_confirmed
-FROM settlements
-WHERE group_id = $1
+SELECT payer_id, payee_id, amount
+FROM settlements, (SELECT id FROM members WHERE group_id = $1) AS members
+WHERE payer_id = members.id OR payee_id = members.id
 `
 
-func (q *Queries) ListSettlements(ctx context.Context, groupID int64) ([]Settlement, error) {
+func (q *Queries) ListSettlements(ctx context.Context, groupID int32) ([]Settlement, error) {
 	rows, err := q.db.QueryContext(ctx, listSettlements, groupID)
 	if err != nil {
 		return nil, err
@@ -96,13 +76,7 @@ func (q *Queries) ListSettlements(ctx context.Context, groupID int64) ([]Settlem
 	items := []Settlement{}
 	for rows.Next() {
 		var i Settlement
-		if err := rows.Scan(
-			&i.GroupID,
-			&i.PayerID,
-			&i.PayeeID,
-			&i.Amount,
-			&i.IsConfirmed,
-		); err != nil {
+		if err := rows.Scan(&i.PayerID, &i.PayeeID, &i.Amount); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -118,34 +92,20 @@ func (q *Queries) ListSettlements(ctx context.Context, groupID int64) ([]Settlem
 
 const updateSettlement = `-- name: UpdateSettlement :one
 UPDATE settlements
-SET amount = $4, is_confirmed = $5
-WHERE group_id = $1 AND payer_id = $2 AND payee_id = $3
-RETURNING group_id, payer_id, payee_id, amount, is_confirmed
+SET amount = $3
+WHERE payer_id = $1 AND payee_id = $2
+RETURNING payer_id, payee_id, amount
 `
 
 type UpdateSettlementParams struct {
-	GroupID     int64  `json:"group_id"`
-	PayerID     string `json:"payer_id"`
-	PayeeID     string `json:"payee_id"`
-	Amount      int64  `json:"amount"`
-	IsConfirmed bool   `json:"is_confirmed"`
+	PayerID int32  `json:"payer_id"`
+	PayeeID int32  `json:"payee_id"`
+	Amount  string `json:"amount"`
 }
 
 func (q *Queries) UpdateSettlement(ctx context.Context, arg UpdateSettlementParams) (Settlement, error) {
-	row := q.db.QueryRowContext(ctx, updateSettlement,
-		arg.GroupID,
-		arg.PayerID,
-		arg.PayeeID,
-		arg.Amount,
-		arg.IsConfirmed,
-	)
+	row := q.db.QueryRowContext(ctx, updateSettlement, arg.PayerID, arg.PayeeID, arg.Amount)
 	var i Settlement
-	err := row.Scan(
-		&i.GroupID,
-		&i.PayerID,
-		&i.PayeeID,
-		&i.Amount,
-		&i.IsConfirmed,
-	)
+	err := row.Scan(&i.PayerID, &i.PayeeID, &i.Amount)
 	return i, err
 }

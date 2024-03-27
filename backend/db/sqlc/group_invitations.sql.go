@@ -12,18 +12,18 @@ import (
 const createGroupInvitation = `-- name: CreateGroupInvitation :one
 INSERT INTO group_invitations (code, group_id)
 VALUES ($1, $2)
-RETURNING code, group_id, created_at
+RETURNING code, group_id
 `
 
 type CreateGroupInvitationParams struct {
 	Code    string `json:"code"`
-	GroupID int64  `json:"group_id"`
+	GroupID int32  `json:"group_id"`
 }
 
 func (q *Queries) CreateGroupInvitation(ctx context.Context, arg CreateGroupInvitationParams) (GroupInvitation, error) {
 	row := q.db.QueryRowContext(ctx, createGroupInvitation, arg.Code, arg.GroupID)
 	var i GroupInvitation
-	err := row.Scan(&i.Code, &i.GroupID, &i.CreatedAt)
+	err := row.Scan(&i.Code, &i.GroupID)
 	return i, err
 }
 
@@ -38,7 +38,7 @@ func (q *Queries) DeleteGroupInvitation(ctx context.Context, code string) error 
 }
 
 const getGroupInvitation = `-- name: GetGroupInvitation :one
-SELECT code, group_id, created_at
+SELECT code, group_id
 FROM group_invitations
 WHERE code = $1
 `
@@ -46,6 +46,6 @@ WHERE code = $1
 func (q *Queries) GetGroupInvitation(ctx context.Context, code string) (GroupInvitation, error) {
 	row := q.db.QueryRowContext(ctx, getGroupInvitation, code)
 	var i GroupInvitation
-	err := row.Scan(&i.Code, &i.GroupID, &i.CreatedAt)
+	err := row.Scan(&i.Code, &i.GroupID)
 	return i, err
 }

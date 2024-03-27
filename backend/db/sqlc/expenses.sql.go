@@ -11,23 +11,21 @@ import (
 )
 
 const createExpense = `-- name: CreateExpense :one
-INSERT INTO expenses (group_id, payer_id, amount, description, date)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, group_id, payer_id, amount, description, date, is_settled
+INSERT INTO expenses (member_id, amount, description, date)
+VALUES ($1, $2, $3, $4)
+RETURNING id, member_id, amount, description, date, is_settled
 `
 
 type CreateExpenseParams struct {
-	GroupID     int64     `json:"group_id"`
-	PayerID     string    `json:"payer_id"`
-	Amount      int64     `json:"amount"`
+	MemberID    int32     `json:"member_id"`
+	Amount      string    `json:"amount"`
 	Description string    `json:"description"`
 	Date        time.Time `json:"date"`
 }
 
 func (q *Queries) CreateExpense(ctx context.Context, arg CreateExpenseParams) (Expense, error) {
 	row := q.db.QueryRowContext(ctx, createExpense,
-		arg.GroupID,
-		arg.PayerID,
+		arg.MemberID,
 		arg.Amount,
 		arg.Description,
 		arg.Date,
@@ -35,8 +33,7 @@ func (q *Queries) CreateExpense(ctx context.Context, arg CreateExpenseParams) (E
 	var i Expense
 	err := row.Scan(
 		&i.ID,
-		&i.GroupID,
-		&i.PayerID,
+		&i.MemberID,
 		&i.Amount,
 		&i.Description,
 		&i.Date,
@@ -50,55 +47,69 @@ DELETE FROM expenses
 WHERE id = $1
 `
 
-func (q *Queries) DeleteExpense(ctx context.Context, id int64) error {
+func (q *Queries) DeleteExpense(ctx context.Context, id int32) error {
 	_, err := q.db.ExecContext(ctx, deleteExpense, id)
 	return err
 }
 
 const getExpense = `-- name: GetExpense :one
-SELECT id, group_id, payer_id, amount, description, date, is_settled
+SELECT member_id, amount, description, date
 FROM expenses
 WHERE id = $1
 `
 
-func (q *Queries) GetExpense(ctx context.Context, id int64) (Expense, error) {
+type GetExpenseRow struct {
+	MemberID    int32     `json:"member_id"`
+	Amount      string    `json:"amount"`
+	Description string    `json:"description"`
+	Date        time.Time `json:"date"`
+}
+
+func (q *Queries) GetExpense(ctx context.Context, id int32) (GetExpenseRow, error) {
 	row := q.db.QueryRowContext(ctx, getExpense, id)
-	var i Expense
+	var i GetExpenseRow
 	err := row.Scan(
-		&i.ID,
-		&i.GroupID,
-		&i.PayerID,
+		&i.MemberID,
 		&i.Amount,
 		&i.Description,
 		&i.Date,
-		&i.IsSettled,
 	)
 	return i, err
 }
 
 const listExpenses = `-- name: ListExpenses :many
-SELECT id, group_id, payer_id, amount, description, date, is_settled
-FROM expenses
-WHERE group_id = $1
+SELECT expenses.id, member_id, amount, description, date, is_settled, members.id
+FROM expenses, (SELECT id FROM members WHERE group_id = $1) AS members
+WHERE expenses.member_id = members.id
 `
 
-func (q *Queries) ListExpenses(ctx context.Context, groupID int64) ([]Expense, error) {
+type ListExpensesRow struct {
+	ID          int32     `json:"id"`
+	MemberID    int32     `json:"member_id"`
+	Amount      string    `json:"amount"`
+	Description string    `json:"description"`
+	Date        time.Time `json:"date"`
+	IsSettled   bool      `json:"is_settled"`
+	ID_2        int32     `json:"id_2"`
+}
+
+func (q *Queries) ListExpenses(ctx context.Context, groupID int32) ([]ListExpensesRow, error) {
 	rows, err := q.db.QueryContext(ctx, listExpenses, groupID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Expense{}
+	items := []ListExpensesRow{}
 	for rows.Next() {
-		var i Expense
+		var i ListExpensesRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.GroupID,
-			&i.PayerID,
+			&i.MemberID,
 			&i.Amount,
 			&i.Description,
 			&i.Date,
 			&i.IsSettled,
+			&i.ID_2,
 		); err != nil {
 			return nil, err
 		}
@@ -114,28 +125,38 @@ func (q *Queries) ListExpenses(ctx context.Context, groupID int64) ([]Expense, e
 }
 
 const listNonSettledExpenses = `-- name: ListNonSettledExpenses :many
-SELECT id, group_id, payer_id, amount, description, date, is_settled
-FROM expenses
-WHERE group_id = $1 AND is_settled = false
+SELECT expenses.id, member_id, amount, description, date, is_settled, members.id
+FROM expenses, (SELECT id FROM members WHERE group_id = $1) AS members
+WHERE expenses.member_id = members.id AND is_settled = false
 `
 
-func (q *Queries) ListNonSettledExpenses(ctx context.Context, groupID int64) ([]Expense, error) {
+type ListNonSettledExpensesRow struct {
+	ID          int32     `json:"id"`
+	MemberID    int32     `json:"member_id"`
+	Amount      string    `json:"amount"`
+	Description string    `json:"description"`
+	Date        time.Time `json:"date"`
+	IsSettled   bool      `json:"is_settled"`
+	ID_2        int32     `json:"id_2"`
+}
+
+func (q *Queries) ListNonSettledExpenses(ctx context.Context, groupID int32) ([]ListNonSettledExpensesRow, error) {
 	rows, err := q.db.QueryContext(ctx, listNonSettledExpenses, groupID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Expense{}
+	items := []ListNonSettledExpensesRow{}
 	for rows.Next() {
-		var i Expense
+		var i ListNonSettledExpensesRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.GroupID,
-			&i.PayerID,
+			&i.MemberID,
 			&i.Amount,
 			&i.Description,
 			&i.Date,
 			&i.IsSettled,
+			&i.ID_2,
 		); err != nil {
 			return nil, err
 		}
@@ -152,16 +173,15 @@ func (q *Queries) ListNonSettledExpenses(ctx context.Context, groupID int64) ([]
 
 const updateExpense = `-- name: UpdateExpense :one
 UPDATE expenses
-SET group_id = $2, payer_id = $3, amount = $4, description = $5, date = $6, is_settled = $7
+SET member_id = $2, amount = $3, description = $4, date = $5, is_settled = $6
 WHERE id = $1
-RETURNING id, group_id, payer_id, amount, description, date, is_settled
+RETURNING id, member_id, amount, description, date, is_settled
 `
 
 type UpdateExpenseParams struct {
-	ID          int64     `json:"id"`
-	GroupID     int64     `json:"group_id"`
-	PayerID     string    `json:"payer_id"`
-	Amount      int64     `json:"amount"`
+	ID          int32     `json:"id"`
+	MemberID    int32     `json:"member_id"`
+	Amount      string    `json:"amount"`
 	Description string    `json:"description"`
 	Date        time.Time `json:"date"`
 	IsSettled   bool      `json:"is_settled"`
@@ -170,8 +190,7 @@ type UpdateExpenseParams struct {
 func (q *Queries) UpdateExpense(ctx context.Context, arg UpdateExpenseParams) (Expense, error) {
 	row := q.db.QueryRowContext(ctx, updateExpense,
 		arg.ID,
-		arg.GroupID,
-		arg.PayerID,
+		arg.MemberID,
 		arg.Amount,
 		arg.Description,
 		arg.Date,
@@ -180,8 +199,7 @@ func (q *Queries) UpdateExpense(ctx context.Context, arg UpdateExpenseParams) (E
 	var i Expense
 	err := row.Scan(
 		&i.ID,
-		&i.GroupID,
-		&i.PayerID,
+		&i.MemberID,
 		&i.Amount,
 		&i.Description,
 		&i.Date,

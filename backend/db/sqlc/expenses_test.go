@@ -4,20 +4,19 @@ import (
 	"bill-splitting/helper"
 	"context"
 	"database/sql"
+	"strconv"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
 
 func createRandomExpense(t *testing.T) Expense {
 	group := createRandomGroup(t)
-	user := createRandomUser(t)
+	member := createRandomMember(t, group.ID)
 	param := CreateExpenseParams{
-		GroupID: group.ID,
-		PayerID: user.ID,
-		Amount:  helper.RandomInt64(1, 1000),
-		Date:    helper.RandomDate(),
+		MemberID: member.ID,
+		Amount:   strconv.FormatInt(helper.RandomInt64(1, 1000), 10),
+		Date:     helper.RandomDate(),
 	}
 	expense, err := testStore.CreateExpense(context.Background(), param)
 
@@ -25,10 +24,11 @@ func createRandomExpense(t *testing.T) Expense {
 	require.NotEmpty(t, expense)
 
 	require.NotZero(t, expense.ID)
-	require.Equal(t, group.ID, expense.GroupID)
-	require.Equal(t, user.ID, expense.PayerID)
+	require.Equal(t, member.ID, expense.MemberID)
 	require.Equal(t, param.Amount, expense.Amount)
-	require.WithinDuration(t, param.Date, expense.Date, time.Second)
+	require.Equal(t, param.Date.Year(), expense.Date.Year())
+	require.Equal(t, param.Date.Month(), expense.Date.Month())
+	require.Equal(t, param.Date.Day(), expense.Date.Day())
 
 	return expense
 }
@@ -45,23 +45,22 @@ func TestGetExpense(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, expense2)
 
-	require.Equal(t, expense1.ID, expense2.ID)
-	require.Equal(t, expense1.GroupID, expense2.GroupID)
-	require.Equal(t, expense1.PayerID, expense2.PayerID)
+	require.Equal(t, expense1.MemberID, expense2.MemberID)
 	require.Equal(t, expense1.Amount, expense2.Amount)
-	require.WithinDuration(t, expense1.Date, expense2.Date, time.Second)
+	require.Equal(t, expense1.Date.Year(), expense2.Date.Year())
+	require.Equal(t, expense1.Date.Month(), expense2.Date.Month())
+	require.Equal(t, expense1.Date.Day(), expense2.Date.Day())
 }
 
 func TestUpdateExpense(t *testing.T) {
 	expense := createRandomExpense(t)
 
-	newAmount := helper.RandomInt64(1, 1000)
+	newAmount := strconv.FormatInt(helper.RandomInt64(1, 1000), 10)
 	param := UpdateExpenseParams{
-		ID:      expense.ID,
-		GroupID: expense.GroupID,
-		PayerID: expense.PayerID,
-		Amount:  newAmount,
-		Date:    expense.Date,
+		ID:       expense.ID,
+		MemberID: expense.MemberID,
+		Amount:   newAmount,
+		Date:     expense.Date,
 	}
 	newExpense, err := testStore.UpdateExpense(context.Background(), param)
 
@@ -69,10 +68,11 @@ func TestUpdateExpense(t *testing.T) {
 	require.NotEmpty(t, newExpense)
 
 	require.Equal(t, expense.ID, newExpense.ID)
-	require.Equal(t, expense.GroupID, newExpense.GroupID)
-	require.Equal(t, expense.PayerID, newExpense.PayerID)
+	require.Equal(t, expense.MemberID, newExpense.MemberID)
 	require.Equal(t, newAmount, newExpense.Amount)
-	require.WithinDuration(t, expense.Date, newExpense.Date, time.Second)
+	require.Equal(t, expense.Date.Year(), newExpense.Date.Year())
+	require.Equal(t, expense.Date.Month(), newExpense.Date.Month())
+	require.Equal(t, expense.Date.Day(), newExpense.Date.Day())
 }
 
 func TestDeleteExpense(t *testing.T) {
@@ -95,14 +95,19 @@ func TestListExpenses(t *testing.T) {
 		lastExpense = createRandomExpense(t)
 	}
 
-	expenses, err := testStore.ListExpenses(context.Background(), lastExpense.GroupID)
+	lastMember, err := testStore.GetMember(context.Background(), lastExpense.MemberID)
+	require.NoError(t, err)
+	expenses, err := testStore.ListExpenses(context.Background(), lastMember.GroupID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, expenses)
 
 	for _, expense := range expenses {
 		require.NotEmpty(t, expense)
-		require.Equal(t, lastExpense.GroupID, expense.GroupID)
+
+		member, err := testStore.GetMember(context.Background(), expense.MemberID)
+		require.NoError(t, err)
+		require.Equal(t, member.GroupID, lastMember.GroupID)
 	}
 }
 
@@ -112,27 +117,31 @@ func TestListNonSettledExpenses(t *testing.T) {
 		lastExpense = createRandomExpense(t)
 	}
 
-	expenses1, err := testStore.ListNonSettledExpenses(context.Background(), lastExpense.GroupID)
+	lastMember, err := testStore.GetMember(context.Background(), lastExpense.MemberID)
+	require.NoError(t, err)
+	expenses1, err := testStore.ListExpenses(context.Background(), lastMember.GroupID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, expenses1)
 
 	for _, expense := range expenses1 {
 		require.NotEmpty(t, expense)
-		require.Equal(t, lastExpense.GroupID, expense.GroupID)
+
+		member, err := testStore.GetMember(context.Background(), expense.MemberID)
+		require.NoError(t, err)
+		require.Equal(t, member.GroupID, lastMember.GroupID)
 	}
 
 	_, err = testStore.UpdateExpense(context.Background(), UpdateExpenseParams{
 		ID:        lastExpense.ID,
-		GroupID:   lastExpense.GroupID,
-		PayerID:   lastExpense.PayerID,
+		MemberID:  lastExpense.MemberID,
 		Amount:    lastExpense.Amount,
 		Date:      lastExpense.Date,
 		IsSettled: true,
 	})
 	require.NoError(t, err)
 
-	expenses2, err := testStore.ListNonSettledExpenses(context.Background(), lastExpense.GroupID)
+	expenses2, err := testStore.ListNonSettledExpenses(context.Background(), lastMember.GroupID)
 
 	require.NoError(t, err)
 	require.Equal(t, len(expenses1)-1, len(expenses2))

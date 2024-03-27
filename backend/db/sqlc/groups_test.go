@@ -5,7 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -38,7 +37,6 @@ func TestGetGroup(t *testing.T) {
 
 	require.Equal(t, group1.ID, group2.ID)
 	require.Equal(t, group1.Name, group2.Name)
-	require.WithinDuration(t, group1.CreatedAt, group2.CreatedAt, time.Second)
 }
 
 func TestUpdateGroup(t *testing.T) {
@@ -56,7 +54,6 @@ func TestUpdateGroup(t *testing.T) {
 
 	require.Equal(t, group1.ID, group2.ID)
 	require.Equal(t, newName, group2.Name)
-	require.WithinDuration(t, group1.CreatedAt, group2.CreatedAt, time.Second)
 }
 
 func TestDeleteGroup(t *testing.T) {

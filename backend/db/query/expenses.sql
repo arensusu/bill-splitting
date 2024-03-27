@@ -1,26 +1,26 @@
 -- name: CreateExpense :one
-INSERT INTO expenses (group_id, payer_id, amount, description, date)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO expenses (member_id, amount, description, date)
+VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: GetExpense :one
-SELECT *
+SELECT member_id, amount, description, date
 FROM expenses
 WHERE id = $1;
 
 -- name: ListExpenses :many
 SELECT *
-FROM expenses
-WHERE group_id = $1;
+FROM expenses, (SELECT id FROM members WHERE group_id = $1) AS members
+WHERE expenses.member_id = members.id;
 
 -- name: ListNonSettledExpenses :many
 SELECT *
-FROM expenses
-WHERE group_id = $1 AND is_settled = false;
+FROM expenses, (SELECT id FROM members WHERE group_id = $1) AS members
+WHERE expenses.member_id = members.id AND is_settled = false;
 
 -- name: UpdateExpense :one
 UPDATE expenses
-SET group_id = $2, payer_id = $3, amount = $4, description = $5, date = $6, is_settled = $7
+SET member_id = $2, amount = $3, description = $4, date = $5, is_settled = $6
 WHERE id = $1
 RETURNING *;
 

@@ -5,13 +5,13 @@ import (
 	"context"
 	"database/sql"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
 
 func createRandomUser(t *testing.T) User {
 	param := CreateUserParams{
+		ID:       helper.RandomString(32),
 		Username: helper.RandomString(10),
 	}
 
@@ -22,7 +22,6 @@ func createRandomUser(t *testing.T) User {
 
 	require.NotZero(t, user.ID)
 	require.Equal(t, param.Username, user.Username)
-	require.NotZero(t, user.CreatedAt)
 
 	return user
 }
@@ -41,7 +40,6 @@ func TestGetUser(t *testing.T) {
 
 	require.Equal(t, user1.ID, user2.ID)
 	require.Equal(t, user1.Username, user2.Username)
-	require.WithinDuration(t, user1.CreatedAt, user2.CreatedAt, time.Second)
 }
 
 func TestUpdateUser(t *testing.T) {
@@ -60,7 +58,6 @@ func TestUpdateUser(t *testing.T) {
 
 	require.Equal(t, user1.ID, user2.ID)
 	require.Equal(t, newUsername, user2.Username)
-	require.WithinDuration(t, user1.CreatedAt, user2.CreatedAt, time.Second)
 }
 
 func TestDeleteUser(t *testing.T) {

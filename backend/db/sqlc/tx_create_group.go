@@ -21,7 +21,7 @@ func (s *SQLStore) CreateGroupTx(ctx context.Context, arg CreateGroupTxParams) (
 		return Group{}, err
 	}
 
-	_, err = q.CreateGroupMember(ctx, CreateGroupMemberParams{
+	_, err = q.CreateMember(ctx, CreateMemberParams{
 		GroupID: group.ID,
 		UserID:  arg.UserID,
 	})

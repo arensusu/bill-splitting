@@ -5,7 +5,11 @@ import (
 	"time"
 )
 
-var randGen = rand.New(rand.NewSource(time.Now().UnixNano()))
+var randGen *rand.Rand
+
+func init() {
+	randGen = rand.New(rand.NewSource(time.Now().UnixNano()))
+}
 
 func RandomString(n int) string {
 	letters := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
