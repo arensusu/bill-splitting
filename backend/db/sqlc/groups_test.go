@@ -69,3 +69,26 @@ func TestDeleteGroup(t *testing.T) {
 	require.EqualError(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, group2)
 }
+
+func TestListGroups(t *testing.T) {
+	user := createRandomUser(t)
+	groups := []Group{}
+	for i := 0; i < 10; i++ {
+		groups = append(groups, createRandomGroup(t))
+	}
+
+	for i := 0; i < 5; i += 1 {
+		testStore.CreateMember(context.Background(), CreateMemberParams{
+			GroupID: groups[i].ID,
+			UserID:  user.ID,
+		})
+	}
+
+	actualGroups, err := testStore.ListGroups(context.Background(), user.ID)
+	require.NoError(t, err)
+	require.Len(t, actualGroups, 5)
+
+	for i := 0; i < 5; i += 1 {
+		require.Equal(t, groups[i], actualGroups[i])
+	}
+}

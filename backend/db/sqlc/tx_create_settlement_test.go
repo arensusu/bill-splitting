@@ -34,13 +34,10 @@ func TestCreateSettlementTx(t *testing.T) {
 	}
 
 	settlements, err := testStore.CreateSettlementsTx(context.Background(), group.ID)
-
 	require.NoError(t, err)
 	require.NotEmpty(t, settlements)
 
 	settlements, err = testStore.CreateSettlementsTx(context.Background(), group.ID)
-
 	require.NoError(t, err)
 	require.NotEmpty(t, settlements)
-
 }
