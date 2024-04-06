@@ -3,67 +3,61 @@ package api
 import (
 	db "bill-splitting/db/sqlc"
 	"bill-splitting/token"
-	"database/sql"
-	"errors"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type createExpenseRequest struct {
-	GroupID     int64  `json:"groupId" binding:"required"`
+	MemberID    int32  `json:"memberId" binding:"required"`
 	Amount      int64  `json:"amount" binding:"required"`
 	Description string `json:"description"`
 	Date        string `json:"date" binding:"required"`
 }
 
-func (s *Server) createExpense(c *gin.Context) {
+func (s *Server) createExpense(ctx *gin.Context) {
 	var req createExpenseRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	payload := c.MustGet("payload").(*token.JWTPayload)
+	payload := ctx.MustGet("payload").(*token.JWTPayload)
 
-	_, err := s.store.GetGroupMember(c, db.GetGroupMemberParams{
-		GroupID: req.GroupID,
-		UserID:  payload.UserID,
-	})
+	member, err := s.store.GetMember(ctx, req.MemberID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			c.JSON(http.StatusForbidden, gin.H{"error": errors.New("user is not a member of the group")})
-			return
-		}
-
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if payload.UserID != member.UserID {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized user"})
 		return
 	}
 
 	date, err := time.Parse("2006-01-02", req.Date)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	expenseTx, err := s.store.CreateExpenseTx(c, db.CreateExpenseTxParams{
-		GroupID:     req.GroupID,
-		PayerID:     payload.UserID,
-		Amount:      req.Amount,
+	expenseTx, err := s.store.CreateExpense(ctx, db.CreateExpenseParams{
+		MemberID:    req.MemberID,
+		Amount:      strconv.FormatInt(req.Amount, 10),
 		Description: req.Description,
 		Date:        date,
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, expenseTx)
+	ctx.JSON(http.StatusOK, expenseTx)
 }
 
 type listExpensesRequest struct {
-	GroupID int64 `uri:"groupId" binding:"required"`
+	GroupID int32 `uri:"groupId" binding:"required"`
 }
 
 func (s *Server) listExpenses(c *gin.Context) {

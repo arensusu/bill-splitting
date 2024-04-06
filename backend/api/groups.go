@@ -34,7 +34,7 @@ func (s *Server) createGroup(c *gin.Context) {
 }
 
 type getGroupRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
+	ID int32 `uri:"id" binding:"required,min=1"`
 }
 
 func (s *Server) getGroup(c *gin.Context) {

@@ -12,7 +12,7 @@ import (
 )
 
 type createGroupInvitationParams struct {
-	GroupID int64 `json:"group_id"`
+	MemberID int32 `json:"groupId"`
 }
 
 func (s *Server) createGroupInvitation(ctx *gin.Context) {
@@ -24,25 +24,20 @@ func (s *Server) createGroupInvitation(ctx *gin.Context) {
 
 	payload := ctx.MustGet("payload").(*token.JWTPayload)
 
-	_, err := s.store.GetGroupMember(ctx, db.GetGroupMemberParams{
-		GroupID: req.GroupID,
-		UserID:  payload.UserID,
-	})
-
+	member, err := s.store.GetMember(ctx, req.MemberID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusForbidden, gin.H{"error": errors.New("user is not a member of the group")})
-			return
-		}
-
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if payload.UserID != member.UserID {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized user"})
 		return
 	}
 
 	code := helper.RandomString(8)
 	invite, err := s.store.CreateGroupInvitation(ctx, db.CreateGroupInvitationParams{
 		Code:    code,
-		GroupID: req.GroupID,
+		GroupID: member.GroupID,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

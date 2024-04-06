@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func newTestServer(t *testing.T, store db.Store) *Server {
+func newTestServer(store db.Store) *Server {
 	secretKey := "secret"
 	server := NewServer(store, secretKey)
 	return server

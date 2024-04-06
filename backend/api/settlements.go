@@ -9,7 +9,7 @@ import (
 )
 
 type replaceSettlementRequest struct {
-	GroupID int64 `json:"groupId" binding:"required"`
+	GroupID int32 `json:"groupId" binding:"required"`
 }
 
 func (s *Server) replaceSettlement(c *gin.Context) {
@@ -29,9 +29,8 @@ func (s *Server) replaceSettlement(c *gin.Context) {
 }
 
 type completeSettlementRequest struct {
-	GroupID int64  `uri:"groupId" binding:"required"`
-	PayerID string `uri:"payerId" binding:"required"`
-	PayeeID string `uri:"payeeId" binding:"required"`
+	PayerID int32 `uri:"payerId" binding:"required"`
+	PayeeID int32 `uri:"payeeId" binding:"required"`
 }
 
 func (s *Server) completeSettlement(c *gin.Context) {
@@ -42,10 +41,10 @@ func (s *Server) completeSettlement(c *gin.Context) {
 		return
 	}
 
-	err := s.store.DeleteSettlement(c, db.DeleteSettlementParams{
-		GroupID: req.GroupID,
+	_, err := s.store.UpdateSettlement(c, db.UpdateSettlementParams{
 		PayerID: req.PayerID,
 		PayeeID: req.PayeeID,
+		Amount:  "0",
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

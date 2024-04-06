@@ -20,7 +20,7 @@ type JWTPayload struct {
 	jwt.RegisteredClaims
 }
 
-func (jwtMaker *JWTMaker) CreateToken(userID string, duration time.Duration) (string, JWTPayload, error) {
+func (jwtMaker *JWTMaker) CreateToken(userID string, duration time.Duration) (string, *JWTPayload, error) {
 	payload := JWTPayload{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -32,7 +32,7 @@ func (jwtMaker *JWTMaker) CreateToken(userID string, duration time.Duration) (st
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, &payload)
 
 	token, err := jwtToken.SignedString([]byte(jwtMaker.secretKey))
-	return token, payload, err
+	return token, &payload, err
 }
 
 func (jwtMaker *JWTMaker) VerifyToken(token string) (*JWTPayload, error) {
@@ -41,7 +41,6 @@ func (jwtMaker *JWTMaker) VerifyToken(token string) (*JWTPayload, error) {
 		if !ok {
 			return nil, jwt.ErrSignatureInvalid
 		}
-
 		return []byte(jwtMaker.secretKey), nil
 	}
 

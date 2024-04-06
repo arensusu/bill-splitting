@@ -16,22 +16,22 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func requireBodyMatchGroupMember(t *testing.T, member db.GroupMember, body *bytes.Buffer) {
+func requireBodyMatchMember(t *testing.T, member db.Member, body *bytes.Buffer) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
-	var gotMember db.GroupMember
+	var gotMember db.Member
 	err = json.Unmarshal(data, &gotMember)
 
 	require.NoError(t, err)
 	require.Equal(t, member, gotMember)
 }
 
-func requireBodyMatchGroupMembers(t *testing.T, members []db.GroupMember, body *bytes.Buffer) {
+func requireBodyMatchGroupMembers(t *testing.T, members []db.Member, body *bytes.Buffer) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
-	var gotMembers []db.GroupMember
+	var gotMembers []db.Member
 	err = json.Unmarshal(data, &gotMembers)
 
 	require.NoError(t, err)
@@ -121,7 +121,7 @@ func requireBodyMatchGroupMembers(t *testing.T, members []db.GroupMember, body *
 func TestListGroupMembers(t *testing.T) {
 	user := randomUser()
 	group := randomGroup()
-	groupMember := db.GroupMember{
+	groupMember := db.Member{
 		GroupID: group.ID,
 		UserID:  user.ID,
 	}
@@ -137,20 +137,20 @@ func TestListGroupMembers(t *testing.T) {
 	}{
 		{
 			name:    "OK",
-			groupID: group.ID,
+			groupID: 1,
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
-				mockStore.EXPECT().ListGroupMembers(gomock.Any(), gomock.Eq(group.ID)).Times(1).Return([]db.GroupMember{groupMember}, nil)
+				mockStore.EXPECT().ListMembersOfGroup(gomock.Any(), gomock.Eq(1)).Times(1).Return([]db.Member{groupMember}, nil)
 			},
 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recoder.Code)
-				requireBodyMatchGroupMembers(t, []db.GroupMember{groupMember}, recoder.Body)
+				requireBodyMatchGroupMembers(t, []db.Member{groupMember}, recoder.Body)
 			},
 		},
 		{
 			name:    "InternalError",
-			groupID: group.ID,
+			groupID: 1,
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
-				mockStore.EXPECT().ListGroupMembers(gomock.Any(), gomock.Eq(group.ID)).Times(1).Return([]db.GroupMember{}, sql.ErrConnDone)
+				mockStore.EXPECT().ListMembersOfGroup(gomock.Any(), gomock.Eq(1)).Times(1).Return([]db.Member{}, sql.ErrConnDone)
 			},
 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recoder.Code)
@@ -160,7 +160,7 @@ func TestListGroupMembers(t *testing.T) {
 			name:    "BadRequest",
 			groupID: 0,
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
-				mockStore.EXPECT().ListGroupMembers(gomock.Any(), gomock.Any()).Times(0)
+				mockStore.EXPECT().ListMembersOfGroup(gomock.Any(), gomock.Any()).Times(0)
 			},
 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recoder.Code)
@@ -175,7 +175,7 @@ func TestListGroupMembers(t *testing.T) {
 			mockStore := mockdb.NewMockStore(ctrl)
 			tc.buildStub(t, mockStore)
 
-			server := newTestServer(t, mockStore)
+			server := newTestServer(mockStore)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/group-members/%d", tc.groupID)

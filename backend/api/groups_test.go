@@ -19,7 +19,7 @@ import (
 
 func randomGroup() db.Group {
 	return db.Group{
-		ID:   helper.RandomInt64(1, 1000),
+		ID:   int32(helper.RandomInt64(1, 1000)),
 		Name: helper.RandomString(10),
 	}
 }
@@ -43,7 +43,7 @@ func TestGetGroupAPI(t *testing.T) {
 
 	testCases := []struct {
 		name          string
-		groupID       int64
+		groupID       int32
 		buildStub     func(t *testing.T, mockStore *mockdb.MockStore)
 		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
 	}{
@@ -97,7 +97,7 @@ func TestGetGroupAPI(t *testing.T) {
 			mockStore := mockdb.NewMockStore(ctrl)
 			tc.buildStub(t, mockStore)
 
-			server := newTestServer(t, mockStore)
+			server := newTestServer(mockStore)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/groups/%d", tc.groupID)
@@ -126,7 +126,7 @@ func TestCreateGroupAPI(t *testing.T) {
 			name: "OK",
 			body: createGroupRequest{Name: group.Name},
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
-				mockStore.EXPECT().CreateGroup(gomock.Any(), gomock.Eq(group.Name)).Times(1).Return(group, nil)
+				mockStore.EXPECT().CreateGroupTx(gomock.Any(), gomock.Any()).Times(1).Return(group, nil)
 			},
 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recoder.Code)
@@ -162,7 +162,7 @@ func TestCreateGroupAPI(t *testing.T) {
 			mockStore := mockdb.NewMockStore(ctrl)
 			tc.buildStub(t, mockStore)
 
-			server := newTestServer(t, mockStore)
+			server := newTestServer(mockStore)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)

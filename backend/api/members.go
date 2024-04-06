@@ -40,7 +40,7 @@ func (s *Server) createGroupMember(ctx *gin.Context) {
 
 	payload := ctx.MustGet("payload").(*token.JWTPayload)
 
-	member, err := s.store.CreateGroupMember(ctx, db.CreateGroupMemberParams{
+	member, err := s.store.CreateMember(ctx, db.CreateMemberParams{
 		GroupID: invite.GroupID,
 		UserID:  payload.UserID,
 	})
@@ -53,7 +53,7 @@ func (s *Server) createGroupMember(ctx *gin.Context) {
 }
 
 type listGroupMembersRequest struct {
-	GroupID int64 `uri:"groupId" binding:"required,min=1"`
+	GroupID int32 `uri:"groupId" binding:"required,min=1"`
 }
 
 func (s *Server) listGroupMembers(ctx *gin.Context) {
@@ -63,7 +63,7 @@ func (s *Server) listGroupMembers(ctx *gin.Context) {
 		return
 	}
 
-	members, err := s.store.ListGroupMembers(ctx, req.GroupID)
+	members, err := s.store.ListMembersOfGroup(ctx, req.GroupID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
