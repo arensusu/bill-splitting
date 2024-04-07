@@ -35,10 +35,9 @@ func NewServer(store db.Store, secretKey string) *Server {
 	authRouter.GET("/groups/:id", server.getGroup)
 	authRouter.GET("/groups", server.listGroups)
 
-	authRouter.POST("/groups/invite", server.createGroupInvitation)
-	authRouter.GET("/groups/invite/:code", server.getGroupInvitation)
+	authRouter.POST("/group/invite", server.createGroupInvitation)
+	authRouter.GET("/groups/invite/:code", server.acceptGroupInvitation)
 
-	authRouter.POST("/groups/members", server.createGroupMember)
 	authRouter.GET("/groups/members/:groupId", server.listGroupMembers)
 
 	authRouter.POST("/expenses", server.createExpense)

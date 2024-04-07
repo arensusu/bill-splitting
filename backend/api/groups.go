@@ -21,7 +21,7 @@ func (s *Server) createGroup(c *gin.Context) {
 	}
 
 	payload := c.MustGet("payload").(*token.JWTPayload)
-	user, err := s.store.CreateGroupTx(c, db.CreateGroupTxParams{
+	group, err := s.store.CreateGroupTx(c, db.CreateGroupTxParams{
 		Name:   req.Name,
 		UserID: payload.UserID,
 	})
@@ -30,7 +30,7 @@ func (s *Server) createGroup(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, group)
 }
 
 type getGroupRequest struct {
@@ -44,7 +44,7 @@ func (s *Server) getGroup(c *gin.Context) {
 		return
 	}
 
-	user, err := s.store.GetGroup(c, req.ID)
+	group, err := s.store.GetGroup(c, req.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -54,7 +54,7 @@ func (s *Server) getGroup(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, group)
 }
 
 func (s *Server) listGroups(c *gin.Context) {

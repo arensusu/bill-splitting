@@ -12,7 +12,7 @@ import (
 )
 
 type createGroupInvitationParams struct {
-	MemberID int32 `json:"groupId"`
+	GroupID int32 `json:"groupId"`
 }
 
 func (s *Server) createGroupInvitation(ctx *gin.Context) {
@@ -22,22 +22,23 @@ func (s *Server) createGroupInvitation(ctx *gin.Context) {
 		return
 	}
 
-	payload := ctx.MustGet("payload").(*token.JWTPayload)
+	// TODO: check membership
+	// payload := ctx.MustGet("payload").(*token.JWTPayload)
 
-	member, err := s.store.GetMember(ctx, req.MemberID)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	if payload.UserID != member.UserID {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized user"})
-		return
-	}
+	// member, err := s.store.GetMember(ctx, req.MemberID)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	return
+	// }
+	// if payload.UserID != member.UserID {
+	// 	ctx.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized user"})
+	// 	return
+	// }
 
 	code := helper.RandomString(8)
 	invite, err := s.store.CreateGroupInvitation(ctx, db.CreateGroupInvitationParams{
 		Code:    code,
-		GroupID: member.GroupID,
+		GroupID: req.GroupID,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -47,12 +48,12 @@ func (s *Server) createGroupInvitation(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, invite)
 }
 
-type getGroupInvitationRequest struct {
+type acceptGroupInvitationRequest struct {
 	Code string `uri:"code" binding:"required"`
 }
 
-func (s *Server) getGroupInvitation(ctx *gin.Context) {
-	var req getGroupInvitationRequest
+func (s *Server) acceptGroupInvitation(ctx *gin.Context) {
+	var req acceptGroupInvitationRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -69,5 +70,22 @@ func (s *Server) getGroupInvitation(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, invite)
+	err = s.store.DeleteGroupInvitation(ctx, req.Code)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	payload := ctx.MustGet("payload").(*token.JWTPayload)
+
+	member, err := s.store.CreateMember(ctx, db.CreateMemberParams{
+		GroupID: invite.GroupID,
+		UserID:  payload.UserID,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, member)
 }
