@@ -8,12 +8,14 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
 func TestReplaceSettlementAPI(t *testing.T) {
+	user := randomUser()
 	group := randomGroup()
 
 	ctrl := gomock.NewController(t)
@@ -73,6 +75,7 @@ func TestReplaceSettlementAPI(t *testing.T) {
 			url := "/settlements"
 			req := httptest.NewRequest(http.MethodPut, url, bytes.NewReader(data))
 
+			addAuthentication(t, req, server.tokenMaker, user.ID, time.Minute)
 			server.router.ServeHTTP(recorder, req)
 			tc.checkResponse(t, recorder)
 		})

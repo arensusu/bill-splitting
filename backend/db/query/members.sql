@@ -3,6 +3,11 @@ INSERT INTO members (group_id, user_id)
 VALUES ($1, $2)
 RETURNING *;
 
+-- name: GetMembership :one
+SELECT *
+FROM members
+WHERE group_id = $1 AND user_id = $2;
+
 -- name: GetMember :one
 SELECT *
 FROM members

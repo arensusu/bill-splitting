@@ -25,6 +25,7 @@ type Querier interface {
 	GetGroup(ctx context.Context, id int32) (Group, error)
 	GetGroupInvitation(ctx context.Context, code string) (GroupInvitation, error)
 	GetMember(ctx context.Context, id int32) (Member, error)
+	GetMembership(ctx context.Context, arg GetMembershipParams) (Member, error)
 	GetSettlement(ctx context.Context, arg GetSettlementParams) (Settlement, error)
 	GetUser(ctx context.Context, id string) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)

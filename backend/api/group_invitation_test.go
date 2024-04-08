@@ -130,6 +130,10 @@ func TestCreateGroupInvitation(t *testing.T) {
 			name: "OK",
 			body: createGroupInvitationParams{GroupID: group.ID},
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
+				mockStore.EXPECT().GetMembership(gomock.Any(), gomock.Any()).Times(1).Return(db.Member{
+					GroupID: group.ID,
+					UserID:  user.ID,
+				}, nil)
 				mockStore.EXPECT().CreateGroupInvitation(gomock.Any(), gomock.Any()).Times(1).Return(invitationCode, nil)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {

@@ -11,7 +11,7 @@ import (
 )
 
 type createExpenseRequest struct {
-	MemberID    int32  `json:"memberId" binding:"required"`
+	GroupID     int32  `json:"groupId" binding:"required"`
 	Amount      int64  `json:"amount" binding:"required"`
 	Description string `json:"description"`
 	Date        string `json:"date" binding:"required"`
@@ -26,7 +26,10 @@ func (s *Server) createExpense(ctx *gin.Context) {
 
 	payload := ctx.MustGet("payload").(*token.JWTPayload)
 
-	member, err := s.store.GetMember(ctx, req.MemberID)
+	member, err := s.store.GetMembership(ctx, db.GetMembershipParams{
+		GroupID: req.GroupID,
+		UserID:  payload.UserID,
+	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -43,7 +46,7 @@ func (s *Server) createExpense(ctx *gin.Context) {
 	}
 
 	expenseTx, err := s.store.CreateExpense(ctx, db.CreateExpenseParams{
-		MemberID:    req.MemberID,
+		MemberID:    member.ID,
 		Amount:      strconv.FormatInt(req.Amount, 10),
 		Description: req.Description,
 		Date:        date,

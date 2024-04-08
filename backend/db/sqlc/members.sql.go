@@ -55,6 +55,24 @@ func (q *Queries) GetMember(ctx context.Context, id int32) (Member, error) {
 	return i, err
 }
 
+const getMembership = `-- name: GetMembership :one
+SELECT id, group_id, user_id
+FROM members
+WHERE group_id = $1 AND user_id = $2
+`
+
+type GetMembershipParams struct {
+	GroupID int32  `json:"group_id"`
+	UserID  string `json:"user_id"`
+}
+
+func (q *Queries) GetMembership(ctx context.Context, arg GetMembershipParams) (Member, error) {
+	row := q.db.QueryRowContext(ctx, getMembership, arg.GroupID, arg.UserID)
+	var i Member
+	err := row.Scan(&i.ID, &i.GroupID, &i.UserID)
+	return i, err
+}
+
 const listMembersOfGroup = `-- name: ListMembersOfGroup :many
 SELECT id, group_id, user_id
 FROM members
