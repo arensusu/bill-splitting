@@ -2,9 +2,8 @@ package api
 
 import (
 	mockdb "bill-splitting/db/mock"
-	"bytes"
 	"database/sql"
-	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -23,38 +22,38 @@ func TestReplaceSettlementAPI(t *testing.T) {
 
 	testCases := []struct {
 		name          string
-		body          replaceSettlementRequest
+		groupID       int32
 		buildStubs    func(store *mockdb.MockStore)
-		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
-			name: "OK",
-			body: replaceSettlementRequest{GroupID: group.ID},
+			name:    "OK",
+			groupID: group.ID,
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().CreateSettlementsTx(gomock.Any(), gomock.Eq(group.ID)).Times(1)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusOK, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
 			},
 		},
 		{
-			name: "InternalError",
-			body: replaceSettlementRequest{GroupID: group.ID},
+			name:    "InternalError",
+			groupID: group.ID,
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().CreateSettlementsTx(gomock.Any(), gomock.Eq(group.ID)).Times(1).Return(nil, sql.ErrConnDone)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusInternalServerError, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
 		{
-			name: "BadRequest",
-			body: replaceSettlementRequest{GroupID: 0},
+			name:    "BadRequest",
+			groupID: 0,
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().CreateSettlementsTx(gomock.Any(), gomock.Any()).Times(0)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 	}
@@ -69,11 +68,8 @@ func TestReplaceSettlementAPI(t *testing.T) {
 			server := newTestServer(mockStore)
 			recorder := httptest.NewRecorder()
 
-			data, err := json.Marshal(tc.body)
-			require.NoError(t, err)
-
-			url := "/settlements"
-			req := httptest.NewRequest(http.MethodPut, url, bytes.NewReader(data))
+			url := fmt.Sprintf("/api/v1/groups/%d/settlements", tc.groupID)
+			req := httptest.NewRequest(http.MethodPut, url, nil)
 
 			addAuthentication(t, req, server.tokenMaker, user.ID, time.Minute)
 			server.router.ServeHTTP(recorder, req)

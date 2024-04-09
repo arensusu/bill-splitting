@@ -39,7 +39,7 @@ func randomUser() db.User {
 // 		name          string
 // 		body          createUserRequest
 // 		buildStub     func(t *testing.T, mockStore *mockdb.MockStore)
-// 		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
+// 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 // 	}{
 // 		{
 // 			name: "OK",
@@ -51,9 +51,9 @@ func randomUser() db.User {
 // 				}
 // 				mockStore.EXPECT().CreateUser(gomock.Any(), gomock.Eq(param)).Times(1).Return(user, nil)
 // 			},
-// 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-// 				require.Equal(t, http.StatusOK, recoder.Code)
-// 				requireBodyMatchUser(t, user, recoder.Body)
+// 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+// 				require.Equal(t, http.StatusOK, recorder.Code)
+// 				requireBodyMatchUser(t, user, recorder.Body)
 // 			},
 // 		},
 // 		{
@@ -62,8 +62,8 @@ func randomUser() db.User {
 // 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 // 				mockStore.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(1).Return(db.User{}, sql.ErrConnDone)
 // 			},
-// 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-// 				require.Equal(t, http.StatusInternalServerError, recoder.Code)
+// 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+// 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 // 			},
 // 		},
 // 		{
@@ -72,8 +72,8 @@ func randomUser() db.User {
 // 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 // 				mockStore.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(0)
 // 			},
-// 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-// 				require.Equal(t, http.StatusBadRequest, recoder.Code)
+// 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+// 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 // 			},
 // 		},
 // 	}
@@ -108,7 +108,7 @@ func randomUser() db.User {
 // 		name          string
 // 		userID        int64
 // 		buildStub     func(t *testing.T, mockStore *mockdb.MockStore)
-// 		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
+// 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 // 	}{
 // 		{
 // 			name:   "OK",
@@ -116,9 +116,9 @@ func randomUser() db.User {
 // 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 // 				mockStore.EXPECT().GetUser(gomock.Any(), gomock.Eq(user.ID)).Times(1).Return(user, nil)
 // 			},
-// 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-// 				require.Equal(t, http.StatusOK, recoder.Code)
-// 				requireBodyMatchUser(t, user, recoder.Body)
+// 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+// 				require.Equal(t, http.StatusOK, recorder.Code)
+// 				requireBodyMatchUser(t, user, recorder.Body)
 // 			},
 // 		},
 // 		{
@@ -127,8 +127,8 @@ func randomUser() db.User {
 // 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 // 				mockStore.EXPECT().GetUser(gomock.Any(), gomock.Eq(user.ID)).Times(1).Return(db.User{}, sql.ErrNoRows)
 // 			},
-// 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-// 				require.Equal(t, http.StatusNotFound, recoder.Code)
+// 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+// 				require.Equal(t, http.StatusNotFound, recorder.Code)
 // 			},
 // 		},
 // 		{
@@ -137,8 +137,8 @@ func randomUser() db.User {
 // 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 // 				mockStore.EXPECT().GetUser(gomock.Any(), gomock.Eq(user.ID)).Times(1).Return(db.User{}, sql.ErrConnDone)
 // 			},
-// 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-// 				require.Equal(t, http.StatusInternalServerError, recoder.Code)
+// 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+// 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 // 			},
 // 		},
 // 		{
@@ -147,8 +147,8 @@ func randomUser() db.User {
 // 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 // 				mockStore.EXPECT().GetUser(gomock.Any(), gomock.Any()).Times(0)
 // 			},
-// 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-// 				require.Equal(t, http.StatusBadRequest, recoder.Code)
+// 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+// 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 // 			},
 // 		},
 // 	}
@@ -158,14 +158,14 @@ func randomUser() db.User {
 // 		t.Run(tc.name, func(t *testing.T) {
 // 			tc.buildStub(t, mockStore)
 // 			server := newTestServer(t, mockStore)
-// 			recoder := httptest.NewRecorder()
+// 			recorder := httptest.NewRecorder()
 
 // 			url := fmt.Sprintf("/users/%d", tc.userID)
 // 			request, err := http.NewRequest(http.MethodGet, url, nil)
 // 			require.NoError(t, err)
 
-// 			server.router.ServeHTTP(recoder, request)
-// 			tc.checkResponse(t, recoder)
+// 			server.router.ServeHTTP(recorder, request)
+// 			tc.checkResponse(t, recorder)
 // 		})
 // 	}
 // }

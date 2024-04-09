@@ -25,14 +25,15 @@ func TestCreateExpenseAPI(t *testing.T) {
 
 	testCases := []struct {
 		name          string
-		body          createExpenseRequest
+		groupID       int32
+		body          createExpenseJSONRequest
 		buildStub     func(t *testing.T, mockStore *mockdb.MockStore)
-		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
-			name: "OK",
-			body: createExpenseRequest{
-				GroupID:     1,
+			name:    "OK",
+			groupID: group.ID,
+			body: createExpenseJSONRequest{
 				Amount:      100,
 				Description: "test",
 				Date:        "2022-01-01",
@@ -44,14 +45,14 @@ func TestCreateExpenseAPI(t *testing.T) {
 				}, nil)
 				mockStore.EXPECT().CreateExpense(gomock.Any(), gomock.Any()).Times(1).Return(db.Expense{}, nil)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusOK, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code, recorder.Body)
 			},
 		},
 		{
-			name: "InternalErrorOfGetGroupMember",
-			body: createExpenseRequest{
-				GroupID:     group.ID,
+			name:    "InternalErrorOfGetGroupMember",
+			groupID: group.ID,
+			body: createExpenseJSONRequest{
 				Amount:      100,
 				Description: "test",
 				Date:        "2022-01-01",
@@ -59,14 +60,14 @@ func TestCreateExpenseAPI(t *testing.T) {
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().GetMembership(gomock.Any(), gomock.Any()).Times(1).Return(db.Member{}, sql.ErrConnDone)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusInternalServerError, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
 		{
-			name: "InternalErrorOfCreateExpenseTx",
-			body: createExpenseRequest{
-				GroupID:     group.ID,
+			name:    "InternalErrorOfCreateExpenseTx",
+			groupID: group.ID,
+			body: createExpenseJSONRequest{
 				Amount:      100,
 				Description: "test",
 				Date:        "2022-01-01",
@@ -78,14 +79,14 @@ func TestCreateExpenseAPI(t *testing.T) {
 				}, nil)
 				mockStore.EXPECT().CreateExpense(gomock.Any(), gomock.Any()).Times(1).Return(db.Expense{}, sql.ErrConnDone)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusInternalServerError, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
 		{
-			name: "BadRequest",
-			body: createExpenseRequest{
-				GroupID:     0,
+			name:    "BadRequest",
+			groupID: 0,
+			body: createExpenseJSONRequest{
 				Amount:      100,
 				Description: "test",
 				Date:        "2022-01-01",
@@ -94,8 +95,8 @@ func TestCreateExpenseAPI(t *testing.T) {
 				mockStore.EXPECT().GetMember(gomock.Any(), gomock.Any()).Times(0)
 				mockStore.EXPECT().CreateExpense(gomock.Any(), gomock.Any()).Times(0)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 	}
@@ -113,7 +114,7 @@ func TestCreateExpenseAPI(t *testing.T) {
 			data, err := json.Marshal(tc.body)
 			require.NoError(t, err)
 
-			url := "/expenses"
+			url := fmt.Sprintf("/api/v1/groups/%d/expenses", tc.groupID)
 			req := httptest.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 
 			addAuthentication(t, req, server.tokenMaker, user.ID, time.Minute)
@@ -134,7 +135,7 @@ func TestListExpensesAPI(t *testing.T) {
 		name          string
 		groupID       int32
 		buildStub     func(t *testing.T, mockStore *mockdb.MockStore)
-		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:    "OK",
@@ -142,8 +143,8 @@ func TestListExpensesAPI(t *testing.T) {
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().ListExpenses(gomock.Any(), gomock.Eq(group.ID)).Times(1)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusOK, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
 			},
 		},
 		{
@@ -152,8 +153,8 @@ func TestListExpensesAPI(t *testing.T) {
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().ListExpenses(gomock.Any(), gomock.Eq(group.ID)).Times(1).Return(nil, sql.ErrConnDone)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusInternalServerError, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
 		{
@@ -162,8 +163,8 @@ func TestListExpensesAPI(t *testing.T) {
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().ListExpenses(gomock.Any(), gomock.Any()).Times(0)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 	}
@@ -178,7 +179,7 @@ func TestListExpensesAPI(t *testing.T) {
 			server := newTestServer(mockStore)
 			recorder := httptest.NewRecorder()
 
-			url := fmt.Sprintf("/expenses/%d", tc.groupID)
+			url := fmt.Sprintf("/api/v1/groups/%d/expenses", tc.groupID)
 			req := httptest.NewRequest(http.MethodGet, url, nil)
 
 			addAuthentication(t, req, server.tokenMaker, user.ID, time.Minute)

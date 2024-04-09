@@ -43,7 +43,7 @@ func TestListGroupMembers(t *testing.T) {
 		name          string
 		groupID       int32
 		buildStub     func(t *testing.T, mockStore *mockdb.MockStore)
-		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:    "OK",
@@ -51,9 +51,9 @@ func TestListGroupMembers(t *testing.T) {
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().ListMembersOfGroup(gomock.Any(), gomock.Eq(group.ID)).Times(1).Return([]db.Member{groupMember}, nil)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusOK, recoder.Code)
-				requireBodyMatchGroupMembers(t, []db.Member{groupMember}, recoder.Body)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchGroupMembers(t, []db.Member{groupMember}, recorder.Body)
 			},
 		},
 		{
@@ -62,8 +62,8 @@ func TestListGroupMembers(t *testing.T) {
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().ListMembersOfGroup(gomock.Any(), gomock.Eq(group.ID)).Times(1).Return([]db.Member{}, sql.ErrConnDone)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusInternalServerError, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
 		{
@@ -72,8 +72,8 @@ func TestListGroupMembers(t *testing.T) {
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().ListMembersOfGroup(gomock.Any(), gomock.Any()).Times(0)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 	}
@@ -88,7 +88,7 @@ func TestListGroupMembers(t *testing.T) {
 			server := newTestServer(mockStore)
 			recorder := httptest.NewRecorder()
 
-			url := fmt.Sprintf("/groups/members/%d", tc.groupID)
+			url := fmt.Sprintf("/api/v1/groups/%d/members", tc.groupID)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 

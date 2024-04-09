@@ -4,6 +4,7 @@ import (
 	"bill-splitting/api"
 	"bill-splitting/auth"
 	db "bill-splitting/db/sqlc"
+	"bill-splitting/token"
 	"database/sql"
 	"fmt"
 	"log"
@@ -30,6 +31,7 @@ func main() {
 	auth.NewAuth()
 
 	store := db.NewStore(conn)
-	server := api.NewServer(store, authSecret)
+	tokenMaker := token.NewJWTMaker(authSecret)
+	server := api.NewServer(store, tokenMaker)
 	server.Start("0.0.0.0:8080")
 }

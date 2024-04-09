@@ -9,12 +9,12 @@ import (
 )
 
 type replaceSettlementRequest struct {
-	GroupID int32 `json:"groupId" binding:"required"`
+	GroupID int32 `uri:"groupId" binding:"required"`
 }
 
 func (s *Server) replaceSettlement(c *gin.Context) {
 	var req replaceSettlementRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindUri(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

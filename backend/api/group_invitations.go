@@ -12,17 +12,16 @@ import (
 )
 
 type createGroupInvitationParams struct {
-	GroupID int32 `json:"groupId"`
+	GroupID int32 `uri:"groupId" binding:"required,min=1"`
 }
 
 func (s *Server) createGroupInvitation(ctx *gin.Context) {
 	var req createGroupInvitationParams
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// TODO: check membership
 	payload := ctx.MustGet("payload").(*token.JWTPayload)
 
 	member, err := s.store.GetMembership(ctx, db.GetMembershipParams{

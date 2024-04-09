@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 type Server struct {
@@ -14,37 +15,50 @@ type Server struct {
 	tokenMaker *token.JWTMaker
 }
 
-func NewServer(store db.Store, secretKey string) *Server {
-	tokenMaker := token.NewJWTMaker(secretKey)
+func NewServer(store db.Store, tokenMaker *token.JWTMaker) *Server {
 	server := &Server{
 		store:      store,
 		tokenMaker: tokenMaker,
 	}
 	router := gin.Default()
 
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://node-dev:3000", "http://localhost:3000"}
+	// Externalize CORS configuration
+	config := cors.Config{
+		AllowOrigins: []string{"http://node-dev:3000", "http://localhost:3000"},
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders: []string{"Origin", "Content-Type", "Authorization"},
+	}
 	router.Use(cors.New(config))
 
-	router.GET("/auth/:provider", server.auth)
-	router.GET("/auth/:provider/callback", server.authCallback)
+	// Setup API versioning
+	api := router.Group("/api/v1")
+	{
+		api.GET("/auth/:provider", server.auth)
+		api.GET("/auth/:provider/callback", server.authCallback)
 
-	authRouter := router.Group("/").Use(authMiddleware(server.tokenMaker))
+		// Authenticated routes
+		authRoutes := api.Group("")
+		authRoutes.Use(authMiddleware(server.tokenMaker))
 
-	authRouter.POST("/groups", server.createGroup)
-	authRouter.GET("/groups/:id", server.getGroup)
-	authRouter.GET("/groups", server.listGroups)
+		authRoutes.GET("/invites/:code", server.acceptGroupInvitation)
 
-	authRouter.POST("/group/invite", server.createGroupInvitation)
-	authRouter.GET("/groups/invite/:code", server.acceptGroupInvitation)
+		authRoutes.DELETE("/settlements/:payerId/:payeeId", server.completeSettlement)
 
-	authRouter.GET("/groups/members/:groupId", server.listGroupMembers)
+		groupRoutes := authRoutes.Group("/groups")
 
-	authRouter.POST("/expenses", server.createExpense)
-	authRouter.GET("/expenses/:groupId", server.listExpenses)
+		groupRoutes.POST("", server.createGroup)
+		groupRoutes.GET("/:groupId", server.getGroup)
+		groupRoutes.GET("", server.listGroups)
 
-	authRouter.PUT("/settlements", server.replaceSettlement)
-	authRouter.DELETE("/settlements/:groupId/:payerId/:payeeId", server.completeSettlement)
+		groupRoutes.POST("/:groupId/invites", server.createGroupInvitation)
+
+		groupRoutes.GET("/:groupId/members", server.listGroupMembers)
+
+		groupRoutes.POST("/:groupId/expenses", server.createExpense)
+		groupRoutes.GET("/:groupId/expenses", server.listExpenses)
+
+		groupRoutes.PUT("/:groupId/settlements", server.replaceSettlement)
+	}
 
 	server.router = router
 	return server

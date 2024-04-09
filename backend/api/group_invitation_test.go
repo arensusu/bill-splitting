@@ -6,6 +6,7 @@ import (
 	"bill-splitting/helper"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -44,7 +45,7 @@ func TestAcceptGroupInvitation(t *testing.T) {
 		name           string
 		invitationCode string
 		buildStub      func(t *testing.T, mockStore *mockdb.MockStore)
-		checkResponse  func(t *testing.T, recoder *httptest.ResponseRecorder)
+		checkResponse  func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:           "OK",
@@ -71,9 +72,9 @@ func TestAcceptGroupInvitation(t *testing.T) {
 					Times(1).
 					Return(member, nil)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusOK, recoder.Code)
-				requireBodyMatchMember(t, member, recoder.Body)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchMember(t, member, recorder.Body)
 			},
 		},
 	}
@@ -88,7 +89,7 @@ func TestAcceptGroupInvitation(t *testing.T) {
 			server := newTestServer(mockStore)
 			recorder := httptest.NewRecorder()
 
-			url := "/groups/invite/" + tc.invitationCode
+			url := "/api/v1/invites/" + tc.invitationCode
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
@@ -150,11 +151,9 @@ func TestCreateGroupInvitation(t *testing.T) {
 
 			server := newTestServer(mockStore)
 			recorder := httptest.NewRecorder()
-			data, err := json.Marshal(tc.body)
-			require.NoError(t, err)
 
-			url := "/group/invite"
-			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+			url := fmt.Sprintf("/api/v1/groups/%d/invites", tc.body.GroupID)
+			request, err := http.NewRequest(http.MethodPost, url, nil)
 			require.NoError(t, err)
 
 			addAuthentication(t, request, server.tokenMaker, user.ID, time.Minute)

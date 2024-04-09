@@ -10,16 +10,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type createExpenseRequest struct {
-	GroupID     int32  `json:"groupId" binding:"required"`
+type createExpenseUriRequest struct {
+	GroupID int32 `uri:"groupId" binding:"required"`
+}
+type createExpenseJSONRequest struct {
 	Amount      int64  `json:"amount" binding:"required"`
 	Description string `json:"description"`
 	Date        string `json:"date" binding:"required"`
 }
 
 func (s *Server) createExpense(ctx *gin.Context) {
-	var req createExpenseRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	var uriRequest createExpenseUriRequest
+	if err := ctx.ShouldBindUri(&uriRequest); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var jsonRequest createExpenseJSONRequest
+	if err := ctx.ShouldBindJSON(&jsonRequest); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -27,7 +35,7 @@ func (s *Server) createExpense(ctx *gin.Context) {
 	payload := ctx.MustGet("payload").(*token.JWTPayload)
 
 	member, err := s.store.GetMembership(ctx, db.GetMembershipParams{
-		GroupID: req.GroupID,
+		GroupID: uriRequest.GroupID,
 		UserID:  payload.UserID,
 	})
 	if err != nil {
@@ -39,7 +47,7 @@ func (s *Server) createExpense(ctx *gin.Context) {
 		return
 	}
 
-	date, err := time.Parse("2006-01-02", req.Date)
+	date, err := time.Parse("2006-01-02", jsonRequest.Date)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -47,8 +55,8 @@ func (s *Server) createExpense(ctx *gin.Context) {
 
 	expenseTx, err := s.store.CreateExpense(ctx, db.CreateExpenseParams{
 		MemberID:    member.ID,
-		Amount:      strconv.FormatInt(req.Amount, 10),
-		Description: req.Description,
+		Amount:      strconv.FormatInt(jsonRequest.Amount, 10),
+		Description: jsonRequest.Description,
 		Date:        date,
 	})
 	if err != nil {

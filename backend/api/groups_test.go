@@ -47,7 +47,7 @@ func TestGetGroupAPI(t *testing.T) {
 		name          string
 		groupID       int32
 		buildStub     func(t *testing.T, mockStore *mockdb.MockStore)
-		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:    "OK",
@@ -55,9 +55,9 @@ func TestGetGroupAPI(t *testing.T) {
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().GetGroup(gomock.Any(), gomock.Eq(group.ID)).Times(1).Return(group, nil)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusOK, recoder.Code)
-				requireBodyMatchGroup(t, group, recoder.Body)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchGroup(t, group, recorder.Body)
 			},
 		},
 		{
@@ -66,8 +66,8 @@ func TestGetGroupAPI(t *testing.T) {
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().GetGroup(gomock.Any(), gomock.Eq(group.ID)).Times(1).Return(db.Group{}, sql.ErrNoRows)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusNotFound, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
 			},
 		},
 		{
@@ -76,8 +76,8 @@ func TestGetGroupAPI(t *testing.T) {
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().GetGroup(gomock.Any(), gomock.Eq(group.ID)).Times(1).Return(db.Group{}, sql.ErrConnDone)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusInternalServerError, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
 		{
@@ -86,8 +86,8 @@ func TestGetGroupAPI(t *testing.T) {
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().GetGroup(gomock.Any(), gomock.Any()).Times(0)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 	}
@@ -102,7 +102,7 @@ func TestGetGroupAPI(t *testing.T) {
 			server := newTestServer(mockStore)
 			recorder := httptest.NewRecorder()
 
-			url := fmt.Sprintf("/groups/%d", tc.groupID)
+			url := fmt.Sprintf("/api/v1/groups/%d", tc.groupID)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
@@ -124,7 +124,7 @@ func TestCreateGroupAPI(t *testing.T) {
 		name          string
 		body          createGroupRequest
 		buildStub     func(t *testing.T, mockStore *mockdb.MockStore)
-		checkResponse func(t *testing.T, recoder *httptest.ResponseRecorder)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
@@ -132,9 +132,9 @@ func TestCreateGroupAPI(t *testing.T) {
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().CreateGroupTx(gomock.Any(), gomock.Any()).Times(1).Return(group, nil)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusOK, recoder.Code)
-				requireBodyMatchGroup(t, group, recoder.Body)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code, recorder.Body)
+				requireBodyMatchGroup(t, group, recorder.Body)
 			},
 		},
 		{
@@ -146,8 +146,8 @@ func TestCreateGroupAPI(t *testing.T) {
 					UserID: user.ID,
 				})).Times(1).Return(db.Group{}, sql.ErrConnDone)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusInternalServerError, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
 		{
@@ -156,8 +156,8 @@ func TestCreateGroupAPI(t *testing.T) {
 			buildStub: func(t *testing.T, mockStore *mockdb.MockStore) {
 				mockStore.EXPECT().CreateGroupTx(gomock.Any(), gomock.Any()).Times(0)
 			},
-			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recoder.Code)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 	}
@@ -175,7 +175,7 @@ func TestCreateGroupAPI(t *testing.T) {
 			data, err := json.Marshal(tc.body)
 			require.NoError(t, err)
 
-			url := "/groups"
+			url := "/api/v1/groups"
 			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 			require.NoError(t, err)
 
@@ -213,10 +213,11 @@ func TestListGroupsAPI(t *testing.T) {
 	server := newTestServer(mockStore)
 	recorder := httptest.NewRecorder()
 
-	request, err := http.NewRequest(http.MethodGet, "/groups", nil)
+	request, err := http.NewRequest(http.MethodGet, "/api/v1/groups", nil)
 	require.NoError(t, err)
 
 	addAuthentication(t, request, server.tokenMaker, user.ID, time.Minute)
 	server.router.ServeHTTP(recorder, request)
+	require.Equal(t, http.StatusOK, recorder.Code)
 	requireBodyMatchGroups(t, groups, recorder.Body)
 }

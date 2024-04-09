@@ -2,6 +2,7 @@ package api
 
 import (
 	db "bill-splitting/db/sqlc"
+	"bill-splitting/token"
 	"os"
 	"testing"
 
@@ -9,8 +10,8 @@ import (
 )
 
 func newTestServer(store db.Store) *Server {
-	secretKey := "secret"
-	server := NewServer(store, secretKey)
+	tokenMaker := token.NewJWTMaker("secret")
+	server := NewServer(store, tokenMaker)
 	return server
 }
 
