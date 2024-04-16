@@ -24,7 +24,7 @@ CREATE TABLE "expenses" (
   "member_id" int NOT NULL,
   "amount" decimal NOT NULL,
   "description" varchar(255) NOT NULL,
-  "date" date NOT NULL,
+  "date" timestamptz NOT NULL,
   "is_settled" bool DEFAULT false NOT NULL
 );
 

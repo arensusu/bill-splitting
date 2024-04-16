@@ -6,5 +6,8 @@ migrate-up:
 migrate-down:
 	migrate -path db/migration -database "postgres://$(DATABASE_USER):$(DATABASE_PASSWORD)@$(DATABASE_HOST):5432/$(DATABASE_NAME)?sslmode=disable" -verbose down
 
+migrate-drop:
+	migrate -path db/migration -database "postgres://$(DATABASE_USER):$(DATABASE_PASSWORD)@$(DATABASE_HOST):5432/$(DATABASE_NAME)?sslmode=disable" -verbose drop
+
 mockdb:
 	mockgen -package mockdb -destination db/mock/store.go bill-splitting/db/sqlc Store

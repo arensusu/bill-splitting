@@ -7,13 +7,14 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
 const createExpense = `-- name: CreateExpense :one
 INSERT INTO expenses (member_id, amount, description, date)
 VALUES ($1, $2, $3, $4)
-RETURNING id, member_id, amount, description, date, is_settled
+RETURNING id, member_id, amount, description, date, is_settled, category
 `
 
 type CreateExpenseParams struct {
@@ -38,6 +39,7 @@ func (q *Queries) CreateExpense(ctx context.Context, arg CreateExpenseParams) (E
 		&i.Description,
 		&i.Date,
 		&i.IsSettled,
+		&i.Category,
 	)
 	return i, err
 }
@@ -78,19 +80,20 @@ func (q *Queries) GetExpense(ctx context.Context, id int32) (GetExpenseRow, erro
 }
 
 const listExpenses = `-- name: ListExpenses :many
-SELECT expenses.id, member_id, amount, description, date, is_settled, members.id
+SELECT expenses.id, member_id, amount, description, date, is_settled, category, members.id
 FROM expenses, (SELECT id FROM members WHERE group_id = $1) AS members
 WHERE expenses.member_id = members.id
 `
 
 type ListExpensesRow struct {
-	ID          int32     `json:"id"`
-	MemberID    int32     `json:"member_id"`
-	Amount      string    `json:"amount"`
-	Description string    `json:"description"`
-	Date        time.Time `json:"date"`
-	IsSettled   bool      `json:"is_settled"`
-	ID_2        int32     `json:"id_2"`
+	ID          int32          `json:"id"`
+	MemberID    int32          `json:"member_id"`
+	Amount      string         `json:"amount"`
+	Description string         `json:"description"`
+	Date        time.Time      `json:"date"`
+	IsSettled   bool           `json:"is_settled"`
+	Category    sql.NullString `json:"category"`
+	ID_2        int32          `json:"id_2"`
 }
 
 func (q *Queries) ListExpenses(ctx context.Context, groupID int32) ([]ListExpensesRow, error) {
@@ -109,6 +112,7 @@ func (q *Queries) ListExpenses(ctx context.Context, groupID int32) ([]ListExpens
 			&i.Description,
 			&i.Date,
 			&i.IsSettled,
+			&i.Category,
 			&i.ID_2,
 		); err != nil {
 			return nil, err
@@ -125,19 +129,20 @@ func (q *Queries) ListExpenses(ctx context.Context, groupID int32) ([]ListExpens
 }
 
 const listNonSettledExpenses = `-- name: ListNonSettledExpenses :many
-SELECT expenses.id, member_id, amount, description, date, is_settled, members.id
+SELECT expenses.id, member_id, amount, description, date, is_settled, category, members.id
 FROM expenses, (SELECT id FROM members WHERE group_id = $1) AS members
 WHERE expenses.member_id = members.id AND is_settled = false
 `
 
 type ListNonSettledExpensesRow struct {
-	ID          int32     `json:"id"`
-	MemberID    int32     `json:"member_id"`
-	Amount      string    `json:"amount"`
-	Description string    `json:"description"`
-	Date        time.Time `json:"date"`
-	IsSettled   bool      `json:"is_settled"`
-	ID_2        int32     `json:"id_2"`
+	ID          int32          `json:"id"`
+	MemberID    int32          `json:"member_id"`
+	Amount      string         `json:"amount"`
+	Description string         `json:"description"`
+	Date        time.Time      `json:"date"`
+	IsSettled   bool           `json:"is_settled"`
+	Category    sql.NullString `json:"category"`
+	ID_2        int32          `json:"id_2"`
 }
 
 func (q *Queries) ListNonSettledExpenses(ctx context.Context, groupID int32) ([]ListNonSettledExpensesRow, error) {
@@ -156,6 +161,7 @@ func (q *Queries) ListNonSettledExpenses(ctx context.Context, groupID int32) ([]
 			&i.Description,
 			&i.Date,
 			&i.IsSettled,
+			&i.Category,
 			&i.ID_2,
 		); err != nil {
 			return nil, err
@@ -175,7 +181,7 @@ const updateExpense = `-- name: UpdateExpense :one
 UPDATE expenses
 SET member_id = $2, amount = $3, description = $4, date = $5, is_settled = $6
 WHERE id = $1
-RETURNING id, member_id, amount, description, date, is_settled
+RETURNING id, member_id, amount, description, date, is_settled, category
 `
 
 type UpdateExpenseParams struct {
@@ -204,6 +210,7 @@ func (q *Queries) UpdateExpense(ctx context.Context, arg UpdateExpenseParams) (E
 		&i.Description,
 		&i.Date,
 		&i.IsSettled,
+		&i.Category,
 	)
 	return i, err
 }

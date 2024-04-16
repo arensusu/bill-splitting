@@ -12,21 +12,13 @@ import (
 	"github.com/markbates/goth/gothic"
 )
 
-// type loginUserResponse struct {
-// 	Token string    `json:"token"`
-// 	Exp   time.Time `json:"exp"`
-// 	User  db.User   `json:"user"`
-// }
-
 func (s *Server) auth(ctx *gin.Context) {
 	gothic.GetProviderName = func(r *http.Request) (string, error) { return ctx.Param("provider"), nil }
 
 	res := ctx.Writer
 	req := ctx.Request
 
-	if gothUser, err := gothic.CompleteUserAuth(res, req); err == nil {
-		fmt.Println(gothUser)
-	} else {
+	if _, err := gothic.CompleteUserAuth(res, req); err != nil {
 		gothic.BeginAuthHandler(res, req)
 	}
 }
@@ -34,31 +26,42 @@ func (s *Server) auth(ctx *gin.Context) {
 func (s *Server) authCallback(ctx *gin.Context) {
 	gothic.GetProviderName = func(r *http.Request) (string, error) { return ctx.Param("provider"), nil }
 
-	gotUser, err := gothic.CompleteUserAuth(ctx.Writer, ctx.Request)
-	if err != nil {
-		fmt.Fprintln(ctx.Writer, err)
-		return
-	}
-
-	user, err := s.store.GetUser(ctx, gotUser.UserID)
-	if err != nil {
-		if err != sql.ErrNoRows {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		username := gotUser.Name
-		if username == "" {
-			username = gotUser.NickName
-		}
-
-		user, err = s.store.CreateUser(ctx, db.CreateUserParams{
-			ID:       gotUser.UserID,
-			Username: username,
-		})
+	var user db.User
+	userID := ctx.GetHeader("X-User")
+	if userID != "" {
+		var err error
+		user, err = s.store.GetUser(ctx, userID)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
+		}
+	} else {
+		gotUser, err := gothic.CompleteUserAuth(ctx.Writer, ctx.Request)
+		if err != nil {
+			fmt.Fprintln(ctx.Writer, err)
+			return
+		}
+
+		user, err = s.store.GetUser(ctx, gotUser.UserID)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+
+			username := gotUser.Name
+			if username == "" {
+				username = gotUser.NickName
+			}
+
+			user, err = s.store.CreateUser(ctx, db.CreateUserParams{
+				ID:       gotUser.UserID,
+				Username: username,
+			})
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
 		}
 	}
 
@@ -66,6 +69,10 @@ func (s *Server) authCallback(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	if user.ID != "" {
+		ctx.JSON(http.StatusOK, gin.H{"token": token})
 	}
 
 	endpoint := os.Getenv("ENDPOINT")

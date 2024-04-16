@@ -5,16 +5,18 @@
 package db
 
 import (
+	"database/sql"
 	"time"
 )
 
 type Expense struct {
-	ID          int32     `json:"id"`
-	MemberID    int32     `json:"member_id"`
-	Amount      string    `json:"amount"`
-	Description string    `json:"description"`
-	Date        time.Time `json:"date"`
-	IsSettled   bool      `json:"is_settled"`
+	ID          int32          `json:"id"`
+	MemberID    int32          `json:"member_id"`
+	Amount      string         `json:"amount"`
+	Description string         `json:"description"`
+	Date        time.Time      `json:"date"`
+	IsSettled   bool           `json:"is_settled"`
+	Category    sql.NullString `json:"category"`
 }
 
 type Group struct {
