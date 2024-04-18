@@ -35,6 +35,7 @@ func NewServer(store db.Store, tokenMaker *token.JWTMaker) *Server {
 	{
 		api.GET("/auth/:provider", server.auth)
 		api.GET("/auth/:provider/callback", server.authCallback)
+		api.POST("/auth/line/bot", server.authLineBot)
 
 		// Authenticated routes
 		authRoutes := api.Group("")
