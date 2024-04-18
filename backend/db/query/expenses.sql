@@ -1,6 +1,6 @@
 -- name: CreateExpense :one
-INSERT INTO expenses (member_id, amount, description, date)
-VALUES ($1, $2, $3, $4)
+INSERT INTO expenses (member_id, amount, description, date, category)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: GetExpense :one

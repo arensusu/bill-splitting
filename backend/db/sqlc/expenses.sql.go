@@ -12,16 +12,17 @@ import (
 )
 
 const createExpense = `-- name: CreateExpense :one
-INSERT INTO expenses (member_id, amount, description, date)
-VALUES ($1, $2, $3, $4)
+INSERT INTO expenses (member_id, amount, description, date, category)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id, member_id, amount, description, date, is_settled, category
 `
 
 type CreateExpenseParams struct {
-	MemberID    int32     `json:"member_id"`
-	Amount      string    `json:"amount"`
-	Description string    `json:"description"`
-	Date        time.Time `json:"date"`
+	MemberID    int32          `json:"member_id"`
+	Amount      string         `json:"amount"`
+	Description string         `json:"description"`
+	Date        time.Time      `json:"date"`
+	Category    sql.NullString `json:"category"`
 }
 
 func (q *Queries) CreateExpense(ctx context.Context, arg CreateExpenseParams) (Expense, error) {
@@ -30,6 +31,7 @@ func (q *Queries) CreateExpense(ctx context.Context, arg CreateExpenseParams) (E
 		arg.Amount,
 		arg.Description,
 		arg.Date,
+		arg.Category,
 	)
 	var i Expense
 	err := row.Scan(

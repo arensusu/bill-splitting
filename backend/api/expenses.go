@@ -3,6 +3,7 @@ package api
 import (
 	db "bill-splitting/db/sqlc"
 	"bill-splitting/token"
+	"database/sql"
 	"net/http"
 	"strconv"
 	"time"
@@ -14,6 +15,7 @@ type createExpenseUriRequest struct {
 	GroupID int32 `uri:"groupId" binding:"required"`
 }
 type createExpenseJSONRequest struct {
+	Category    string `json:"category"`
 	Amount      int64  `json:"amount" binding:"required"`
 	Description string `json:"description"`
 	Date        string `json:"date" binding:"required"`
@@ -58,6 +60,7 @@ func (s *Server) createExpense(ctx *gin.Context) {
 		Amount:      strconv.FormatInt(jsonRequest.Amount, 10),
 		Description: jsonRequest.Description,
 		Date:        date,
+		Category:    sql.NullString{String: jsonRequest.Category, Valid: true},
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
