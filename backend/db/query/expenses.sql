@@ -27,3 +27,9 @@ RETURNING *;
 -- name: DeleteExpense :exec
 DELETE FROM expenses
 WHERE id = $1;
+
+-- name: ListSumOfExpensesWithCategory :many
+SELECT category, SUM(amount)
+FROM expenses, (SELECT id FROM members WHERE group_id = $1) AS members
+WHERE expenses.member_id = members.id
+GROUP BY category;

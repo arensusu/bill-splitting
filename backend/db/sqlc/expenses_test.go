@@ -10,13 +10,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomExpense(t *testing.T) Expense {
-	group := createRandomGroup(t)
-	member := createRandomMember(t, group.ID)
+func createRandomExpense(t *testing.T, memberID int32, category string) Expense {
 	param := CreateExpenseParams{
-		MemberID: member.ID,
+		MemberID: memberID,
 		Amount:   strconv.FormatInt(helper.RandomInt64(1, 1000), 10),
 		Date:     helper.RandomDate(),
+		Category: sql.NullString{
+			String: category,
+			Valid:  true,
+		},
 	}
 	expense, err := testStore.CreateExpense(context.Background(), param)
 
@@ -24,8 +26,9 @@ func createRandomExpense(t *testing.T) Expense {
 	require.NotEmpty(t, expense)
 
 	require.NotZero(t, expense.ID)
-	require.Equal(t, member.ID, expense.MemberID)
+	require.Equal(t, memberID, expense.MemberID)
 	require.Equal(t, param.Amount, expense.Amount)
+	require.Equal(t, param.Category.String, expense.Category.String)
 	require.Equal(t, param.Date.Year(), expense.Date.Year())
 	require.Equal(t, param.Date.Month(), expense.Date.Month())
 	require.Equal(t, param.Date.Day(), expense.Date.Day())
@@ -34,11 +37,15 @@ func createRandomExpense(t *testing.T) Expense {
 }
 
 func TestCreateExpense(t *testing.T) {
-	createRandomExpense(t)
+	member := createRandomMember(t, createRandomGroup(t).ID)
+	category := helper.RandomString(5)
+	createRandomExpense(t, member.ID, category)
 }
 
 func TestGetExpense(t *testing.T) {
-	expense1 := createRandomExpense(t)
+	member := createRandomMember(t, createRandomGroup(t).ID)
+	category := helper.RandomString(5)
+	expense1 := createRandomExpense(t, member.ID, category)
 
 	expense2, err := testStore.GetExpense(context.Background(), expense1.ID)
 
@@ -53,7 +60,9 @@ func TestGetExpense(t *testing.T) {
 }
 
 func TestUpdateExpense(t *testing.T) {
-	expense := createRandomExpense(t)
+	member := createRandomMember(t, createRandomGroup(t).ID)
+	category := helper.RandomString(5)
+	expense := createRandomExpense(t, member.ID, category)
 
 	newAmount := strconv.FormatInt(helper.RandomInt64(1, 1000), 10)
 	param := UpdateExpenseParams{
@@ -76,7 +85,9 @@ func TestUpdateExpense(t *testing.T) {
 }
 
 func TestDeleteExpense(t *testing.T) {
-	expense1 := createRandomExpense(t)
+	member := createRandomMember(t, createRandomGroup(t).ID)
+	category := helper.RandomString(5)
+	expense1 := createRandomExpense(t, member.ID, category)
 
 	err := testStore.DeleteExpense(context.Background(), expense1.ID)
 
@@ -90,15 +101,13 @@ func TestDeleteExpense(t *testing.T) {
 }
 
 func TestListExpenses(t *testing.T) {
-	var lastExpense Expense
+	member := createRandomMember(t, createRandomGroup(t).ID)
+	category := helper.RandomString(5)
 	for i := 0; i < 10; i++ {
-		lastExpense = createRandomExpense(t)
+		createRandomExpense(t, member.ID, category)
 	}
 
-	lastMember, err := testStore.GetMember(context.Background(), lastExpense.MemberID)
-	require.NoError(t, err)
-	expenses, err := testStore.ListExpenses(context.Background(), lastMember.GroupID)
-
+	expenses, err := testStore.ListExpenses(context.Background(), member.GroupID)
 	require.NoError(t, err)
 	require.NotEmpty(t, expenses)
 
@@ -107,19 +116,20 @@ func TestListExpenses(t *testing.T) {
 
 		member, err := testStore.GetMember(context.Background(), expense.MemberID)
 		require.NoError(t, err)
-		require.Equal(t, member.GroupID, lastMember.GroupID)
+		require.Equal(t, member.GroupID, member.GroupID)
 	}
 }
 
 func TestListNonSettledExpenses(t *testing.T) {
+	member := createRandomMember(t, createRandomGroup(t).ID)
+	category := helper.RandomString(5)
+
 	var lastExpense Expense
 	for i := 0; i < 10; i++ {
-		lastExpense = createRandomExpense(t)
+		lastExpense = createRandomExpense(t, member.ID, category)
 	}
 
-	lastMember, err := testStore.GetMember(context.Background(), lastExpense.MemberID)
-	require.NoError(t, err)
-	expenses1, err := testStore.ListExpenses(context.Background(), lastMember.GroupID)
+	expenses1, err := testStore.ListExpenses(context.Background(), member.GroupID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, expenses1)
@@ -129,7 +139,7 @@ func TestListNonSettledExpenses(t *testing.T) {
 
 		member, err := testStore.GetMember(context.Background(), expense.MemberID)
 		require.NoError(t, err)
-		require.Equal(t, member.GroupID, lastMember.GroupID)
+		require.Equal(t, member.GroupID, member.GroupID)
 	}
 
 	_, err = testStore.UpdateExpense(context.Background(), UpdateExpenseParams{
@@ -141,8 +151,38 @@ func TestListNonSettledExpenses(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	expenses2, err := testStore.ListNonSettledExpenses(context.Background(), lastMember.GroupID)
+	expenses2, err := testStore.ListNonSettledExpenses(context.Background(), member.GroupID)
 
 	require.NoError(t, err)
 	require.Equal(t, len(expenses1)-1, len(expenses2))
+}
+
+func TestListSumOfExpensesWithCategory(t *testing.T) {
+	member := createRandomMember(t, createRandomGroup(t).ID)
+	category := helper.RandomString(5)
+	for i := 0; i < 10; i++ {
+		createRandomExpense(t, member.ID, category)
+	}
+
+	expenses, err := testStore.ListExpenses(context.Background(), member.GroupID)
+	require.NoError(t, err)
+	require.NotEmpty(t, expenses)
+
+	expectedSum := int64(0)
+	for _, expense := range expenses {
+		if expense.Category.String == category {
+			amount, err := strconv.ParseInt(expense.Amount, 10, 64)
+			require.NoError(t, err)
+			expectedSum += amount
+		}
+	}
+
+	categorySums, err := testStore.ListSumOfExpensesWithCategory(context.Background(), member.GroupID)
+	require.NoError(t, err)
+
+	for _, sum := range categorySums {
+		if sum.Category.String == category {
+			require.Equal(t, expectedSum, sum.Sum)
+		}
+	}
 }

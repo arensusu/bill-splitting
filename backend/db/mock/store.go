@@ -438,6 +438,21 @@ func (mr *MockStoreMockRecorder) ListSettlements(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSettlements", reflect.TypeOf((*MockStore)(nil).ListSettlements), arg0, arg1)
 }
 
+// ListSumOfExpensesWithCategory mocks base method.
+func (m *MockStore) ListSumOfExpensesWithCategory(arg0 context.Context, arg1 int32) ([]db.ListSumOfExpensesWithCategoryRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListSumOfExpensesWithCategory", arg0, arg1)
+	ret0, _ := ret[0].([]db.ListSumOfExpensesWithCategoryRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListSumOfExpensesWithCategory indicates an expected call of ListSumOfExpensesWithCategory.
+func (mr *MockStoreMockRecorder) ListSumOfExpensesWithCategory(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSumOfExpensesWithCategory", reflect.TypeOf((*MockStore)(nil).ListSumOfExpensesWithCategory), arg0, arg1)
+}
+
 // UpdateExpense mocks base method.
 func (m *MockStore) UpdateExpense(arg0 context.Context, arg1 db.UpdateExpenseParams) (db.Expense, error) {
 	m.ctrl.T.Helper()

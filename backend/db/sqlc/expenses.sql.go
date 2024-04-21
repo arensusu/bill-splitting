@@ -179,6 +179,41 @@ func (q *Queries) ListNonSettledExpenses(ctx context.Context, groupID int32) ([]
 	return items, nil
 }
 
+const listSumOfExpensesWithCategory = `-- name: ListSumOfExpensesWithCategory :many
+SELECT category, SUM(amount)
+FROM expenses, (SELECT id FROM members WHERE group_id = $1) AS members
+WHERE expenses.member_id = members.id
+GROUP BY category
+`
+
+type ListSumOfExpensesWithCategoryRow struct {
+	Category sql.NullString `json:"category"`
+	Sum      int64          `json:"sum"`
+}
+
+func (q *Queries) ListSumOfExpensesWithCategory(ctx context.Context, groupID int32) ([]ListSumOfExpensesWithCategoryRow, error) {
+	rows, err := q.db.QueryContext(ctx, listSumOfExpensesWithCategory, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListSumOfExpensesWithCategoryRow{}
+	for rows.Next() {
+		var i ListSumOfExpensesWithCategoryRow
+		if err := rows.Scan(&i.Category, &i.Sum); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateExpense = `-- name: UpdateExpense :one
 UPDATE expenses
 SET member_id = $2, amount = $3, description = $4, date = $5, is_settled = $6
