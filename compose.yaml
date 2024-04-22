@@ -37,6 +37,14 @@ services:
       - "80:80"
     depends_on:
       - frontend
+  linebot:
+    build:
+      context: .
+      dockerfile: linebot.dockerfile
+    depends_on:
+      - api
+    ports:
+      - "7000:7000"
 
 volumes:
   db-data:
