@@ -120,7 +120,7 @@ func getAuthToken(userId string, displayName string) (string, error) {
 	uri := "http://api:8080/api/v1/linebot/auth"
 	body, err := json.Marshal(map[string]string{"id": userId, "username": displayName})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("json.Marshal: %w", err)
 	}
 
 	req, err := http.NewRequest("POST", uri, bytes.NewReader(body))
@@ -144,7 +144,7 @@ func getAuthToken(userId string, displayName string) (string, error) {
 		Token string `json:"token"`
 	}
 	if err := json.Unmarshal(data, &res); err != nil {
-		return "", err
+		return "", fmt.Errorf("json.Unmarshal: %w", err)
 	}
 	return res.Token, nil
 }
