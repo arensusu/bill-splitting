@@ -139,6 +139,7 @@ func getAuthToken(userId string, displayName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	log.Println(string(data))
 
 	var res struct {
 		Token string `json:"token"`
