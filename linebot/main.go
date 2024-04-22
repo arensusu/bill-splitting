@@ -13,14 +13,19 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
+	"strings"
+	"time"
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/line/line-bot-sdk-go/v8/linebot"
+	"github.com/line/line-bot-sdk-go/v8/linebot/messaging_api"
 	"github.com/line/line-bot-sdk-go/v8/linebot/webhook"
 )
 
@@ -48,6 +53,12 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	client, err := messaging_api.NewMessagingApiAPI(os.Getenv("LINEBOT_ACCESS_TOKEN"))
+	if err != nil {
+		log.Println("NewMessagingApiAPI err:", err)
+		return
+	}
+
 	for _, event := range cb.Events {
 		log.Printf("Got event %v", event)
 		switch e := event.(type) {
@@ -55,28 +66,42 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 			switch message := e.Message.(type) {
 			// Handle only on text message
 			case webhook.TextMessageContent:
-				// GetMessageQuota: Get how many remain free tier push message quota you still have this month. (maximum 500)
-				quota, err := bot.GetMessageQuota().Do()
-				if err != nil {
-					log.Println("Quota err:", err)
+				var userId, lineGroupId string
+				switch source := e.Source.(type) {
+				case webhook.UserSource:
+					userId = source.UserId
+					lineGroupId = userId
+				case webhook.GroupSource:
+					userId = source.UserId
+					lineGroupId = source.GroupId
+				default:
+					log.Printf("Unknown source: %v", source)
 				}
+				_ = lineGroupId
+
+				msg := ""
+
+				profile, err := client.GetProfile(userId)
+				if err != nil {
+					log.Println("GetProfile err:", err)
+					msg = "找不到使用者，請確認使用者是否將官方帳號加入好友"
+				}
+
+				token, err := getAuthToken(userId, profile.DisplayName)
+				if err != nil {
+					log.Println("getAuthToken err:", err)
+					msg = "發生錯誤，請稍後再試"
+				}
+
+				msgList := strings.Split(message.Text, "\n")
+				msg = createExpense(token, msgList[0], msgList[1], msgList[2])
+
 				// message.ID: Msg unique ID
 				// message.Text: Msg text
-				if _, err = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage("msg ID:"+message.Id+":"+"Get:"+message.Text+" , \n OK! remain message:"+strconv.FormatInt(quota.Value, 10))).Do(); err != nil {
+				if _, err = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
 					log.Print(err)
 				}
 
-			// Handle only on Sticker message
-			case webhook.StickerMessageContent:
-				var kw string
-				for _, k := range message.Keywords {
-					kw = kw + "," + k
-				}
-
-				outStickerResult := fmt.Sprintf("收到貼圖訊息: %s, pkg: %s kw: %s  text: %s", message.StickerId, message.PackageId, kw, message.Text)
-				if _, err = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage(outStickerResult)).Do(); err != nil {
-					log.Print(err)
-				}
 			default:
 				log.Printf("Unknown message: %v", message)
 			}
@@ -89,4 +114,71 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Got beacon: " + e.Beacon.Hwid)
 		}
 	}
+}
+
+func getAuthToken(userId string, displayName string) (string, error) {
+	uri := "http://api:8080/api/v1/linebot/auth"
+	body, err := json.Marshal(map[string]string{"id": userId, "username": displayName})
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest("POST", uri, bytes.NewReader(body))
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var res struct {
+		Token string `json:"token"`
+	}
+	if err := json.Unmarshal(data, &res); err != nil {
+		return "", err
+	}
+	return res.Token, nil
+}
+
+func createExpense(token, category, description, amount string) string {
+	groupId := 1
+	uri := fmt.Sprintf("http://api:8080/api/v1/groups/%d/expenses", groupId)
+
+	date := time.Now().Format("2006-01-02")
+	body, err := json.Marshal(map[string]string{
+		"category":    category,
+		"description": description,
+		"amount":      amount,
+		"date":        date,
+	})
+	if err != nil {
+		return "發生錯誤，請稍後再試"
+	}
+
+	req, err := http.NewRequest("POST", uri, bytes.NewReader(body))
+	if err != nil {
+		return "發生錯誤，請稍後再試"
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "發生錯誤，請稍後再試"
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "發生錯誤，請稍後再試"
+	}
+	return "新增成功"
 }
