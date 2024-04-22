@@ -5,7 +5,6 @@ import (
 	"bill-splitting/token"
 	"database/sql"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +15,7 @@ type createExpenseUriRequest struct {
 }
 type createExpenseJSONRequest struct {
 	Category    string `json:"category"`
-	Amount      int64  `json:"amount" binding:"required"`
+	Amount      string `json:"amount" binding:"required"`
 	Description string `json:"description"`
 	Date        string `json:"date" binding:"required"`
 }
@@ -57,7 +56,7 @@ func (s *Server) createExpense(ctx *gin.Context) {
 
 	expenseTx, err := s.store.CreateExpense(ctx, db.CreateExpenseParams{
 		MemberID:    member.ID,
-		Amount:      strconv.FormatInt(jsonRequest.Amount, 10),
+		Amount:      jsonRequest.Amount,
 		Description: jsonRequest.Description,
 		Date:        date,
 		Category:    sql.NullString{String: jsonRequest.Category, Valid: true},

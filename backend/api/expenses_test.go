@@ -34,7 +34,7 @@ func TestCreateExpenseAPI(t *testing.T) {
 			name:    "OK",
 			groupID: group.ID,
 			body: createExpenseJSONRequest{
-				Amount:      100,
+				Amount:      "100",
 				Description: "test",
 				Date:        "2022-01-01",
 			},
@@ -53,7 +53,7 @@ func TestCreateExpenseAPI(t *testing.T) {
 			name:    "InternalErrorOfGetGroupMember",
 			groupID: group.ID,
 			body: createExpenseJSONRequest{
-				Amount:      100,
+				Amount:      "100",
 				Description: "test",
 				Date:        "2022-01-01",
 			},
@@ -68,7 +68,7 @@ func TestCreateExpenseAPI(t *testing.T) {
 			name:    "InternalErrorOfCreateExpenseTx",
 			groupID: group.ID,
 			body: createExpenseJSONRequest{
-				Amount:      100,
+				Amount:      "100",
 				Description: "test",
 				Date:        "2022-01-01",
 			},
@@ -87,7 +87,7 @@ func TestCreateExpenseAPI(t *testing.T) {
 			name:    "BadRequest",
 			groupID: 0,
 			body: createExpenseJSONRequest{
-				Amount:      100,
+				Amount:      "100",
 				Description: "test",
 				Date:        "2022-01-01",
 			},
