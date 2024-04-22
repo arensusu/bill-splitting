@@ -117,7 +117,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAuthToken(userId string, displayName string) (string, error) {
-	uri := "http://api:8080/api/v1/linebot/auth"
+	uri := "http://api:8080/api/v1/auth/linebot"
 	body, err := json.Marshal(map[string]string{"id": userId, "username": displayName})
 	if err != nil {
 		return "", fmt.Errorf("json.Marshal: %w", err)
