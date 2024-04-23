@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang/freetype/truetype"
 	"github.com/wcharczuk/go-chart/v2"
 )
 
@@ -125,10 +126,23 @@ func (s *Server) listExpensesSummary(c *gin.Context) {
 		}
 	}
 
+	fontBytes, err := os.ReadFile("./msjh.ttc")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	font, err := truetype.Parse(fontBytes)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	pie := chart.PieChart{
 		Width:  512,
 		Height: 512,
 		Values: values,
+		Font:   font,
 	}
 
 	f, err := os.Create(fmt.Sprintf("/var/images/%x.png", hashBytes))
