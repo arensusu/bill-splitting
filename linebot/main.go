@@ -34,7 +34,10 @@ var bot *linebot.Client
 func main() {
 	var err error
 	bot, err = linebot.New(os.Getenv("LINEBOT_SECRET"), os.Getenv("LINEBOT_ACCESS_TOKEN"))
-	log.Println("Bot:", bot, " err:", err)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	http.HandleFunc("/callback", callbackHandler)
 	port := os.Getenv("LINEBOT_PORT")
 	addr := fmt.Sprintf(":%s", port)
@@ -60,9 +63,10 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, event := range cb.Events {
-		log.Printf("Got event %v", event)
 		switch e := event.(type) {
 		case webhook.MessageEvent:
+			var replyMessage linebot.SendingMessage
+
 			switch message := e.Message.(type) {
 			// Handle only on text message
 			case webhook.TextMessageContent:
@@ -79,31 +83,39 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				_ = lineGroupId
 
-				msg := ""
-
 				profile, err := client.GetProfile(userId)
 				if err != nil {
 					log.Println("GetProfile err:", err)
-					msg = "找不到使用者，請確認使用者是否將官方帳號加入好友"
+					replyMessage = linebot.NewTextMessage("找不到使用者，請確認使用者是否將官方帳號加入好友")
+					break
 				}
 
 				token, err := getAuthToken(userId, profile.DisplayName)
 				if err != nil {
 					log.Println("getAuthToken err:", err)
-					msg = "發生錯誤，請稍後再試"
+					replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
+					break
 				}
 
 				msgList := strings.Split(message.Text, "\n")
-				msg = createExpense(token, msgList[0], msgList[1], msgList[2])
-
-				// message.ID: Msg unique ID
-				// message.Text: Msg text
-				if _, err = bot.ReplyMessage(e.ReplyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
-					log.Print(err)
+				if len(msgList) == 3 {
+					msg := createExpense(token, msgList[0], msgList[1], msgList[2])
+					replyMessage = linebot.NewTextMessage(msg)
+				} else if msgList[0] == "支出" {
+					imgUrl, err := getExpenseImage(token)
+					if err != nil {
+						replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
+					} else {
+						replyMessage = linebot.NewImageMessage(imgUrl, imgUrl)
+					}
 				}
 
 			default:
 				log.Printf("Unknown message: %v", message)
+			}
+
+			if _, err = bot.ReplyMessage(e.ReplyToken, replyMessage).Do(); err != nil {
+				log.Print(err)
 			}
 		case webhook.FollowEvent:
 			log.Printf("message: Got followed event")
@@ -182,4 +194,34 @@ func createExpense(token, category, description, amount string) string {
 		return "發生錯誤，請稍後再試"
 	}
 	return "新增成功"
+}
+
+func getExpenseImage(token string) (string, error) {
+	groupId := 1
+	uri := fmt.Sprintf("http://api:8080/api/v1/groups/%d/expenses/summary", groupId)
+
+	req, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var res struct {
+		Image string `json:"image"`
+	}
+	if err := json.Unmarshal(data, &res); err != nil {
+		return "", fmt.Errorf("json.Unmarshal: %w", err)
+	}
+	return fmt.Sprintf("https://arensusu.ddns.net/api/v1/images/%s", res.Image), nil
 }

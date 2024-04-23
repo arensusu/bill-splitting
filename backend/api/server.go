@@ -37,6 +37,8 @@ func NewServer(store db.Store, tokenMaker *token.JWTMaker) *Server {
 		api.GET("/auth/:provider/callback", server.authCallback)
 		api.POST("/auth/linebot", server.authLineBot)
 
+		api.Static("/images", "/var/images")
+
 		// Authenticated routes
 		authRoutes := api.Group("")
 		authRoutes.Use(authMiddleware(server.tokenMaker))
@@ -57,6 +59,7 @@ func NewServer(store db.Store, tokenMaker *token.JWTMaker) *Server {
 
 		groupRoutes.POST("/:groupId/expenses", server.createExpense)
 		groupRoutes.GET("/:groupId/expenses", server.listExpenses)
+		groupRoutes.GET("/:groupId/expenses/summary", server.listExpensesSummary)
 
 		groupRoutes.PUT("/:groupId/settlements", server.replaceSettlement)
 	}

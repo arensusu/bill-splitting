@@ -3,11 +3,16 @@ package api
 import (
 	db "bill-splitting/db/sqlc"
 	"bill-splitting/token"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/wcharczuk/go-chart/v2"
 )
 
 type createExpenseUriRequest struct {
@@ -87,4 +92,56 @@ func (s *Server) listExpenses(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, expenses)
+}
+
+func (s *Server) listExpensesSummary(c *gin.Context) {
+	var req listExpensesRequest
+	if err := c.ShouldBindUri(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	summary, err := s.store.ListSumOfExpensesWithCategory(c, req.GroupID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	data, err := json.Marshal(summary)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	hasher := sha256.New()
+	hasher.Write(data)
+	hashBytes := hasher.Sum(nil)
+
+	values := make([]chart.Value, len(summary))
+	for i, v := range summary {
+		values[i] = chart.Value{
+			Value: float64(v.Sum),
+			Label: fmt.Sprintf("%s $%d", v.Category.String, v.Sum),
+		}
+	}
+
+	pie := chart.PieChart{
+		Width:  512,
+		Height: 512,
+		Values: values,
+	}
+
+	f, err := os.Create(fmt.Sprintf("/var/images/%x.png", hashBytes))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer f.Close()
+	err = pie.Render(chart.PNG, f)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"image": fmt.Sprintf("%x.png", hashBytes)})
 }
