@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -177,12 +178,16 @@ func TestListSumOfExpensesWithCategory(t *testing.T) {
 		}
 	}
 
-	categorySums, err := testStore.ListSumOfExpensesWithCategory(context.Background(), member.GroupID)
+	categorySums, err := testStore.SummarizeExpensesWithinDate(context.Background(), SummarizeExpensesWithinDateParams{
+		GroupID:   member.GroupID,
+		StartTime: time.Now().AddDate(0, 0, -365),
+		EndTime:   time.Now().AddDate(0, 0, 365),
+	})
 	require.NoError(t, err)
 
 	for _, sum := range categorySums {
 		if sum.Category.String == category {
-			require.Equal(t, expectedSum, sum.Sum)
+			require.Equal(t, expectedSum, sum.Total)
 		}
 	}
 }

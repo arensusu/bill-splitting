@@ -34,7 +34,7 @@ type Querier interface {
 	ListMembersOfGroup(ctx context.Context, groupID int32) ([]Member, error)
 	ListNonSettledExpenses(ctx context.Context, groupID int32) ([]ListNonSettledExpensesRow, error)
 	ListSettlements(ctx context.Context, groupID int32) ([]Settlement, error)
-	ListSumOfExpensesWithCategory(ctx context.Context, groupID int32) ([]ListSumOfExpensesWithCategoryRow, error)
+	SummarizeExpensesWithinDate(ctx context.Context, arg SummarizeExpensesWithinDateParams) ([]SummarizeExpensesWithinDateRow, error)
 	UpdateExpense(ctx context.Context, arg UpdateExpenseParams) (Expense, error)
 	UpdateGroup(ctx context.Context, arg UpdateGroupParams) (Group, error)
 	UpdateSettlement(ctx context.Context, arg UpdateSettlementParams) (Settlement, error)

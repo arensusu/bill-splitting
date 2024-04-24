@@ -179,28 +179,34 @@ func (q *Queries) ListNonSettledExpenses(ctx context.Context, groupID int32) ([]
 	return items, nil
 }
 
-const listSumOfExpensesWithCategory = `-- name: ListSumOfExpensesWithCategory :many
-SELECT category, SUM(amount)
-FROM expenses, (SELECT id FROM members WHERE group_id = $1) AS members
+const summarizeExpensesWithinDate = `-- name: SummarizeExpensesWithinDate :many
+SELECT category, SUM(amount) as total
+FROM (SELECT id, member_id, amount, description, date, is_settled, category FROM expenses WHERE date BETWEEN $2 AND $3) as expenses, (SELECT id FROM members WHERE group_id = $1) AS members
 WHERE expenses.member_id = members.id
 GROUP BY category
 `
 
-type ListSumOfExpensesWithCategoryRow struct {
-	Category sql.NullString `json:"category"`
-	Sum      int64          `json:"sum"`
+type SummarizeExpensesWithinDateParams struct {
+	GroupID   int32     `json:"group_id"`
+	StartTime time.Time `json:"start_time"`
+	EndTime   time.Time `json:"end_time"`
 }
 
-func (q *Queries) ListSumOfExpensesWithCategory(ctx context.Context, groupID int32) ([]ListSumOfExpensesWithCategoryRow, error) {
-	rows, err := q.db.QueryContext(ctx, listSumOfExpensesWithCategory, groupID)
+type SummarizeExpensesWithinDateRow struct {
+	Category sql.NullString `json:"category"`
+	Total    int64          `json:"total"`
+}
+
+func (q *Queries) SummarizeExpensesWithinDate(ctx context.Context, arg SummarizeExpensesWithinDateParams) ([]SummarizeExpensesWithinDateRow, error) {
+	rows, err := q.db.QueryContext(ctx, summarizeExpensesWithinDate, arg.GroupID, arg.StartTime, arg.EndTime)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ListSumOfExpensesWithCategoryRow{}
+	items := []SummarizeExpensesWithinDateRow{}
 	for rows.Next() {
-		var i ListSumOfExpensesWithCategoryRow
-		if err := rows.Scan(&i.Category, &i.Sum); err != nil {
+		var i SummarizeExpensesWithinDateRow
+		if err := rows.Scan(&i.Category, &i.Total); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

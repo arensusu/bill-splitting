@@ -95,6 +95,11 @@ func (s *Server) listExpenses(c *gin.Context) {
 	c.JSON(http.StatusOK, expenses)
 }
 
+type listExpensesSummaryQueryParams struct {
+	StartTime string `form:"startTime"`
+	EndTime   string `form:"endTime"`
+}
+
 func (s *Server) listExpensesSummary(c *gin.Context) {
 	var req listExpensesRequest
 	if err := c.ShouldBindUri(&req); err != nil {
@@ -102,7 +107,29 @@ func (s *Server) listExpensesSummary(c *gin.Context) {
 		return
 	}
 
-	summary, err := s.store.ListSumOfExpensesWithCategory(c, req.GroupID)
+	var query listExpensesSummaryQueryParams
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	startTime, err := time.Parse("2006-01-02", query.StartTime)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	endTime, err := time.Parse("2006-01-02", query.EndTime)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	summary, err := s.store.SummarizeExpensesWithinDate(c, db.SummarizeExpensesWithinDateParams{
+		GroupID:   req.GroupID,
+		StartTime: startTime,
+		EndTime:   endTime,
+	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -121,8 +148,8 @@ func (s *Server) listExpensesSummary(c *gin.Context) {
 	values := make([]chart.Value, len(summary))
 	for i, v := range summary {
 		values[i] = chart.Value{
-			Value: float64(v.Sum),
-			Label: fmt.Sprintf("%s $%d", v.Category.String, v.Sum),
+			Value: float64(v.Total),
+			Label: fmt.Sprintf("%s $%d", v.Category.String, v.Total),
 		}
 	}
 

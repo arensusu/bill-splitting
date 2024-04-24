@@ -438,19 +438,19 @@ func (mr *MockStoreMockRecorder) ListSettlements(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSettlements", reflect.TypeOf((*MockStore)(nil).ListSettlements), arg0, arg1)
 }
 
-// ListSumOfExpensesWithCategory mocks base method.
-func (m *MockStore) ListSumOfExpensesWithCategory(arg0 context.Context, arg1 int32) ([]db.ListSumOfExpensesWithCategoryRow, error) {
+// SummarizeExpensesWithinDate mocks base method.
+func (m *MockStore) SummarizeExpensesWithinDate(arg0 context.Context, arg1 db.SummarizeExpensesWithinDateParams) ([]db.SummarizeExpensesWithinDateRow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListSumOfExpensesWithCategory", arg0, arg1)
-	ret0, _ := ret[0].([]db.ListSumOfExpensesWithCategoryRow)
+	ret := m.ctrl.Call(m, "SummarizeExpensesWithinDate", arg0, arg1)
+	ret0, _ := ret[0].([]db.SummarizeExpensesWithinDateRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListSumOfExpensesWithCategory indicates an expected call of ListSumOfExpensesWithCategory.
-func (mr *MockStoreMockRecorder) ListSumOfExpensesWithCategory(arg0, arg1 any) *gomock.Call {
+// SummarizeExpensesWithinDate indicates an expected call of SummarizeExpensesWithinDate.
+func (mr *MockStoreMockRecorder) SummarizeExpensesWithinDate(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSumOfExpensesWithCategory", reflect.TypeOf((*MockStore)(nil).ListSumOfExpensesWithCategory), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummarizeExpensesWithinDate", reflect.TypeOf((*MockStore)(nil).SummarizeExpensesWithinDate), arg0, arg1)
 }
 
 // UpdateExpense mocks base method.
