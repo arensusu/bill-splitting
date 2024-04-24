@@ -166,8 +166,9 @@ func (s *Server) listExpensesSummary(c *gin.Context) {
 	}
 
 	pie := chart.PieChart{
-		Width:  512,
-		Height: 512,
+		Title:  fmt.Sprintf("%s ~ %s", query.StartTime, query.EndTime),
+		Width:  500,
+		Height: 600,
 		Values: values,
 		Font:   font,
 	}
