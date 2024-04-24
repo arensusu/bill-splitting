@@ -101,8 +101,8 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 				if len(msgList) == 3 {
 					msg := createExpense(token, msgList[0], msgList[1], msgList[2])
 					replyMessage = linebot.NewTextMessage(msg)
-				} else if msgList[0] == "支出" {
-					imgUrl, err := getExpenseImage(token)
+				} else if strings.Contains(msgList[0], "支出") {
+					imgUrl, err := getExpenseImage(token, msgList[0])
 					if err != nil {
 						replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
 					} else {
@@ -196,7 +196,7 @@ func createExpense(token, category, description, amount string) string {
 	return "新增成功"
 }
 
-func getExpenseImage(token string) (string, error) {
+func getExpenseImage(token, summaryType string) (string, error) {
 	groupId := 1
 	uri := fmt.Sprintf("http://api:8080/api/v1/groups/%d/expenses/summary", groupId)
 
@@ -204,6 +204,25 @@ func getExpenseImage(token string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	var startTime, endTime time.Time
+	now := time.Now()
+
+	switch summaryType {
+	case "本月支出":
+		startTime = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+		endTime = startTime.AddDate(0, 1, -1)
+	case "今年支出":
+		startTime = time.Date(now.Year(), 1, 1, 0, 0, 0, 0, now.Location())
+		endTime = startTime.AddDate(1, 0, -1)
+	case "本周支出":
+		startTime = now.AddDate(0, 0, int(time.Sunday-now.Weekday()))
+		endTime = startTime.AddDate(0, 0, 7)
+	}
+
+	q := req.URL.Query()
+	q.Add("startTime", startTime.Format("2006-01-02"))
+	q.Add("endTime", endTime.Format("2006-01-02"))
 
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	resp, err := http.DefaultClient.Do(req)
