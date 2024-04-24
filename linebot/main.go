@@ -223,6 +223,7 @@ func getExpenseImage(token, summaryType string) (string, error) {
 	q := req.URL.Query()
 	q.Add("startTime", startTime.Format("2006-01-02"))
 	q.Add("endTime", endTime.Format("2006-01-02"))
+	req.URL.RawQuery = q.Encode()
 
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	resp, err := http.DefaultClient.Do(req)
