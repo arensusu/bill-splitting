@@ -216,7 +216,7 @@ func getExpenseImage(token, summaryType string) (string, error) {
 		startTime = time.Date(now.Year(), 1, 1, 0, 0, 0, 0, now.Location())
 		endTime = startTime.AddDate(1, 0, -1)
 	case "本周支出":
-		startTime = now.AddDate(0, 0, int(time.Sunday-now.Weekday()))
+		startTime = now.AddDate(0, 0, int(time.Sunday)-int(now.Weekday()))
 		endTime = startTime.AddDate(0, 0, 7)
 	}
 
