@@ -18,7 +18,7 @@ func main() {
 	authSecret := os.Getenv("AUTH_SECRET")
 	dbDriver := "postgres"
 	dbHost := os.Getenv("DATABASE_HOST")
-	dbPort := "5432"
+	dbPort := os.Getenv("DATABASE_PORT")
 	dbUser := os.Getenv("DATABASE_USER")
 	dbPassword := os.Getenv("DATABASE_PASSWORD")
 	dbName := os.Getenv("DATABASE_NAME")
