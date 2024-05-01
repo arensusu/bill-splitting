@@ -17,5 +17,4 @@ COPY backend/start.sh .
 RUN chmod +x start.sh
 
 EXPOSE 8080
-CMD ["/app/main"]
-ENTRYPOINT [ "/app/start.sh" ]
+CMD ["/app/start.sh", "/app/main"]
