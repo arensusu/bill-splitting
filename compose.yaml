@@ -6,16 +6,12 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=${DATABASE_NAME}
-    ports:
-      - ${DATABASE_PORT}:5432
     volumes:
         - db-data:/var/lib/postgresql/data
   api:
     build:
       context: .
       dockerfile: backend.dockerfile
-    ports:
-      - "8080:8080"
     depends_on:
       - postgres
     command: ["/app/main"]
@@ -23,8 +19,6 @@ services:
     build:
       context: .
       dockerfile: frontend.dockerfile
-    ports:
-      - "3000:3000"
     environment:
       - API_ENDPOINT=${API_ENDPOINT}
     depends_on:
@@ -44,8 +38,6 @@ services:
       dockerfile: linebot.dockerfile
     depends_on:
       - api
-    ports:
-      - "7000:7000"
 
 volumes:
   db-data:
