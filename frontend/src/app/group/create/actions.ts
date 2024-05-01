@@ -12,7 +12,7 @@ const createGroup = async (formData: FormData) => {
         name: formData.get("name"),
     };
 
-    const response = await fetch(`${process.env.ENDPOINT}/api/groups`, {
+    const response = await fetch(`${process.env.API_ENDPOINT}/groups`, {
         cache: "no-store",
         method: "POST",
         headers: {

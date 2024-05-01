@@ -10,6 +10,6 @@ export default async function LoginForm() {
   }
 
   return (
-    <Button variant="contained" href={`${process.env.ENDPOINT}/api/auth/line`}>Login</Button>
+    <Button variant="contained" href={`${process.env.API_ENDPOINT}/auth/line`}>Login</Button>
   )
 }

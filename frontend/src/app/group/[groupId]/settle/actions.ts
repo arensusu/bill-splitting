@@ -9,18 +9,13 @@ const settleUp = async (id: string) => {
         redirect("/login");
     }
     
-    const request = {
-        groupId: parseInt(id),
-    };
-    
-    const response = await fetch(`${process.env.ENDPOINT}/api/settlements`, {
+    const response = await fetch(`${process.env.API_ENDPOINT}/groups/${id}/settlements`, {
         cache: "no-store",
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify(request),
     })
 
     if (!response.ok) {
@@ -33,7 +28,7 @@ const settleUp = async (id: string) => {
 const comfirmSettlement = async (groupId: string, payerId: string, payeeId: string) => {
     const token = await getToken();
 
-    const response = await fetch(`${process.env.ENDPOINT}/api/settlements/${parseInt(groupId)}/${payerId}/${payeeId}`, {
+    const response = await fetch(`${process.env.API_ENDPOINT}/settlements/${payerId}/${payeeId}`, {
         cache: "no-store",
         method: "DELETE",
         headers: {

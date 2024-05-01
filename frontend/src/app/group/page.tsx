@@ -9,7 +9,7 @@ const GroupPage = async () => {
         redirect("/login");
     }
 
-    const res = await fetch(`${process.env.ENDPOINT}/api/groups`, {
+    const res = await fetch(`${process.env.API_ENDPOINT}/groups`, {
         cache: "no-store",
         method: "GET",
         headers: {

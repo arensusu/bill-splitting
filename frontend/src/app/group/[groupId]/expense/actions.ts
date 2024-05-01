@@ -9,13 +9,12 @@ const createExpense = async (id: string, formData: FormData) => {
     }
     
     const request = {
-        groupId: parseInt(id),
         amount: parseInt(formData.get("amount")?.toString() || "0"),
         date: formData.get("date"),
         description: formData.get("description"),
     };
 
-    const response = await fetch(`${process.env.ENDPOINT}/api/expenses`, {
+    const response = await fetch(`${process.env.API_ENDPOINT}/groups/${id}/expenses`, {
         cache: "no-store",
         method: "POST",
         headers: {
