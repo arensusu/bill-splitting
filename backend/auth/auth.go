@@ -29,5 +29,5 @@ func NewAuth() {
 
 	gothic.Store = store
 
-	goth.UseProviders(line.New(lineClientID, lineClientSecret, fmt.Sprintf("%s/api/auth/line/callback", endpoint), "profile"))
+	goth.UseProviders(line.New(lineClientID, lineClientSecret, fmt.Sprintf("%s/api/v1/auth/line/callback", endpoint), "profile"))
 }
