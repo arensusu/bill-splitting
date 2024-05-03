@@ -394,10 +394,10 @@ func (mr *MockStoreMockRecorder) ListGroups(arg0, arg1 any) *gomock.Call {
 }
 
 // ListMembersOfGroup mocks base method.
-func (m *MockStore) ListMembersOfGroup(arg0 context.Context, arg1 int32) ([]db.Member, error) {
+func (m *MockStore) ListMembersOfGroup(arg0 context.Context, arg1 int32) ([]db.ListMembersOfGroupRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListMembersOfGroup", arg0, arg1)
-	ret0, _ := ret[0].([]db.Member)
+	ret0, _ := ret[0].([]db.ListMembersOfGroupRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

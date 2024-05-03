@@ -74,21 +74,26 @@ func (q *Queries) GetMembership(ctx context.Context, arg GetMembershipParams) (M
 }
 
 const listMembersOfGroup = `-- name: ListMembersOfGroup :many
-SELECT id, group_id, user_id
-FROM members
-WHERE group_id = $1
+SELECT members.id as id, username
+FROM (SELECT id, group_id, user_id FROM members WHERE group_id = $1) AS members, users
+WHERE members.user_id = users.id
 `
 
-func (q *Queries) ListMembersOfGroup(ctx context.Context, groupID int32) ([]Member, error) {
+type ListMembersOfGroupRow struct {
+	ID       int32  `json:"id"`
+	Username string `json:"username"`
+}
+
+func (q *Queries) ListMembersOfGroup(ctx context.Context, groupID int32) ([]ListMembersOfGroupRow, error) {
 	rows, err := q.db.QueryContext(ctx, listMembersOfGroup, groupID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Member{}
+	items := []ListMembersOfGroupRow{}
 	for rows.Next() {
-		var i Member
-		if err := rows.Scan(&i.ID, &i.GroupID, &i.UserID); err != nil {
+		var i ListMembersOfGroupRow
+		if err := rows.Scan(&i.ID, &i.Username); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

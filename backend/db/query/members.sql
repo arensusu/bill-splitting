@@ -14,9 +14,9 @@ FROM members
 WHERE id = $1;
 
 -- name: ListMembersOfGroup :many
-SELECT *
-FROM members
-WHERE group_id = $1;
+SELECT members.id as id, username
+FROM (SELECT * FROM members WHERE group_id = $1) AS members, users
+WHERE members.user_id = users.id;
 
 -- name: DeleteMember :exec
 DELETE FROM members

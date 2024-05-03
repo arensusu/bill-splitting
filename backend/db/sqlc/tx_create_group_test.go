@@ -24,5 +24,5 @@ func TestCreateGroupTx(t *testing.T) {
 	members, err := testStore.ListMembersOfGroup(context.Background(), group.ID)
 	require.NoError(t, err)
 	require.Len(t, members, 1)
-	require.Equal(t, user.ID, members[0].UserID)
+	require.Equal(t, user.Username, members[0].Username)
 }

@@ -24,7 +24,7 @@ func NewServer(store db.Store, tokenMaker *token.JWTMaker) *Server {
 
 	// Externalize CORS configuration
 	config := cors.Config{
-		AllowOrigins: []string{"http://node-dev:3000", "http://localhost:3000"},
+		AllowOrigins: []string{"http://node-dev:3000", "http://localhost"},
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders: []string{"Origin", "Content-Type", "Authorization"},
 	}
