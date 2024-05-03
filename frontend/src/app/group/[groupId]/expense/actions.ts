@@ -9,7 +9,7 @@ const createExpense = async (id: string, formData: FormData) => {
     }
     
     const request = {
-        amount: parseInt(formData.get("amount")?.toString() || "0"),
+        amount: formData.get("amount")?.toString() || "0",
         date: formData.get("date"),
         description: formData.get("description"),
     };

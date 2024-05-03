@@ -3,7 +3,7 @@ const nextConfig = {
     experimental: {
         serverActions: {
           // edit: updated to new key. Was previously `allowedForwardedHosts`
-          allowedOrigins: ['*'],
+          allowedOrigins: ['localhost'],
         },
       },
 }

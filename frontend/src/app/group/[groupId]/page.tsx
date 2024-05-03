@@ -10,11 +10,9 @@ const GroupPage = async ({ params }: { params: { groupId: string } }) => {
     }
 
     const groupName = await getGroupName(params.groupId)
-
     const groupMembers: any[] = await getGroupMembers(params.groupId)
-
     const groupExpenses: any[] = await getGroupExpenses(params.groupId)
-
+    
     return (
         <div className="grid grid-col-1 gap-4 m-10">
             <Typography variant="h5">Group: {groupName}</Typography>
@@ -45,7 +43,7 @@ const GroupPage = async ({ params }: { params: { groupId: string } }) => {
                                         {expense.amount}
                                     </TableCell>
                                     <TableCell>
-                                        {groupMembers.find((member) => member.id === expense.payer_id).username}
+                                        {groupMembers.find((member) => member.id === expense.member_id).username}
                                     </TableCell>
                                 </TableRow>
                             )
