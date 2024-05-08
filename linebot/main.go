@@ -30,6 +30,7 @@ import (
 	"github.com/line/line-bot-sdk-go/v8/linebot/messaging_api"
 	"github.com/line/line-bot-sdk-go/v8/linebot/webhook"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -87,7 +88,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				_ = lineGroupId
 
-				conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+				conn, err := grpc.Dial("api:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 				if err != nil {
 					log.Println("conn err:", err)
 					replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
@@ -165,7 +166,6 @@ func getAuthToken(userId string, displayName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	log.Println(string(data))
 
 	var res struct {
 		Token string `json:"token"`
