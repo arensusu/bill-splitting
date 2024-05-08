@@ -117,6 +117,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 				} else if strings.Contains(msgList[0], "支出") {
 					imgUrl, err := getExpenseImage(grpcClient, token, msgList[0])
 					if err != nil {
+						log.Println("getExpenseImage err:", err)
 						replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
 					} else {
 						replyMessage = linebot.NewImageMessage(imgUrl, imgUrl)
