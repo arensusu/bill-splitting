@@ -1,19 +1,13 @@
 syntax = "proto3";
 
-package billSplitting;
+package proto;
+
+import "proto/expense.proto";
+import "proto/auth.proto";
 
 option go_package = "github.com/bill-splitting/proto";
 
-message CreateExpenseSummaryChartRequest {
-    int32 group_id = 1;
-    string start_date = 2;
-    string end_date = 3;
-}
-
-message CreateExpenseSummaryChartResponse {
-    string url = 1;
-}
-
 service BillSplitting {
     rpc CreateExpenseSummaryChart(CreateExpenseSummaryChartRequest) returns (CreateExpenseSummaryChartResponse);
+    rpc GetAuthToken(GetAuthTokenRequest) returns (GetAuthTokenResponse);
 }

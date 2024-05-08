@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BillSplittingClient interface {
 	CreateExpenseSummaryChart(ctx context.Context, in *CreateExpenseSummaryChartRequest, opts ...grpc.CallOption) (*CreateExpenseSummaryChartResponse, error)
+	GetAuthToken(ctx context.Context, in *GetAuthTokenRequest, opts ...grpc.CallOption) (*GetAuthTokenResponse, error)
 }
 
 type billSplittingClient struct {
@@ -35,7 +36,16 @@ func NewBillSplittingClient(cc grpc.ClientConnInterface) BillSplittingClient {
 
 func (c *billSplittingClient) CreateExpenseSummaryChart(ctx context.Context, in *CreateExpenseSummaryChartRequest, opts ...grpc.CallOption) (*CreateExpenseSummaryChartResponse, error) {
 	out := new(CreateExpenseSummaryChartResponse)
-	err := c.cc.Invoke(ctx, "/billSplitting.BillSplitting/CreateExpenseSummaryChart", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.BillSplitting/CreateExpenseSummaryChart", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *billSplittingClient) GetAuthToken(ctx context.Context, in *GetAuthTokenRequest, opts ...grpc.CallOption) (*GetAuthTokenResponse, error) {
+	out := new(GetAuthTokenResponse)
+	err := c.cc.Invoke(ctx, "/proto.BillSplitting/GetAuthToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -47,6 +57,7 @@ func (c *billSplittingClient) CreateExpenseSummaryChart(ctx context.Context, in 
 // for forward compatibility
 type BillSplittingServer interface {
 	CreateExpenseSummaryChart(context.Context, *CreateExpenseSummaryChartRequest) (*CreateExpenseSummaryChartResponse, error)
+	GetAuthToken(context.Context, *GetAuthTokenRequest) (*GetAuthTokenResponse, error)
 	mustEmbedUnimplementedBillSplittingServer()
 }
 
@@ -56,6 +67,9 @@ type UnimplementedBillSplittingServer struct {
 
 func (UnimplementedBillSplittingServer) CreateExpenseSummaryChart(context.Context, *CreateExpenseSummaryChartRequest) (*CreateExpenseSummaryChartResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateExpenseSummaryChart not implemented")
+}
+func (UnimplementedBillSplittingServer) GetAuthToken(context.Context, *GetAuthTokenRequest) (*GetAuthTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAuthToken not implemented")
 }
 func (UnimplementedBillSplittingServer) mustEmbedUnimplementedBillSplittingServer() {}
 
@@ -80,10 +94,28 @@ func _BillSplitting_CreateExpenseSummaryChart_Handler(srv interface{}, ctx conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/billSplitting.BillSplitting/CreateExpenseSummaryChart",
+		FullMethod: "/proto.BillSplitting/CreateExpenseSummaryChart",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BillSplittingServer).CreateExpenseSummaryChart(ctx, req.(*CreateExpenseSummaryChartRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BillSplitting_GetAuthToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAuthTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BillSplittingServer).GetAuthToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.BillSplitting/GetAuthToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BillSplittingServer).GetAuthToken(ctx, req.(*GetAuthTokenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -92,12 +124,16 @@ func _BillSplitting_CreateExpenseSummaryChart_Handler(srv interface{}, ctx conte
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var BillSplitting_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "billSplitting.BillSplitting",
+	ServiceName: "proto.BillSplitting",
 	HandlerType: (*BillSplittingServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "CreateExpenseSummaryChart",
 			Handler:    _BillSplitting_CreateExpenseSummaryChart_Handler,
+		},
+		{
+			MethodName: "GetAuthToken",
+			Handler:    _BillSplitting_GetAuthToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

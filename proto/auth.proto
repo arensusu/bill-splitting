@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/bill-splitting/proto";
+
+message GetAuthTokenRequest {
+    string id = 1;
+    string username = 2;
+}
+
+message GetAuthTokenResponse {
+    string token = 1;
+}

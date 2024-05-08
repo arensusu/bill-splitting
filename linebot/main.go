@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -104,7 +103,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 					break
 				}
 
-				token, err := getAuthToken(userId, profile.DisplayName)
+				token, err := getAuthToken(grpcClient, userId, profile.DisplayName)
 				if err != nil {
 					log.Println("getAuthToken err:", err)
 					replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
@@ -143,37 +142,16 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getAuthToken(userId string, displayName string) (string, error) {
-	uri := "http://api:8080/api/v1/auth/linebot"
-	body, err := json.Marshal(map[string]string{"id": userId, "username": displayName})
-	if err != nil {
-		return "", fmt.Errorf("json.Marshal: %w", err)
-	}
-
-	req, err := http.NewRequest("POST", uri, bytes.NewReader(body))
+func getAuthToken(client proto.BillSplittingClient, userId string, displayName string) (string, error) {
+	resp, err := client.GetAuthToken(context.Background(), &proto.GetAuthTokenRequest{
+		Id:       userId,
+		Username: displayName,
+	})
 	if err != nil {
 		return "", err
 	}
 
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	var res struct {
-		Token string `json:"token"`
-	}
-	if err := json.Unmarshal(data, &res); err != nil {
-		return "", fmt.Errorf("json.Unmarshal: %w", err)
-	}
-	return res.Token, nil
+	return resp.Token, nil
 }
 
 func createExpense(token, category, description, amount string) string {
