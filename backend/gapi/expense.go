@@ -75,7 +75,7 @@ func (s *Server) CreateExpenseSummaryChart(ctx context.Context, req *proto.Creat
 	}
 
 	pie := chart.PieChart{
-		Title:  fmt.Sprintf("%s ~ %s", startDate, endDate),
+		Title:  fmt.Sprintf("%s ~ %s", req.StartDate, req.EndDate),
 		Width:  500,
 		Height: 600,
 		Values: values,
