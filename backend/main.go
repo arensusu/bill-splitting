@@ -4,14 +4,19 @@ import (
 	"bill-splitting/api"
 	"bill-splitting/auth"
 	db "bill-splitting/db/sqlc"
+	"bill-splitting/gapi"
+	"bill-splitting/proto"
 	"bill-splitting/token"
 	"database/sql"
 	"fmt"
 	"log"
+	"net"
 	"os"
 
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -33,5 +38,17 @@ func main() {
 	store := db.NewStore(conn)
 	tokenMaker := token.NewJWTMaker(authSecret)
 	server := api.NewServer(store, tokenMaker)
-	server.Start("0.0.0.0:8080")
+	go server.Start("0.0.0.0:8080")
+
+	lis, err := net.Listen("tcp", "localhost:50051")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
+	grpcServer := gapi.NewServer(store, tokenMaker)
+	proto.RegisterBillSplittingServer(s, grpcServer)
+	reflection.Register(s)
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }

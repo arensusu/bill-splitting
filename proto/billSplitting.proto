@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package billSplitting;
+
+option go_package = "github.com/bill-splitting/proto";
+
+message CreateExpenseSummaryChartRequest {
+    int32 group_id = 1;
+    string start_date = 2;
+    string end_date = 3;
+}
+
+message CreateExpenseSummaryChartResponse {
+    string url = 1;
+}
+
+service BillSplitting {
+    rpc CreateExpenseSummaryChart(CreateExpenseSummaryChartRequest) returns (CreateExpenseSummaryChartResponse);
+}

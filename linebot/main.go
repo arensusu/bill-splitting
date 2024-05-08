@@ -13,7 +13,9 @@
 package main
 
 import (
+	"bill-splitting-linebot/proto"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -27,6 +29,8 @@ import (
 	"github.com/line/line-bot-sdk-go/v8/linebot"
 	"github.com/line/line-bot-sdk-go/v8/linebot/messaging_api"
 	"github.com/line/line-bot-sdk-go/v8/linebot/webhook"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 var bot *linebot.Client
@@ -83,6 +87,15 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				_ = lineGroupId
 
+				conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+				if err != nil {
+					log.Println("conn err:", err)
+					replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
+					break
+				}
+				defer conn.Close()
+				grpcClient := proto.NewBillSplittingClient(conn)
+
 				profile, err := client.GetProfile(userId)
 				if err != nil {
 					log.Println("GetProfile err:", err)
@@ -102,7 +115,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 					msg := createExpense(token, msgList[0], msgList[1], msgList[2])
 					replyMessage = linebot.NewTextMessage(msg)
 				} else if strings.Contains(msgList[0], "支出") {
-					imgUrl, err := getExpenseImage(token, msgList[0])
+					imgUrl, err := getExpenseImage(grpcClient, token, msgList[0])
 					if err != nil {
 						replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
 					} else {
@@ -196,14 +209,8 @@ func createExpense(token, category, description, amount string) string {
 	return "新增成功"
 }
 
-func getExpenseImage(token, summaryType string) (string, error) {
+func getExpenseImage(client proto.BillSplittingClient, token, summaryType string) (string, error) {
 	groupId := 1
-	uri := fmt.Sprintf("http://api:8080/api/v1/groups/%d/expenses/summary", groupId)
-
-	req, err := http.NewRequest("GET", uri, nil)
-	if err != nil {
-		return "", err
-	}
 
 	var startTime, endTime time.Time
 	now := time.Now()
@@ -220,28 +227,16 @@ func getExpenseImage(token, summaryType string) (string, error) {
 		endTime = startTime.AddDate(0, 0, 7)
 	}
 
-	q := req.URL.Query()
-	q.Add("startTime", startTime.Format("2006-01-02"))
-	q.Add("endTime", endTime.Format("2006-01-02"))
-	req.URL.RawQuery = q.Encode()
-
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
+	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	resp, err := client.CreateExpenseSummaryChart(ctx, &proto.CreateExpenseSummaryChartRequest{
+		GroupId:   int32(groupId),
+		StartDate: startTime.Format("2006-01-02"),
+		EndDate:   endTime.Format("2006-01-02"),
+	})
 	if err != nil {
 		return "", err
 	}
 
-	var res struct {
-		Image string `json:"image"`
-	}
-	if err := json.Unmarshal(data, &res); err != nil {
-		return "", fmt.Errorf("json.Unmarshal: %w", err)
-	}
-	return fmt.Sprintf("https://arensusu.ddns.net/api/v1/images/%s", res.Image), nil
+	return fmt.Sprintf("https://arensusu.ddns.net/api/v1/images/%s", resp.Url), nil
 }
