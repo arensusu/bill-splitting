@@ -21,137 +21,41 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/line/line-bot-sdk-go/v8/linebot"
 	"github.com/line/line-bot-sdk-go/v8/linebot/messaging_api"
-	"github.com/line/line-bot-sdk-go/v8/linebot/webhook"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 )
 
-var bot *linebot.Client
-
 func main() {
-	var err error
-	bot, err = linebot.New(os.Getenv("LINEBOT_SECRET"), os.Getenv("LINEBOT_ACCESS_TOKEN"))
+	bot, err := linebot.New(os.Getenv("LINEBOT_SECRET"), os.Getenv("LINEBOT_ACCESS_TOKEN"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	http.HandleFunc("/callback", callbackHandler)
+	client, err := messaging_api.NewMessagingApiAPI(os.Getenv("LINEBOT_ACCESS_TOKEN"))
+	if err != nil {
+		log.Fatal("NewMessagingApiAPI err:", err)
+	}
+
+	conn, err := grpc.Dial("api:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Println("conn err:", err)
+		return
+	}
+	defer conn.Close()
+	grpcClient := proto.NewBillSplittingClient(conn)
+
+	server := NewLineBotServer(bot, client, grpcClient)
+
+	http.HandleFunc("/callback", server.callbackHandler)
 	port := os.Getenv("LINEBOT_PORT")
 	addr := fmt.Sprintf(":%s", port)
 	http.ListenAndServe(addr, nil)
-}
-
-func callbackHandler(w http.ResponseWriter, r *http.Request) {
-	cb, err := webhook.ParseRequest(os.Getenv("LINEBOT_SECRET"), r)
-	log.Printf("%v", err)
-	if err != nil {
-		if err == linebot.ErrInvalidSignature {
-			w.WriteHeader(400)
-		} else {
-			w.WriteHeader(500)
-		}
-		return
-	}
-
-	client, err := messaging_api.NewMessagingApiAPI(os.Getenv("LINEBOT_ACCESS_TOKEN"))
-	if err != nil {
-		log.Println("NewMessagingApiAPI err:", err)
-		return
-	}
-
-	for _, event := range cb.Events {
-		switch e := event.(type) {
-		case webhook.MessageEvent:
-			var replyMessage linebot.SendingMessage
-
-			switch message := e.Message.(type) {
-			// Handle only on text message
-			case webhook.TextMessageContent:
-				var userId, lineGroupId string
-				switch source := e.Source.(type) {
-				case webhook.UserSource:
-					userId = source.UserId
-					lineGroupId = userId
-				case webhook.GroupSource:
-					userId = source.UserId
-					lineGroupId = source.GroupId
-				default:
-					log.Printf("Unknown source: %v", source)
-				}
-				_ = lineGroupId
-
-				conn, err := grpc.Dial("api:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
-				if err != nil {
-					log.Println("conn err:", err)
-					replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
-					break
-				}
-				defer conn.Close()
-				grpcClient := proto.NewBillSplittingClient(conn)
-
-				profile, err := client.GetProfile(userId)
-				if err != nil {
-					log.Println("GetProfile err:", err)
-					replyMessage = linebot.NewTextMessage("找不到使用者，請確認使用者是否將官方帳號加入好友")
-					break
-				}
-
-				token, err := getAuthToken(grpcClient, userId, profile.DisplayName)
-				if err != nil {
-					log.Println("getAuthToken err:", err)
-					replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
-					break
-				}
-
-				msgList := strings.Split(message.Text, "\n")
-				if len(msgList) == 3 {
-					msg := createExpense(token, msgList[0], msgList[1], msgList[2])
-					replyMessage = linebot.NewTextMessage(msg)
-				} else if strings.Contains(msgList[0], "支出") {
-					imgUrl, err := getExpenseImage(grpcClient, token, msgList[0])
-					if err != nil {
-						log.Println("getExpenseImage err:", err)
-						replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
-					} else {
-						replyMessage = linebot.NewImageMessage(imgUrl, imgUrl)
-					}
-				}
-
-			default:
-				log.Printf("Unknown message: %v", message)
-			}
-
-			if _, err = bot.ReplyMessage(e.ReplyToken, replyMessage).Do(); err != nil {
-				log.Print(err)
-			}
-		case webhook.FollowEvent:
-			log.Printf("message: Got followed event")
-		case webhook.PostbackEvent:
-			data := e.Postback.Data
-			log.Printf("Unknown message: Got postback: " + data)
-		case webhook.BeaconEvent:
-			log.Printf("Got beacon: " + e.Beacon.Hwid)
-		}
-	}
-}
-
-func getAuthToken(client proto.BillSplittingClient, userId string, displayName string) (string, error) {
-	resp, err := client.GetAuthToken(context.Background(), &proto.GetAuthTokenRequest{
-		Id:       userId,
-		Username: displayName,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	return resp.Token, nil
 }
 
 func createExpense(token, category, description, amount string) string {
