@@ -20,8 +20,9 @@ type Expense struct {
 }
 
 type Group struct {
-	ID   int32  `json:"id"`
-	Name string `json:"name"`
+	ID     int32          `json:"id"`
+	Name   string         `json:"name"`
+	LineID sql.NullString `json:"line_id"`
 }
 
 type GroupInvitation struct {

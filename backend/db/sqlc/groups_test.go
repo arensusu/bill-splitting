@@ -11,8 +11,12 @@ import (
 
 func createRandomGroup(t *testing.T) Group {
 	name := helper.RandomString(10)
+	lineId := helper.RandomString(20)
 
-	group, err := testStore.CreateGroup(context.Background(), name)
+	group, err := testStore.CreateGroup(context.Background(), CreateGroupParams{
+		Name:   name,
+		LineID: sql.NullString{String: lineId, Valid: lineId != ""},
+	})
 
 	require.NoError(t, err)
 	require.NotEmpty(t, group)

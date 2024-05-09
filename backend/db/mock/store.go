@@ -11,6 +11,7 @@ package mockdb
 import (
 	db "bill-splitting/db/sqlc"
 	context "context"
+	sql "database/sql"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -55,7 +56,7 @@ func (mr *MockStoreMockRecorder) CreateExpense(arg0, arg1 any) *gomock.Call {
 }
 
 // CreateGroup mocks base method.
-func (m *MockStore) CreateGroup(arg0 context.Context, arg1 string) (db.Group, error) {
+func (m *MockStore) CreateGroup(arg0 context.Context, arg1 db.CreateGroupParams) (db.Group, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateGroup", arg0, arg1)
 	ret0, _ := ret[0].(db.Group)
@@ -288,6 +289,21 @@ func (mr *MockStoreMockRecorder) GetGroupInvitation(arg0, arg1 any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupInvitation", reflect.TypeOf((*MockStore)(nil).GetGroupInvitation), arg0, arg1)
 }
 
+// GetLineGroup mocks base method.
+func (m *MockStore) GetLineGroup(arg0 context.Context, arg1 sql.NullString) (db.Group, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLineGroup", arg0, arg1)
+	ret0, _ := ret[0].(db.Group)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLineGroup indicates an expected call of GetLineGroup.
+func (mr *MockStoreMockRecorder) GetLineGroup(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLineGroup", reflect.TypeOf((*MockStore)(nil).GetLineGroup), arg0, arg1)
+}
+
 // GetMember mocks base method.
 func (m *MockStore) GetMember(arg0 context.Context, arg1 int32) (db.Member, error) {
 	m.ctrl.T.Helper()
@@ -379,10 +395,10 @@ func (mr *MockStoreMockRecorder) ListExpenses(arg0, arg1 any) *gomock.Call {
 }
 
 // ListGroups mocks base method.
-func (m *MockStore) ListGroups(arg0 context.Context, arg1 string) ([]db.Group, error) {
+func (m *MockStore) ListGroups(arg0 context.Context, arg1 string) ([]db.ListGroupsRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListGroups", arg0, arg1)
-	ret0, _ := ret[0].([]db.Group)
+	ret0, _ := ret[0].([]db.ListGroupsRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

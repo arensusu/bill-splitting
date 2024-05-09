@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type BillSplittingClient interface {
 	CreateExpenseSummaryChart(ctx context.Context, in *CreateExpenseSummaryChartRequest, opts ...grpc.CallOption) (*CreateExpenseSummaryChartResponse, error)
 	GetAuthToken(ctx context.Context, in *GetAuthTokenRequest, opts ...grpc.CallOption) (*GetAuthTokenResponse, error)
+	CreateLineGroup(ctx context.Context, in *CreateLineGroupRequest, opts ...grpc.CallOption) (*CreateLineGroupResponse, error)
 }
 
 type billSplittingClient struct {
@@ -52,12 +53,22 @@ func (c *billSplittingClient) GetAuthToken(ctx context.Context, in *GetAuthToken
 	return out, nil
 }
 
+func (c *billSplittingClient) CreateLineGroup(ctx context.Context, in *CreateLineGroupRequest, opts ...grpc.CallOption) (*CreateLineGroupResponse, error) {
+	out := new(CreateLineGroupResponse)
+	err := c.cc.Invoke(ctx, "/proto.BillSplitting/CreateLineGroup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BillSplittingServer is the server API for BillSplitting service.
 // All implementations must embed UnimplementedBillSplittingServer
 // for forward compatibility
 type BillSplittingServer interface {
 	CreateExpenseSummaryChart(context.Context, *CreateExpenseSummaryChartRequest) (*CreateExpenseSummaryChartResponse, error)
 	GetAuthToken(context.Context, *GetAuthTokenRequest) (*GetAuthTokenResponse, error)
+	CreateLineGroup(context.Context, *CreateLineGroupRequest) (*CreateLineGroupResponse, error)
 	mustEmbedUnimplementedBillSplittingServer()
 }
 
@@ -70,6 +81,9 @@ func (UnimplementedBillSplittingServer) CreateExpenseSummaryChart(context.Contex
 }
 func (UnimplementedBillSplittingServer) GetAuthToken(context.Context, *GetAuthTokenRequest) (*GetAuthTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAuthToken not implemented")
+}
+func (UnimplementedBillSplittingServer) CreateLineGroup(context.Context, *CreateLineGroupRequest) (*CreateLineGroupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateLineGroup not implemented")
 }
 func (UnimplementedBillSplittingServer) mustEmbedUnimplementedBillSplittingServer() {}
 
@@ -120,6 +134,24 @@ func _BillSplitting_GetAuthToken_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BillSplitting_CreateLineGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateLineGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BillSplittingServer).CreateLineGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.BillSplitting/CreateLineGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BillSplittingServer).CreateLineGroup(ctx, req.(*CreateLineGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BillSplitting_ServiceDesc is the grpc.ServiceDesc for BillSplitting service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +166,10 @@ var BillSplitting_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAuthToken",
 			Handler:    _BillSplitting_GetAuthToken_Handler,
+		},
+		{
+			MethodName: "CreateLineGroup",
+			Handler:    _BillSplitting_CreateLineGroup_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

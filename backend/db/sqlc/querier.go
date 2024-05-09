@@ -6,11 +6,12 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 type Querier interface {
 	CreateExpense(ctx context.Context, arg CreateExpenseParams) (Expense, error)
-	CreateGroup(ctx context.Context, name string) (Group, error)
+	CreateGroup(ctx context.Context, arg CreateGroupParams) (Group, error)
 	CreateGroupInvitation(ctx context.Context, arg CreateGroupInvitationParams) (GroupInvitation, error)
 	CreateMember(ctx context.Context, arg CreateMemberParams) (Member, error)
 	CreateSettlement(ctx context.Context, arg CreateSettlementParams) (Settlement, error)
@@ -24,13 +25,14 @@ type Querier interface {
 	GetExpense(ctx context.Context, id int32) (GetExpenseRow, error)
 	GetGroup(ctx context.Context, id int32) (Group, error)
 	GetGroupInvitation(ctx context.Context, code string) (GroupInvitation, error)
+	GetLineGroup(ctx context.Context, lineID sql.NullString) (Group, error)
 	GetMember(ctx context.Context, id int32) (Member, error)
 	GetMembership(ctx context.Context, arg GetMembershipParams) (Member, error)
 	GetSettlement(ctx context.Context, arg GetSettlementParams) (Settlement, error)
 	GetUser(ctx context.Context, id string) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	ListExpenses(ctx context.Context, groupID int32) ([]ListExpensesRow, error)
-	ListGroups(ctx context.Context, userID string) ([]Group, error)
+	ListGroups(ctx context.Context, userID string) ([]ListGroupsRow, error)
 	ListMembersOfGroup(ctx context.Context, groupID int32) ([]ListMembersOfGroupRow, error)
 	ListNonSettledExpenses(ctx context.Context, groupID int32) ([]ListNonSettledExpensesRow, error)
 	ListSettlements(ctx context.Context, groupID int32) ([]Settlement, error)

@@ -1,9 +1,13 @@
 package db
 
-import "context"
+import (
+	"context"
+	"database/sql"
+)
 
 type CreateGroupTxParams struct {
 	Name   string `json:"name"`
+	LineId string
 	UserID string `json:"userId"`
 }
 
@@ -16,7 +20,13 @@ func (s *SQLStore) CreateGroupTx(ctx context.Context, arg CreateGroupTxParams) (
 
 	q := New(tx)
 
-	group, err := q.CreateGroup(ctx, arg.Name)
+	group, err := q.CreateGroup(ctx, CreateGroupParams{
+		Name: arg.Name,
+		LineID: sql.NullString{
+			String: arg.LineId,
+			Valid:  arg.LineId != "",
+		},
+	})
 	if err != nil {
 		return Group{}, err
 	}

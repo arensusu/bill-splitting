@@ -7,18 +7,24 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createGroup = `-- name: CreateGroup :one
-INSERT INTO groups (name)
-VALUES ($1)
-RETURNING id, name
+INSERT INTO groups (name, line_id)
+VALUES ($1, $2)
+RETURNING id, name, line_id
 `
 
-func (q *Queries) CreateGroup(ctx context.Context, name string) (Group, error) {
-	row := q.db.QueryRowContext(ctx, createGroup, name)
+type CreateGroupParams struct {
+	Name   string         `json:"name"`
+	LineID sql.NullString `json:"line_id"`
+}
+
+func (q *Queries) CreateGroup(ctx context.Context, arg CreateGroupParams) (Group, error) {
+	row := q.db.QueryRowContext(ctx, createGroup, arg.Name, arg.LineID)
 	var i Group
-	err := row.Scan(&i.ID, &i.Name)
+	err := row.Scan(&i.ID, &i.Name, &i.LineID)
 	return i, err
 }
 
@@ -33,7 +39,7 @@ func (q *Queries) DeleteGroup(ctx context.Context, id int32) error {
 }
 
 const getGroup = `-- name: GetGroup :one
-SELECT id, name
+SELECT id, name, line_id
 FROM groups
 WHERE id = $1
 LIMIT 1
@@ -42,7 +48,21 @@ LIMIT 1
 func (q *Queries) GetGroup(ctx context.Context, id int32) (Group, error) {
 	row := q.db.QueryRowContext(ctx, getGroup, id)
 	var i Group
-	err := row.Scan(&i.ID, &i.Name)
+	err := row.Scan(&i.ID, &i.Name, &i.LineID)
+	return i, err
+}
+
+const getLineGroup = `-- name: GetLineGroup :one
+SELECT id, name, line_id
+FROM groups
+WHERE line_id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetLineGroup(ctx context.Context, lineID sql.NullString) (Group, error) {
+	row := q.db.QueryRowContext(ctx, getLineGroup, lineID)
+	var i Group
+	err := row.Scan(&i.ID, &i.Name, &i.LineID)
 	return i, err
 }
 
@@ -52,15 +72,20 @@ FROM groups, (SELECT group_id FROM members WHERE user_id = $1) AS group_members
 WHERE groups.id = group_members.group_id
 `
 
-func (q *Queries) ListGroups(ctx context.Context, userID string) ([]Group, error) {
+type ListGroupsRow struct {
+	ID   int32  `json:"id"`
+	Name string `json:"name"`
+}
+
+func (q *Queries) ListGroups(ctx context.Context, userID string) ([]ListGroupsRow, error) {
 	rows, err := q.db.QueryContext(ctx, listGroups, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Group{}
+	items := []ListGroupsRow{}
 	for rows.Next() {
-		var i Group
+		var i ListGroupsRow
 		if err := rows.Scan(&i.ID, &i.Name); err != nil {
 			return nil, err
 		}
@@ -79,7 +104,7 @@ const updateGroup = `-- name: UpdateGroup :one
 UPDATE groups
 SET name = $2
 WHERE id = $1
-RETURNING id, name
+RETURNING id, name, line_id
 `
 
 type UpdateGroupParams struct {
@@ -90,6 +115,6 @@ type UpdateGroupParams struct {
 func (q *Queries) UpdateGroup(ctx context.Context, arg UpdateGroupParams) (Group, error) {
 	row := q.db.QueryRowContext(ctx, updateGroup, arg.ID, arg.Name)
 	var i Group
-	err := row.Scan(&i.ID, &i.Name)
+	err := row.Scan(&i.ID, &i.Name, &i.LineID)
 	return i, err
 }

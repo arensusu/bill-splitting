@@ -1,12 +1,18 @@
 -- name: CreateGroup :one
-INSERT INTO groups (name)
-VALUES ($1)
+INSERT INTO groups (name, line_id)
+VALUES ($1, $2)
 RETURNING *;
 
 -- name: GetGroup :one
 SELECT *
 FROM groups
 WHERE id = $1
+LIMIT 1;
+
+-- name: GetLineGroup :one
+SELECT *
+FROM groups
+WHERE line_id = $1
 LIMIT 1;
 
 -- name: ListGroups :many
