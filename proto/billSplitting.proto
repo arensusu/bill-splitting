@@ -12,4 +12,5 @@ service BillSplitting {
     rpc CreateExpenseSummaryChart(CreateExpenseSummaryChartRequest) returns (CreateExpenseSummaryChartResponse);
     rpc GetAuthToken(GetAuthTokenRequest) returns (GetAuthTokenResponse);
     rpc CreateLineGroup(CreateLineGroupRequest) returns (CreateLineGroupResponse);
+    rpc AddGroupMember(AddGroupMemberRequest) returns (AddGroupMemberResponse);
 }

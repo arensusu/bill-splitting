@@ -34,3 +34,28 @@ func (s *Server) CreateLineGroup(ctx context.Context, req *proto.CreateLineGroup
 		Name:   group.Name,
 	}, nil
 }
+
+func (s *Server) AddGroupMember(ctx context.Context, req *proto.AddGroupMemberRequest) (*proto.AddGroupMemberResponse, error) {
+	_, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.GroupId == 0 || req.UserId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid group id or user id")
+	}
+
+	member, err := s.store.CreateMember(ctx, db.CreateMemberParams{
+		GroupID: req.GroupId,
+		UserID:  req.UserId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &proto.AddGroupMemberResponse{
+		Id:      member.ID,
+		GroupId: member.GroupID,
+		UserId:  member.UserID,
+	}, nil
+}

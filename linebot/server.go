@@ -3,6 +3,7 @@ package main
 import (
 	"bill-splitting-linebot/proto"
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"github.com/line/line-bot-sdk-go/v8/linebot"
 	"github.com/line/line-bot-sdk-go/v8/linebot/messaging_api"
 	"github.com/line/line-bot-sdk-go/v8/linebot/webhook"
+	"google.golang.org/grpc/metadata"
 )
 
 type LineBotServer struct {
@@ -41,6 +43,8 @@ func (s *LineBotServer) callbackHandler(w http.ResponseWriter, r *http.Request) 
 			s.messageHandler(e)
 		case webhook.FollowEvent:
 			s.followHandler(e)
+		case webhook.JoinEvent:
+			s.joinHandler(e)
 		case webhook.PostbackEvent:
 			data := e.Postback.Data
 			log.Printf("Unknown message: Got postback: " + data)
@@ -120,13 +124,104 @@ func (s *LineBotServer) followHandler(event webhook.FollowEvent) {
 		return
 	}
 
-	_, err = s.getAuthToken(source.UserId, profile.DisplayName)
+	token, err := s.getAuthToken(source.UserId, profile.DisplayName)
 	if err != nil {
 		log.Println("getAuthToken err:", err)
 		return
 	}
 
+	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	resp, err := s.GrpcClient.CreateLineGroup(ctx, &proto.CreateLineGroupRequest{
+		Name:   "個人",
+		LineId: source.UserId,
+	})
+	if err != nil {
+		log.Println("CreateLineGroup err:", err)
+		return
+	}
+
+	if resp.Name != "個人" || resp.LineId != source.UserId {
+		log.Println("group name or line id is not match")
+		return
+	}
+
 	replyMessage := linebot.NewTextMessage("Welcome " + profile.DisplayName + "!")
+	if _, err := s.Bot.ReplyMessage(event.ReplyToken, replyMessage).Do(); err != nil {
+		log.Print(err)
+	}
+}
+
+func (s *LineBotServer) joinHandler(event webhook.JoinEvent) {
+	source, ok := event.Source.(webhook.GroupSource)
+	if !ok {
+		log.Printf("Unknown source: %v", source)
+		return
+	}
+
+	memberIds, err := s.MsgApi.GetGroupMembersIds(source.GroupId, "")
+	if err != nil {
+		log.Println("GetGroupMembersIds err:", err)
+		return
+	}
+
+	profiles := []*messaging_api.GroupUserProfileResponse{}
+	for _, memberId := range memberIds.MemberIds {
+		profile, err := s.MsgApi.GetGroupMemberProfile(source.GroupId, memberId)
+		if err != nil {
+			log.Println("GetGroupMemberProfile err:", err)
+			return
+		}
+		profiles = append(profiles, profile)
+	}
+
+	var token string
+	for _, profile := range profiles {
+		token, err = s.getAuthToken(source.UserId, profile.DisplayName)
+		if err != nil {
+			log.Println("getAuthToken err:", err)
+			return
+		}
+	}
+
+	group, err := s.MsgApi.GetGroupSummary(source.GroupId)
+	if err != nil {
+		log.Println("GetGroupSummary err:", err)
+		return
+	}
+
+	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	createGroupResp, err := s.GrpcClient.CreateLineGroup(ctx, &proto.CreateLineGroupRequest{
+		Name:   group.GroupName,
+		LineId: source.GroupId,
+	})
+	if err != nil {
+		log.Println("CreateLineGroup err:", err)
+		return
+	}
+
+	if createGroupResp.Name != group.GroupName || createGroupResp.LineId != source.GroupId {
+		log.Println("group name or line id is not match")
+		return
+	}
+
+	for i := 0; i < len(memberIds.MemberIds)-1; i += 1 {
+		resp, err := s.GrpcClient.AddGroupMember(ctx, &proto.AddGroupMemberRequest{
+			GroupId: createGroupResp.Id,
+			UserId:  memberIds.MemberIds[i],
+		})
+		if err != nil {
+			log.Println("AddGroupMember err:", err)
+			return
+		}
+		if resp.GroupId != createGroupResp.Id || resp.UserId != memberIds.MemberIds[i] {
+			log.Println("group id or user id is not match")
+			return
+		}
+	}
+
+	replyMessage := linebot.NewTextMessage("Hello " + group.GroupName + "!")
 	if _, err := s.Bot.ReplyMessage(event.ReplyToken, replyMessage).Do(); err != nil {
 		log.Print(err)
 	}
