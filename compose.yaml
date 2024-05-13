@@ -14,7 +14,6 @@ services:
       dockerfile: backend.dockerfile
     depends_on:
       - postgres
-    command: ["/app/main"]
   frontend:
     build:
       context: .
