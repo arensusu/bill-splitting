@@ -13,4 +13,6 @@ service BillSplitting {
     rpc GetAuthToken(GetAuthTokenRequest) returns (GetAuthTokenResponse);
     rpc CreateLineGroup(CreateLineGroupRequest) returns (CreateLineGroupResponse);
     rpc AddGroupMember(AddGroupMemberRequest) returns (AddGroupMemberResponse);
+    rpc GetLineGroup(GetLineGroupRequest) returns (GetLineGroupResponse);
+    rpc GetMembership(GetMembershipRequest) returns (GetMembershipResponse);
 }

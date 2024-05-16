@@ -15,12 +15,31 @@ message CreateLineGroupResponse {
     string line_id = 3;
 }
 
+message GetLineGroupRequest {
+    string line_id = 1;
+}
+
+message GetLineGroupResponse {
+    int32 id = 1;
+    string name = 2;
+    string line_id = 3;
+}
+
 message AddGroupMemberRequest {
     int32 group_id = 1;
-    string user_id = 2;
 }
 
 message AddGroupMemberResponse {
+    int32 id = 1;
+    int32 group_id = 2;
+    string user_id = 3;
+}
+
+message GetMembershipRequest {
+    int32 group_id = 1;
+}
+
+message GetMembershipResponse {
     int32 id = 1;
     int32 group_id = 2;
     string user_id = 3;

@@ -15,7 +15,6 @@ package main
 import (
 	"bill-splitting-linebot/proto"
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -28,7 +27,6 @@ import (
 	"github.com/line/line-bot-sdk-go/v8/linebot/messaging_api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
 )
 
 func main() {
@@ -91,36 +89,4 @@ func createExpense(token, category, description, amount string) string {
 		return "發生錯誤，請稍後再試"
 	}
 	return "新增成功"
-}
-
-func getExpenseImage(client proto.BillSplittingClient, token, summaryType string) (string, error) {
-	groupId := 1
-
-	var startTime, endTime time.Time
-	now := time.Now()
-
-	switch summaryType {
-	case "本月支出":
-		startTime = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
-		endTime = startTime.AddDate(0, 1, -1)
-	case "今年支出":
-		startTime = time.Date(now.Year(), 1, 1, 0, 0, 0, 0, now.Location())
-		endTime = startTime.AddDate(1, 0, -1)
-	case "本周支出", "本週支出":
-		startTime = now.AddDate(0, 0, int(time.Sunday)-int(now.Weekday()))
-		endTime = startTime.AddDate(0, 0, 7)
-	}
-
-	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
-	resp, err := client.CreateExpenseSummaryChart(ctx, &proto.CreateExpenseSummaryChartRequest{
-		GroupId:   int32(groupId),
-		StartDate: startTime.Format("2006-01-02"),
-		EndDate:   endTime.Format("2006-01-02"),
-	})
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("https://arensusu.ddns.net/api/v1/images/%s", resp.Url), nil
 }
