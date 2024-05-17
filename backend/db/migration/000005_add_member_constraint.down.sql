@@ -1,0 +1,1 @@
+ALTER TABLE "members" DROP CONSTRAINT "unique_member";

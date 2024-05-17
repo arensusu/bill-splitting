@@ -251,7 +251,7 @@ func (s *LineBotServer) addMembership(token string, groupId int32) error {
 	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
-	_, err := s.GrpcClient.AddGroupMember(ctx, &proto.AddGroupMemberRequest{
+	_, err := s.GrpcClient.AddMembership(ctx, &proto.AddMembershipRequest{
 		GroupId: groupId,
 	})
 	return err

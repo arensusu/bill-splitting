@@ -25,7 +25,7 @@ type BillSplittingClient interface {
 	CreateExpenseSummaryChart(ctx context.Context, in *CreateExpenseSummaryChartRequest, opts ...grpc.CallOption) (*CreateExpenseSummaryChartResponse, error)
 	GetAuthToken(ctx context.Context, in *GetAuthTokenRequest, opts ...grpc.CallOption) (*GetAuthTokenResponse, error)
 	CreateLineGroup(ctx context.Context, in *CreateLineGroupRequest, opts ...grpc.CallOption) (*CreateLineGroupResponse, error)
-	AddGroupMember(ctx context.Context, in *AddGroupMemberRequest, opts ...grpc.CallOption) (*AddGroupMemberResponse, error)
+	AddMembership(ctx context.Context, in *AddMembershipRequest, opts ...grpc.CallOption) (*AddMembershipResponse, error)
 	GetLineGroup(ctx context.Context, in *GetLineGroupRequest, opts ...grpc.CallOption) (*GetLineGroupResponse, error)
 	GetMembership(ctx context.Context, in *GetMembershipRequest, opts ...grpc.CallOption) (*GetMembershipResponse, error)
 }
@@ -65,9 +65,9 @@ func (c *billSplittingClient) CreateLineGroup(ctx context.Context, in *CreateLin
 	return out, nil
 }
 
-func (c *billSplittingClient) AddGroupMember(ctx context.Context, in *AddGroupMemberRequest, opts ...grpc.CallOption) (*AddGroupMemberResponse, error) {
-	out := new(AddGroupMemberResponse)
-	err := c.cc.Invoke(ctx, "/proto.BillSplitting/AddGroupMember", in, out, opts...)
+func (c *billSplittingClient) AddMembership(ctx context.Context, in *AddMembershipRequest, opts ...grpc.CallOption) (*AddMembershipResponse, error) {
+	out := new(AddMembershipResponse)
+	err := c.cc.Invoke(ctx, "/proto.BillSplitting/AddMembership", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +99,7 @@ type BillSplittingServer interface {
 	CreateExpenseSummaryChart(context.Context, *CreateExpenseSummaryChartRequest) (*CreateExpenseSummaryChartResponse, error)
 	GetAuthToken(context.Context, *GetAuthTokenRequest) (*GetAuthTokenResponse, error)
 	CreateLineGroup(context.Context, *CreateLineGroupRequest) (*CreateLineGroupResponse, error)
-	AddGroupMember(context.Context, *AddGroupMemberRequest) (*AddGroupMemberResponse, error)
+	AddMembership(context.Context, *AddMembershipRequest) (*AddMembershipResponse, error)
 	GetLineGroup(context.Context, *GetLineGroupRequest) (*GetLineGroupResponse, error)
 	GetMembership(context.Context, *GetMembershipRequest) (*GetMembershipResponse, error)
 	mustEmbedUnimplementedBillSplittingServer()
@@ -118,8 +118,8 @@ func (UnimplementedBillSplittingServer) GetAuthToken(context.Context, *GetAuthTo
 func (UnimplementedBillSplittingServer) CreateLineGroup(context.Context, *CreateLineGroupRequest) (*CreateLineGroupResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateLineGroup not implemented")
 }
-func (UnimplementedBillSplittingServer) AddGroupMember(context.Context, *AddGroupMemberRequest) (*AddGroupMemberResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddGroupMember not implemented")
+func (UnimplementedBillSplittingServer) AddMembership(context.Context, *AddMembershipRequest) (*AddMembershipResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddMembership not implemented")
 }
 func (UnimplementedBillSplittingServer) GetLineGroup(context.Context, *GetLineGroupRequest) (*GetLineGroupResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLineGroup not implemented")
@@ -194,20 +194,20 @@ func _BillSplitting_CreateLineGroup_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _BillSplitting_AddGroupMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddGroupMemberRequest)
+func _BillSplitting_AddMembership_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddMembershipRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BillSplittingServer).AddGroupMember(ctx, in)
+		return srv.(BillSplittingServer).AddMembership(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.BillSplitting/AddGroupMember",
+		FullMethod: "/proto.BillSplitting/AddMembership",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BillSplittingServer).AddGroupMember(ctx, req.(*AddGroupMemberRequest))
+		return srv.(BillSplittingServer).AddMembership(ctx, req.(*AddMembershipRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -268,8 +268,8 @@ var BillSplitting_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _BillSplitting_CreateLineGroup_Handler,
 		},
 		{
-			MethodName: "AddGroupMember",
-			Handler:    _BillSplitting_AddGroupMember_Handler,
+			MethodName: "AddMembership",
+			Handler:    _BillSplitting_AddMembership_Handler,
 		},
 		{
 			MethodName: "GetLineGroup",

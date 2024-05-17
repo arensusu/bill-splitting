@@ -61,7 +61,7 @@ func (s *Server) GetLineGroup(ctx context.Context, req *proto.GetLineGroupReques
 	}, nil
 }
 
-func (s *Server) AddMembership(ctx context.Context, req *proto.AddGroupMemberRequest) (*proto.AddGroupMemberResponse, error) {
+func (s *Server) AddMembership(ctx context.Context, req *proto.AddMembershipRequest) (*proto.AddMembershipResponse, error) {
 	payload, err := s.authorize(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, err.Error())
@@ -79,7 +79,7 @@ func (s *Server) AddMembership(ctx context.Context, req *proto.AddGroupMemberReq
 		return nil, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &proto.AddGroupMemberResponse{
+	return &proto.AddMembershipResponse{
 		Id:      member.ID,
 		GroupId: member.GroupID,
 		UserId:  member.UserID,
