@@ -66,7 +66,6 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 	switch message := event.Message.(type) {
 	// Handle only on text message
 	case webhook.TextMessageContent:
-		_ = lineGroupId
 
 		profile, err := s.MsgApi.GetProfile(userId)
 		if err != nil {
@@ -82,8 +81,9 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 			break
 		}
 
+		var groupId int32
 		if lineGroupId != "" {
-			groupId, err := s.getGroup(token, lineGroupId)
+			groupId, err = s.getGroup(token, lineGroupId)
 			if err != nil {
 				group, err := s.MsgApi.GetGroupSummary(lineGroupId)
 				if err != nil {
@@ -91,7 +91,7 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 					replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
 					break
 				}
-				if err = s.createGroup(token, lineGroupId, group.GroupName); err != nil {
+				if groupId, err = s.createGroup(token, lineGroupId, group.GroupName); err != nil {
 					log.Println("createGroup err:", err)
 					replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
 					break
@@ -106,14 +106,21 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 					break
 				}
 			}
+		} else {
+			groupId, err = s.getGroup(token, userId)
+			if err != nil {
+				log.Println("getGroup err:", err)
+				replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
+				break
+			}
 		}
 
 		msgList := strings.Split(message.Text, "\n")
 		if len(msgList) == 3 {
-			msg := createExpense(token, msgList[0], msgList[1], msgList[2])
+			msg := createExpense(token, groupId, msgList[0], msgList[1], msgList[2])
 			replyMessage = linebot.NewTextMessage(msg)
 		} else if strings.Contains(msgList[0], "支出") {
-			imgUrl, err := s.getExpenseImage(token, msgList[0])
+			imgUrl, err := s.getExpenseImage(token, groupId, msgList[0])
 			if err != nil {
 				log.Println("getExpenseImage err:", err)
 				replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
@@ -150,7 +157,7 @@ func (s *LineBotServer) followHandler(event webhook.FollowEvent) {
 		return
 	}
 
-	if err = s.createGroup(token, "", "個人"); err != nil {
+	if _, err = s.createGroup(token, "", "個人"); err != nil {
 		log.Println("createGroup err:", err)
 		return
 	}
@@ -173,7 +180,7 @@ func (s *LineBotServer) getAuthToken(userId string, displayName string) (string,
 	return resp.Token, nil
 }
 
-func (s *LineBotServer) createGroup(token, lineGroupId, groupName string) error {
+func (s *LineBotServer) createGroup(token, lineGroupId, groupName string) (int32, error) {
 	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
@@ -182,14 +189,14 @@ func (s *LineBotServer) createGroup(token, lineGroupId, groupName string) error 
 		LineId: lineGroupId,
 	})
 	if err != nil {
-		return fmt.Errorf("CreateLineGroup err: %v", err)
+		return 0, fmt.Errorf("CreateLineGroup err: %v", err)
 	}
 
 	if createGroupResp.Name != groupName || createGroupResp.LineId != lineGroupId {
-		return errors.New("group name or line id is not match")
+		return 0, errors.New("group name or line id is not match")
 	}
 
-	return nil
+	return createGroupResp.Id, nil
 }
 
 func (s *LineBotServer) getGroup(token, lineGroupId string) (int32, error) {
@@ -205,9 +212,7 @@ func (s *LineBotServer) getGroup(token, lineGroupId string) (int32, error) {
 	return group.GetId(), nil
 }
 
-func (s *LineBotServer) getExpenseImage(token, summaryType string) (string, error) {
-	groupId := 1
-
+func (s *LineBotServer) getExpenseImage(token string, groupId int32, summaryType string) (string, error) {
 	var startTime, endTime time.Time
 	now := time.Now()
 

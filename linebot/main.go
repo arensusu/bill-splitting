@@ -57,8 +57,7 @@ func main() {
 	http.ListenAndServe(addr, nil)
 }
 
-func createExpense(token, category, description, amount string) string {
-	groupId := 1
+func createExpense(token string, groupId int32, category, description, amount string) string {
 	uri := fmt.Sprintf("http://api:8080/api/v1/groups/%d/expenses", groupId)
 
 	date := time.Now().Format("2006-01-02")
