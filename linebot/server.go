@@ -117,7 +117,7 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 
 		msgList := strings.Split(message.Text, "\n")
 		if len(msgList) == 3 {
-			msg := createExpense(token, groupId, msgList[0], msgList[1], msgList[2])
+			msg := s.createExpense(token, groupId, msgList[0], msgList[1], msgList[2])
 			replyMessage = linebot.NewTextMessage(msg)
 		} else if strings.Contains(msgList[0], "支出") {
 			imgUrl, err := s.getExpenseImage(token, groupId, msgList[0])
@@ -260,4 +260,27 @@ func (s *LineBotServer) addMembership(token string, groupId int32) error {
 		GroupId: groupId,
 	})
 	return err
+}
+
+func (s *LineBotServer) createExpense(token string, groupId int32, category, description, amount string) string {
+	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+	date := time.Now().Format("2006-01-02")
+
+	expense, err := s.GrpcClient.CreateExpense(ctx, &proto.CreateExpenseRequest{
+		GroupId:     groupId,
+		Category:    category,
+		Description: description,
+		Amount:      amount,
+		Date:        date,
+	})
+	if err != nil {
+		return "新增失敗"
+	}
+
+	if expense.Id == 0 {
+		return "新增失敗"
+	}
+	return "新增成功"
 }

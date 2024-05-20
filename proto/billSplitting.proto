@@ -15,4 +15,5 @@ service BillSplitting {
     rpc AddMembership(AddMembershipRequest) returns (AddMembershipResponse);
     rpc GetLineGroup(GetLineGroupRequest) returns (GetLineGroupResponse);
     rpc GetMembership(GetMembershipRequest) returns (GetMembershipResponse);
+    rpc CreateExpense(CreateExpenseRequest) returns (CreateExpenseResponse);
 }

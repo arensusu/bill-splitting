@@ -13,3 +13,19 @@ message CreateExpenseSummaryChartRequest {
 message CreateExpenseSummaryChartResponse {
     string url = 1;
 }
+
+message CreateExpenseRequest {
+    int32 group_id = 1;
+    string category = 2;
+    string description = 3;
+    string amount = 4;
+    string date = 5;
+}
+
+message CreateExpenseResponse {
+    int32 id = 1;
+    string category = 2;
+    string description = 3;
+    string amount = 4;
+    string date = 5;
+}

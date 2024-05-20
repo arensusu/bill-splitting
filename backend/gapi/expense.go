@@ -5,6 +5,7 @@ import (
 	"bill-splitting/proto"
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -12,6 +13,8 @@ import (
 
 	"github.com/golang/freetype/truetype"
 	"github.com/wcharczuk/go-chart/v2"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *Server) CreateExpenseSummaryChart(ctx context.Context, req *proto.CreateExpenseSummaryChartRequest) (*proto.CreateExpenseSummaryChartResponse, error) {
@@ -94,5 +97,42 @@ func (s *Server) CreateExpenseSummaryChart(ctx context.Context, req *proto.Creat
 
 	return &proto.CreateExpenseSummaryChartResponse{
 		Url: fmt.Sprintf("%x.png", hashBytes),
+	}, nil
+}
+
+func (s *Server) CreateExpense(ctx context.Context, req *proto.CreateExpenseRequest) (*proto.CreateExpenseResponse, error) {
+	payload, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.GroupId == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid group id")
+	}
+
+	member, err := s.store.GetMembership(ctx, db.GetMembershipParams{
+		GroupID: req.GroupId,
+		UserID:  payload.UserID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	expense, err := s.store.CreateExpense(ctx, db.CreateExpenseParams{
+		MemberID:    member.ID,
+		Amount:      req.Amount,
+		Description: req.Description,
+		Category:    sql.NullString{String: req.Category, Valid: req.Category != ""},
+		Date:        time.Now(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &proto.CreateExpenseResponse{
+		Id:          expense.ID,
+		Category:    expense.Category.String,
+		Date:        expense.Date.Format("2006-01-02"),
+		Amount:      expense.Amount,
+		Description: expense.Description,
 	}, nil
 }

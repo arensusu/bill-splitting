@@ -14,13 +14,10 @@ package main
 
 import (
 	"bill-splitting-linebot/proto"
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/line/line-bot-sdk-go/v8/linebot"
@@ -55,37 +52,4 @@ func main() {
 	addr := fmt.Sprintf(":%s", port)
 	log.Println("Listening on", addr)
 	http.ListenAndServe(addr, nil)
-}
-
-func createExpense(token string, groupId int32, category, description, amount string) string {
-	uri := fmt.Sprintf("http://api:8080/api/v1/groups/%d/expenses", groupId)
-
-	date := time.Now().Format("2006-01-02")
-	body, err := json.Marshal(map[string]string{
-		"category":    category,
-		"description": description,
-		"amount":      amount,
-		"date":        date,
-	})
-	if err != nil {
-		return "發生錯誤，請稍後再試"
-	}
-
-	req, err := http.NewRequest("POST", uri, bytes.NewReader(body))
-	if err != nil {
-		return "發生錯誤，請稍後再試"
-	}
-
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "發生錯誤，請稍後再試"
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "發生錯誤，請稍後再試"
-	}
-	return "新增成功"
 }
