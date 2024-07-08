@@ -46,6 +46,9 @@ func (s *LineBotServer) getExpenseImage(token string, groupId int32, summaryType
 	case "本周支出", "本週支出":
 		startTime = now.AddDate(0, 0, int(time.Sunday)-int(now.Weekday()))
 		endTime = startTime.AddDate(0, 0, 7)
+	case "上週支出", "上周支出":
+		startTime = now.AddDate(0, 0, int(time.Sunday)-int(now.Weekday())-7)
+		endTime = startTime.AddDate(0, 0, 7)
 	}
 
 	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
