@@ -96,7 +96,7 @@ func (s *LineBotServer) getSource(source webhook.SourceInterface) (Source, error
 
 func (s *LineBotServer) groupChatPreProcessing(token string, source Source) (int32, error) {
 	groupId, err := s.getGroup(token, *source.GroupId)
-	if err == nil {
+	if err != nil {
 		group, err := s.MsgApi.GetGroupSummary(*source.GroupId)
 		if err != nil {
 			return 0, fmt.Errorf("GetGroupSummary err: %w", err)
