@@ -4,23 +4,30 @@ import (
 	"bill-splitting-linebot/proto"
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"google.golang.org/grpc/metadata"
 )
 
-func (s *LineBotServer) createExpense(token string, groupId int32, category, description, amount string) string {
+func (s *LineBotServer) createExpense(token string, groupId int32, category, description, currency, amount string) string {
 	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
 	date := time.Now().Format("2006-01-02")
 
+	amountFloat, err := strconv.ParseFloat(amount, 64)
+	if err != nil {
+		return "新增失敗"
+	}
+
 	expense, err := s.GrpcClient.CreateExpense(ctx, &proto.CreateExpenseRequest{
-		GroupId:     groupId,
-		Category:    category,
-		Description: description,
-		Amount:      amount,
-		Date:        date,
+		GroupId:        groupId,
+		Category:       category,
+		Description:    description,
+		OriginCurrency: currency,
+		OriginAmount:   amountFloat,
+		Date:           date,
 	})
 	if err != nil {
 		return "新增失敗"

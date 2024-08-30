@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package proto;
 
-import "proto/expense.proto";
-import "proto/auth.proto";
-import "proto/group.proto";
+import "expense.proto";
+import "auth.proto";
+import "group.proto";
 
 option go_package = "github.com/bill-splitting/proto";
 

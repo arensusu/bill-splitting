@@ -1,10 +1,10 @@
 -- name: CreateExpense :one
-INSERT INTO expenses (member_id, amount, description, date, category)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO expenses (member_id, origin_currency, origin_amount, amount, description, date, category)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
 
 -- name: GetExpense :one
-SELECT member_id, amount, description, date
+SELECT member_id, amount, description, date, origin_currency, origin_amount
 FROM expenses
 WHERE id = $1;
 

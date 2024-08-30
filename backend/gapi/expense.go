@@ -3,6 +3,7 @@ package gapi
 import (
 	db "bill-splitting/db/sqlc"
 	"bill-splitting/proto"
+	"bill-splitting/utils"
 	"context"
 	"crypto/sha256"
 	"database/sql"
@@ -110,6 +111,11 @@ func (s *Server) CreateExpense(ctx context.Context, req *proto.CreateExpenseRequ
 		return nil, status.Errorf(codes.InvalidArgument, "invalid group id")
 	}
 
+	group, err := s.store.GetGroup(ctx, req.GroupId)
+	if err != nil {
+		return nil, fmt.Errorf("group not found: %w", err)
+	}
+
 	member, err := s.store.GetMembership(ctx, db.GetMembershipParams{
 		GroupID: req.GroupId,
 		UserID:  payload.UserID,
@@ -118,9 +124,14 @@ func (s *Server) CreateExpense(ctx context.Context, req *proto.CreateExpenseRequ
 		return nil, err
 	}
 
+	amount, err := utils.GetExchangeAmount(req.OriginCurrency, group.Currency.String, req.OriginAmount)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get exchanged amount: %w", err)
+	}
+
 	expense, err := s.store.CreateExpense(ctx, db.CreateExpenseParams{
 		MemberID:    member.ID,
-		Amount:      req.Amount,
+		Amount:      fmt.Sprint(amount),
 		Description: req.Description,
 		Category:    sql.NullString{String: req.Category, Valid: req.Category != ""},
 		Date:        time.Now(),
@@ -132,7 +143,7 @@ func (s *Server) CreateExpense(ctx context.Context, req *proto.CreateExpenseRequ
 		Id:          expense.ID,
 		Category:    expense.Category.String,
 		Date:        expense.Date.Format("2006-01-02"),
-		Amount:      expense.Amount,
+		Amount:      amount,
 		Description: expense.Description,
 	}, nil
 }

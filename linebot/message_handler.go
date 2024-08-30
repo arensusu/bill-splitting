@@ -56,7 +56,14 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 
 		msgList := strings.Split(message.Text, "\n")
 		if len(msgList) == 3 {
-			msg := s.createExpense(token, groupId, msgList[0], msgList[1], msgList[2])
+			price := strings.Split(msgList[2], " ")
+
+			var msg string
+			if len(price) == 1 {
+				msg = s.createExpense(token, groupId, msgList[0], msgList[1], "TWD", msgList[2])
+			} else {
+				msg = s.createExpense(token, groupId, msgList[0], msgList[1], price[0], price[1])
+			}
 			replyMessage = linebot.NewTextMessage(msg)
 		} else if strings.Contains(msgList[0], "支出") {
 			imgUrl, err := s.getExpenseImage(token, groupId, msgList[0])

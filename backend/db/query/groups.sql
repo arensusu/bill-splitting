@@ -1,6 +1,6 @@
 -- name: CreateGroup :one
-INSERT INTO groups (name, line_id)
-VALUES ($1, $2)
+INSERT INTO groups (name, line_id, currency)
+VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: GetGroup :one
