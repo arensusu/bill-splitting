@@ -26,15 +26,15 @@ func GetExchangeAmount(from, to string, amount float64) (float64, error) {
 		return 0, fmt.Errorf("failed to decode response body: %w", err)
 	}
 
-	ex, ok := data[from+to]
-	if ok {
-		return ex.Exrate * amount, nil
+	fromUsd, ok := data["USD"+from]
+	if !ok {
+		return 0, errors.New("exchange rate not found")
 	}
 
-	ex, ok = data[to+from]
-	if ok {
-		return amount / ex.Exrate, nil
+	toUsd, ok := data["USD"+to]
+	if !ok {
+		return 0, errors.New("exchange rate not found")
 	}
 
-	return 0, errors.New("exchange rate not found")
+	return amount / fromUsd.Exrate * toUsd.Exrate, nil
 }
