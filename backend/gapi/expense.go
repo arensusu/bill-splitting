@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/golang/freetype/truetype"
@@ -62,9 +63,11 @@ func (s *Server) CreateExpenseSummaryChart(ctx context.Context, req *proto.Creat
 
 	values := make([]chart.Value, len(summary))
 	for i, v := range summary {
+		total, _ := strconv.ParseFloat(v.Total, 64)
+
 		values[i] = chart.Value{
-			Value: float64(v.Total),
-			Label: fmt.Sprintf("%s $%d", v.Category.String, v.Total),
+			Value: total,
+			Label: fmt.Sprintf("%s $%s", v.Category.String, v.Total),
 		}
 	}
 

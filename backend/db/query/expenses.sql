@@ -29,7 +29,7 @@ DELETE FROM expenses
 WHERE id = $1;
 
 -- name: SummarizeExpensesWithinDate :many
-SELECT category, SUM(amount) as total
+SELECT category, SUM(amount::decimal)::decimal as total
 FROM (SELECT * FROM expenses WHERE date BETWEEN @start_time AND @end_time) as expenses, (SELECT id FROM members WHERE group_id = $1) AS members
 WHERE expenses.member_id = members.id
 GROUP BY category;

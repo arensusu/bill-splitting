@@ -3,17 +3,11 @@ package api
 import (
 	db "bill-splitting/db/sqlc"
 	"bill-splitting/token"
-	"crypto/sha256"
 	"database/sql"
-	"encoding/json"
-	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang/freetype/truetype"
-	"github.com/wcharczuk/go-chart/v2"
 )
 
 type createExpenseUriRequest struct {
@@ -100,90 +94,90 @@ type listExpensesSummaryQueryParams struct {
 	EndTime   string `form:"endTime"`
 }
 
-func (s *Server) listExpensesSummary(c *gin.Context) {
-	var req listExpensesRequest
-	if err := c.ShouldBindUri(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+// func (s *Server) listExpensesSummary(c *gin.Context) {
+// 	var req listExpensesRequest
+// 	if err := c.ShouldBindUri(&req); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 		return
+// 	}
 
-	var query listExpensesSummaryQueryParams
-	if err := c.ShouldBindQuery(&query); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+// 	var query listExpensesSummaryQueryParams
+// 	if err := c.ShouldBindQuery(&query); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 		return
+// 	}
 
-	startTime, err := time.Parse("2006-01-02", query.StartTime)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+// 	startTime, err := time.Parse("2006-01-02", query.StartTime)
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 		return
+// 	}
 
-	endTime, err := time.Parse("2006-01-02", query.EndTime)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+// 	endTime, err := time.Parse("2006-01-02", query.EndTime)
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 		return
+// 	}
 
-	summary, err := s.store.SummarizeExpensesWithinDate(c, db.SummarizeExpensesWithinDateParams{
-		GroupID:   req.GroupID,
-		StartTime: startTime,
-		EndTime:   endTime,
-	})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+// 	summary, err := s.store.SummarizeExpensesWithinDate(c, db.SummarizeExpensesWithinDateParams{
+// 		GroupID:   req.GroupID,
+// 		StartTime: startTime,
+// 		EndTime:   endTime,
+// 	})
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 		return
+// 	}
 
-	data, err := json.Marshal(summary)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+// 	data, err := json.Marshal(summary)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 		return
+// 	}
 
-	hasher := sha256.New()
-	hasher.Write(data)
-	hashBytes := hasher.Sum(nil)
+// 	hasher := sha256.New()
+// 	hasher.Write(data)
+// 	hashBytes := hasher.Sum(nil)
 
-	values := make([]chart.Value, len(summary))
-	for i, v := range summary {
-		values[i] = chart.Value{
-			Value: float64(v.Total),
-			Label: fmt.Sprintf("%s $%d", v.Category.String, v.Total),
-		}
-	}
+// 	values := make([]chart.Value, len(summary))
+// 	for i, v := range summary {
+// 		values[i] = chart.Value{
+// 			Value: float64(v.Total),
+// 			Label: fmt.Sprintf("%s $%d", v.Category.String, v.Total),
+// 		}
+// 	}
 
-	fontBytes, err := os.ReadFile("./msjh.ttc")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+// 	fontBytes, err := os.ReadFile("./msjh.ttc")
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 		return
+// 	}
 
-	font, err := truetype.Parse(fontBytes)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+// 	font, err := truetype.Parse(fontBytes)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 		return
+// 	}
 
-	pie := chart.PieChart{
-		Title:  fmt.Sprintf("%s ~ %s", query.StartTime, query.EndTime),
-		Width:  500,
-		Height: 600,
-		Values: values,
-		Font:   font,
-	}
+// 	pie := chart.PieChart{
+// 		Title:  fmt.Sprintf("%s ~ %s", query.StartTime, query.EndTime),
+// 		Width:  500,
+// 		Height: 600,
+// 		Values: values,
+// 		Font:   font,
+// 	}
 
-	f, err := os.Create(fmt.Sprintf("/var/images/%x.png", hashBytes))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	defer f.Close()
-	err = pie.Render(chart.PNG, f)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+// 	f, err := os.Create(fmt.Sprintf("/var/images/%x.png", hashBytes))
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 		return
+// 	}
+// 	defer f.Close()
+// 	err = pie.Render(chart.PNG, f)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{"image": fmt.Sprintf("%x.png", hashBytes)})
-}
+// 	c.JSON(http.StatusOK, gin.H{"image": fmt.Sprintf("%x.png", hashBytes)})
+// }

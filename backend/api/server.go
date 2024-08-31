@@ -59,7 +59,7 @@ func NewServer(store db.Store, tokenMaker *token.JWTMaker) *Server {
 
 		groupRoutes.POST("/:groupId/expenses", server.createExpense)
 		groupRoutes.GET("/:groupId/expenses", server.listExpenses)
-		groupRoutes.GET("/:groupId/expenses/summary", server.listExpensesSummary)
+		//groupRoutes.GET("/:groupId/expenses/summary", server.listExpensesSummary)
 
 		groupRoutes.PUT("/:groupId/settlements", server.replaceSettlement)
 	}

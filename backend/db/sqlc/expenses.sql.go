@@ -198,7 +198,7 @@ func (q *Queries) ListNonSettledExpenses(ctx context.Context, groupID int32) ([]
 }
 
 const summarizeExpensesWithinDate = `-- name: SummarizeExpensesWithinDate :many
-SELECT category, SUM(amount) as total
+SELECT category, SUM(amount::decimal)::decimal as total
 FROM (SELECT id, member_id, amount, description, date, is_settled, category, origin_amount, origin_currency FROM expenses WHERE date BETWEEN $2 AND $3) as expenses, (SELECT id FROM members WHERE group_id = $1) AS members
 WHERE expenses.member_id = members.id
 GROUP BY category
@@ -212,7 +212,7 @@ type SummarizeExpensesWithinDateParams struct {
 
 type SummarizeExpensesWithinDateRow struct {
 	Category sql.NullString `json:"category"`
-	Total    int64          `json:"total"`
+	Total    string         `json:"total"`
 }
 
 func (q *Queries) SummarizeExpensesWithinDate(ctx context.Context, arg SummarizeExpensesWithinDateParams) ([]SummarizeExpensesWithinDateRow, error) {
