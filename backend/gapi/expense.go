@@ -130,11 +130,13 @@ func (s *Server) CreateExpense(ctx context.Context, req *proto.CreateExpenseRequ
 	}
 
 	expense, err := s.store.CreateExpense(ctx, db.CreateExpenseParams{
-		MemberID:    member.ID,
-		Amount:      fmt.Sprint(amount),
-		Description: req.Description,
-		Category:    sql.NullString{String: req.Category, Valid: req.Category != ""},
-		Date:        time.Now(),
+		MemberID:       member.ID,
+		Amount:         fmt.Sprint(amount),
+		OriginCurrency: sql.NullString{String: req.OriginCurrency, Valid: true},
+		OriginAmount:   sql.NullString{String: fmt.Sprint(req.OriginAmount), Valid: true},
+		Description:    req.Description,
+		Category:       sql.NullString{String: req.Category, Valid: req.Category != ""},
+		Date:           time.Now(),
 	})
 	if err != nil {
 		return nil, err
