@@ -58,14 +58,14 @@ func (s *Server) CreateExpenseSummaryChart(ctx context.Context, req *proto.Creat
 	hasher.Write(data)
 	hashBytes := hasher.Sum(nil)
 
-	values := make([]float64, len(summary))
+	values := make([]any, len(summary))
 	legends := make([]string, len(summary))
 	total := 0.0
 	for i, v := range summary {
 		value, _ := strconv.ParseFloat(v.Total, 64)
 
 		total += value
-		values[i] = value
+		values[i] = int(value)
 		legends[i] = v.Category.String
 	}
 

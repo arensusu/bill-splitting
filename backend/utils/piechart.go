@@ -8,7 +8,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func CreatePieChart(values []float64, legends []string, title, subtitle string, path string) error {
+func CreatePieChart(values []any, legends []string, title, subtitle string, path string) error {
 	pie := charts.NewPie()
 	pie.SetGlobalOptions(
 		charts.WithAnimation(false),

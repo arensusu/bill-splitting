@@ -8,7 +8,7 @@ import (
 )
 
 func TestCreatePieChart(t *testing.T) {
-	values := []float64{1, 2, 3}
+	values := []any{1, 2, 3}
 	legends := []string{"中文", "b", "c"}
 	title := "test"
 	subtitle := fmt.Sprintf("%.0f", 123.123456)
