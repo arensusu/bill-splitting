@@ -9,12 +9,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strconv"
 	"time"
 
-	"github.com/golang/freetype/truetype"
-	"github.com/wcharczuk/go-chart/v2"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -61,46 +58,28 @@ func (s *Server) CreateExpenseSummaryChart(ctx context.Context, req *proto.Creat
 	hasher.Write(data)
 	hashBytes := hasher.Sum(nil)
 
-	values := make([]chart.Value, len(summary))
+	values := make([]float64, len(summary))
+	legends := make([]string, len(summary))
+	total := 0.0
 	for i, v := range summary {
-		total, _ := strconv.ParseFloat(v.Total, 64)
+		value, _ := strconv.ParseFloat(v.Total, 64)
 
-		values[i] = chart.Value{
-			Value: total,
-			Label: fmt.Sprintf("%s $%s", v.Category.String, v.Total),
-		}
+		total += value
+		values[i] = value
+		legends[i] = v.Category.String
 	}
 
-	fontBytes, err := os.ReadFile("./msjh.ttc")
+	title := fmt.Sprintf("%s ~ %s", req.StartDate, req.EndDate)
+	subtitle := fmt.Sprintf("Total: %.0f", total)
+	path := fmt.Sprintf("/var/images/%x.html", hashBytes)
+
+	err = utils.CreatePieChart(values, legends, title, subtitle, path)
 	if err != nil {
-		return nil, err
-	}
-
-	font, err := truetype.Parse(fontBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	pie := chart.PieChart{
-		Title:  fmt.Sprintf("%s ~ %s", req.StartDate, req.EndDate),
-		Width:  500,
-		Height: 600,
-		Values: values,
-		Font:   font,
-	}
-
-	f, err := os.Create(fmt.Sprintf("/var/images/%x.png", hashBytes))
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	err = pie.Render(chart.PNG, f)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create pie chart: %w", err)
 	}
 
 	return &proto.CreateExpenseSummaryChartResponse{
-		Url: fmt.Sprintf("%x.png", hashBytes),
+		Url: fmt.Sprintf("%x.html", hashBytes),
 	}, nil
 }
 

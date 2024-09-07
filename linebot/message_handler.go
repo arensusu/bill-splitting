@@ -71,7 +71,7 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 				log.Println("getExpenseImage err:", err)
 				replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
 			} else {
-				replyMessage = linebot.NewImageMessage(imgUrl, imgUrl)
+				replyMessage = linebot.NewTextMessage(imgUrl)
 			}
 		}
 
