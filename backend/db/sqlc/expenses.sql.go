@@ -144,6 +144,65 @@ func (q *Queries) ListExpenses(ctx context.Context, groupID int32) ([]ListExpens
 	return items, nil
 }
 
+const listExpensesWithinDate = `-- name: ListExpensesWithinDate :many
+SELECT expenses.id, member_id, amount, description, date, is_settled, category, origin_amount, origin_currency, members.id
+FROM expenses, (SELECT id FROM members WHERE group_id = $1) AS members
+WHERE expenses.member_id = members.id AND date BETWEEN $2 AND $3
+`
+
+type ListExpensesWithinDateParams struct {
+	GroupID   int32     `json:"group_id"`
+	StartTime time.Time `json:"start_time"`
+	EndTime   time.Time `json:"end_time"`
+}
+
+type ListExpensesWithinDateRow struct {
+	ID             int32          `json:"id"`
+	MemberID       int32          `json:"member_id"`
+	Amount         string         `json:"amount"`
+	Description    string         `json:"description"`
+	Date           time.Time      `json:"date"`
+	IsSettled      bool           `json:"is_settled"`
+	Category       sql.NullString `json:"category"`
+	OriginAmount   sql.NullString `json:"origin_amount"`
+	OriginCurrency sql.NullString `json:"origin_currency"`
+	ID_2           int32          `json:"id_2"`
+}
+
+func (q *Queries) ListExpensesWithinDate(ctx context.Context, arg ListExpensesWithinDateParams) ([]ListExpensesWithinDateRow, error) {
+	rows, err := q.db.QueryContext(ctx, listExpensesWithinDate, arg.GroupID, arg.StartTime, arg.EndTime)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListExpensesWithinDateRow{}
+	for rows.Next() {
+		var i ListExpensesWithinDateRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.MemberID,
+			&i.Amount,
+			&i.Description,
+			&i.Date,
+			&i.IsSettled,
+			&i.Category,
+			&i.OriginAmount,
+			&i.OriginCurrency,
+			&i.ID_2,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listNonSettledExpenses = `-- name: ListNonSettledExpenses :many
 SELECT expenses.id, member_id, amount, description, date, is_settled, category, origin_amount, origin_currency, members.id
 FROM expenses, (SELECT id FROM members WHERE group_id = $1) AS members

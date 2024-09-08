@@ -5,6 +5,7 @@
 //
 //	mockgen -package mockdb -destination db/mock/store.go bill-splitting/db/sqlc Store
 //
+
 // Package mockdb is a generated GoMock package.
 package mockdb
 
@@ -392,6 +393,21 @@ func (m *MockStore) ListExpenses(arg0 context.Context, arg1 int32) ([]db.ListExp
 func (mr *MockStoreMockRecorder) ListExpenses(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListExpenses", reflect.TypeOf((*MockStore)(nil).ListExpenses), arg0, arg1)
+}
+
+// ListExpensesWithinDate mocks base method.
+func (m *MockStore) ListExpensesWithinDate(arg0 context.Context, arg1 db.ListExpensesWithinDateParams) ([]db.ListExpensesWithinDateRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListExpensesWithinDate", arg0, arg1)
+	ret0, _ := ret[0].([]db.ListExpensesWithinDateRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListExpensesWithinDate indicates an expected call of ListExpensesWithinDate.
+func (mr *MockStoreMockRecorder) ListExpensesWithinDate(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListExpensesWithinDate", reflect.TypeOf((*MockStore)(nil).ListExpensesWithinDate), arg0, arg1)
 }
 
 // ListGroups mocks base method.

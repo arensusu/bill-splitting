@@ -32,6 +32,7 @@ type Querier interface {
 	GetUser(ctx context.Context, id string) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	ListExpenses(ctx context.Context, groupID int32) ([]ListExpensesRow, error)
+	ListExpensesWithinDate(ctx context.Context, arg ListExpensesWithinDateParams) ([]ListExpensesWithinDateRow, error)
 	ListGroups(ctx context.Context, userID string) ([]ListGroupsRow, error)
 	ListMembersOfGroup(ctx context.Context, groupID int32) ([]ListMembersOfGroupRow, error)
 	ListNonSettledExpenses(ctx context.Context, groupID int32) ([]ListNonSettledExpensesRow, error)

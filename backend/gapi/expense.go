@@ -40,6 +40,12 @@ func (s *Server) CreateExpenseSummaryChart(ctx context.Context, req *proto.Creat
 		return nil, err
 	}
 
+	// expenses, err := s.store.ListExpensesWithinDate(ctx, db.ListExpensesWithinDateParams{
+	// 	GroupID:   req.GroupId,
+	// 	StartTime: startDate,
+	// 	EndTime:   endDate,
+	// })
+
 	summary, err := s.store.SummarizeExpensesWithinDate(ctx, db.SummarizeExpensesWithinDateParams{
 		GroupID:   req.GroupId,
 		StartTime: startDate,
