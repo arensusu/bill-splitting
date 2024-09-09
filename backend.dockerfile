@@ -1,5 +1,5 @@
 
-FROM golang:latest AS builder
+FROM golang:1.22 AS builder
 WORKDIR /app
 COPY backend/ .
 
@@ -15,7 +15,7 @@ RUN apt-get update -y; \
 RUN go build -o main main.go
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
 
-FROM golang:latest
+FROM golang:1.22
 RUN mkdir /var/images
 WORKDIR /app
 COPY --from=builder /app/main .
