@@ -3,13 +3,13 @@ FROM golang:1.22 AS builder
 WORKDIR /app
 COPY backend/ .
 
-RUN apt-get install -y gnupg wget curl unzip --no-install-recommends; \
-    wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | \
-    gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/google.gpg --import; \
-    chmod 644 /etc/apt/trusted.gpg.d/google.gpg; \
-    echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list; \
-    apt-get update -y; \
-    apt-get install -y google-chrome-stable;
+# RUN apt-get install -y gnupg wget curl unzip --no-install-recommends; \
+#     wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | \
+#     gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/google.gpg --import; \
+#     chmod 644 /etc/apt/trusted.gpg.d/google.gpg; \
+#     echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list; \
+#     apt-get update; \
+#     apt-get install -y google-chrome-stable;
 
 RUN go build -o main main.go
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
