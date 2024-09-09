@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"google.golang.org/grpc/codes"
@@ -40,11 +41,14 @@ func (s *Server) CreateExpenseSummaryChart(ctx context.Context, req *proto.Creat
 		return nil, err
 	}
 
-	// expenses, err := s.store.ListExpensesWithinDate(ctx, db.ListExpensesWithinDateParams{
-	// 	GroupID:   req.GroupId,
-	// 	StartTime: startDate,
-	// 	EndTime:   endDate,
-	// })
+	expenses, err := s.store.ListExpensesWithinDate(ctx, db.ListExpensesWithinDateParams{
+		GroupID:   req.GroupId,
+		StartTime: startDate,
+		EndTime:   endDate,
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	summary, err := s.store.SummarizeExpensesWithinDate(ctx, db.SummarizeExpensesWithinDateParams{
 		GroupID:   req.GroupId,
@@ -55,31 +59,41 @@ func (s *Server) CreateExpenseSummaryChart(ctx context.Context, req *proto.Creat
 		return nil, err
 	}
 
-	data, err := json.Marshal(summary)
+	dataStr, err := json.Marshal(summary)
 	if err != nil {
 		return nil, err
 	}
 
 	hasher := sha256.New()
-	hasher.Write(data)
+	hasher.Write(dataStr)
 	hashBytes := hasher.Sum(nil)
 
-	values := make([]any, len(summary))
+	values := make([]float64, len(summary))
 	legends := make([]string, len(summary))
 	total := 0.0
 	for i, v := range summary {
 		value, _ := strconv.ParseFloat(v.Total, 64)
 
 		total += value
-		values[i] = int(value)
+		values[i] = value
 		legends[i] = v.Category.String
+	}
+
+	data := make([][4]string, len(expenses))
+	for i, expense := range expenses {
+		data[i] = [4]string{
+			expense.Date.String(),
+			expense.Category.String,
+			expense.Description,
+			strings.Split(expense.Amount, ".")[0],
+		}
 	}
 
 	title := fmt.Sprintf("%s ~ %s", req.StartDate, req.EndDate)
 	subtitle := fmt.Sprintf("Total: %.0f", total)
 	path := fmt.Sprintf("/var/images/%x.html", hashBytes)
 
-	err = utils.CreatePieChart(values, legends, title, subtitle, path)
+	err = utils.CreatePieChart(values, legends, title, subtitle, data, path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create pie chart: %w", err)
 	}
