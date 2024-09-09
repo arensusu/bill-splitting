@@ -113,7 +113,7 @@ func CreatePieChart(values []float64, legends []string, title, subtitle string, 
 
 	data := make([]opts.PieData, 0)
 	for i := 0; i < len(values); i++ {
-		data = append(data, opts.PieData{Value: fmt.Sprintf("%.0f", values[i]/total), Name: legends[i]})
+		data = append(data, opts.PieData{Value: fmt.Sprintf("%.0f", values[i]/total*100), Name: legends[i]})
 	}
 
 	for _, dataset := range datasets {
