@@ -82,7 +82,7 @@ func (s *Server) CreateExpenseSummaryChart(ctx context.Context, req *proto.Creat
 	data := make([][4]string, len(expenses))
 	for i, expense := range expenses {
 		data[i] = [4]string{
-			expense.Date.String(),
+			expense.Date.Format("2006/01/02"),
 			expense.Category.String,
 			expense.Description,
 			strings.Split(expense.Amount, ".")[0],
