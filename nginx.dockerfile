@@ -1,5 +1,5 @@
 
-FROM nginx:latest
+FROM nginx:stable
 
 RUN apt-get update
 RUN apt-get install -y certbot python3-certbot-nginx
