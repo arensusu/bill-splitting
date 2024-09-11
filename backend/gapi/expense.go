@@ -33,6 +33,8 @@ func (s *Server) CreateExpenseSummaryChart(ctx context.Context, req *proto.Creat
 		return nil, err
 	}
 
+	endDate = endDate.AddDate(0, 0, 1)
+
 	_, err = s.store.GetMembership(ctx, db.GetMembershipParams{
 		GroupID: req.GroupId,
 		UserID:  payload.UserID,
