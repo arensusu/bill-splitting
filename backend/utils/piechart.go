@@ -224,7 +224,7 @@ func CreatePieChart(values []float64, legends []string, title, subtitle string, 
 		pie.AddDataset(opts.Dataset{Source: dataset})
 	}
 
-	pie.AddSeries("pie", data).
+	pie.AddSeries("", data).
 		SetSeriesOptions(
 			charts.WithLabelOpts(opts.Label{
 				Show:       opts.Bool(true),
@@ -241,16 +241,4 @@ func CreatePieChart(values []float64, legends []string, title, subtitle string, 
 	fmt.Printf("%#v\n", pie)
 
 	return pie.Render(io.MultiWriter(f))
-	// return render.MakeChartSnapshot(pie.RenderContent(), path)
-
-	// fontBytes, err := os.ReadFile("../msjh.ttc")
-	// if err != nil {
-	// 	return err
-	// }
-
-	// font, err := truetype.Parse(fontBytes)
-	// if err != nil {
-	// 	return err
-	// }
-
 }
