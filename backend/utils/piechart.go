@@ -50,6 +50,7 @@ var chartTml = `{{- define "chart" }}
 <style>
     .container {margin-top:30px; display: flex;justify-content: center;align-items: center;}
     .item {margin: auto;}
+	body {font-family: monospace;}
 </style>
 <script
   src="https://code.jquery.com/jquery-3.7.1.min.js"
@@ -192,9 +193,9 @@ func CreatePieChart(values []float64, legends []string, title, subtitle string, 
 		}),
 		charts.WithTitleOpts(opts.Title{
 			Title:         title,
-			TitleStyle:    &opts.TextStyle{Color: "black", FontSize: 28},
+			TitleStyle:    &opts.TextStyle{Color: "black", FontSize: 28, FontFamily: "monospace"},
 			Subtitle:      subtitle,
-			SubtitleStyle: &opts.TextStyle{Color: "black", FontSize: 20},
+			SubtitleStyle: &opts.TextStyle{Color: "black", FontSize: 20, FontFamily: "monospace"},
 			Left:          "80",
 			Top:           "20",
 		}),
@@ -226,9 +227,10 @@ func CreatePieChart(values []float64, legends []string, title, subtitle string, 
 	pie.AddSeries("pie", data).
 		SetSeriesOptions(
 			charts.WithLabelOpts(opts.Label{
-				Show:      opts.Bool(true),
-				Formatter: "{b}: {c}%",
-				FontSize:  16,
+				Show:       opts.Bool(true),
+				Formatter:  "{b}: {c}%",
+				FontSize:   16,
+				FontFamily: "monospace",
 			}),
 		)
 
