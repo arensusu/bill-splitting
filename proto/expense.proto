@@ -30,3 +30,12 @@ message CreateExpenseResponse {
     double amount = 4;
     string date = 5;
 }
+
+message CreateTrendingImageRequest {
+    int32 group_id = 1;
+    string type = 2;
+}
+
+message CreateTrendingImageResponse {
+    string url = 1;
+}

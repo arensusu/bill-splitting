@@ -71,3 +71,25 @@ func (s *LineBotServer) getExpenseImage(token string, groupId int32, summaryType
 
 	return fmt.Sprintf("https://arensusu.ddns.net/api/v1/images/%s", resp.Url), nil
 }
+
+func (s *LineBotServer) getTrendingImage(token string, groupId int32, summaryType string) (string, error) {
+	trendingType := ""
+	switch summaryType {
+	case "周趨勢", "週趨勢":
+		trendingType = "week"
+	case "月趨勢":
+		trendingType = "month"
+	}
+
+	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	resp, err := s.GrpcClient.CreateTrendingImage(ctx, &proto.CreateTrendingImageRequest{
+		GroupId: int32(groupId),
+		Type:    trendingType,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("https://arensusu.ddns.net/api/v1/images/%s", resp.Url), nil
+}

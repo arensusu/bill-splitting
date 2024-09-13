@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.27.3
-// source: billSplitting.proto
+// source: proto/billSplitting.proto
 
 package proto
 
@@ -26,6 +26,7 @@ const (
 	BillSplitting_GetLineGroup_FullMethodName              = "/proto.BillSplitting/GetLineGroup"
 	BillSplitting_GetMembership_FullMethodName             = "/proto.BillSplitting/GetMembership"
 	BillSplitting_CreateExpense_FullMethodName             = "/proto.BillSplitting/CreateExpense"
+	BillSplitting_CreateTrendingImage_FullMethodName       = "/proto.BillSplitting/CreateTrendingImage"
 )
 
 // BillSplittingClient is the client API for BillSplitting service.
@@ -39,6 +40,7 @@ type BillSplittingClient interface {
 	GetLineGroup(ctx context.Context, in *GetLineGroupRequest, opts ...grpc.CallOption) (*GetLineGroupResponse, error)
 	GetMembership(ctx context.Context, in *GetMembershipRequest, opts ...grpc.CallOption) (*GetMembershipResponse, error)
 	CreateExpense(ctx context.Context, in *CreateExpenseRequest, opts ...grpc.CallOption) (*CreateExpenseResponse, error)
+	CreateTrendingImage(ctx context.Context, in *CreateTrendingImageRequest, opts ...grpc.CallOption) (*CreateTrendingImageResponse, error)
 }
 
 type billSplittingClient struct {
@@ -119,6 +121,16 @@ func (c *billSplittingClient) CreateExpense(ctx context.Context, in *CreateExpen
 	return out, nil
 }
 
+func (c *billSplittingClient) CreateTrendingImage(ctx context.Context, in *CreateTrendingImageRequest, opts ...grpc.CallOption) (*CreateTrendingImageResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateTrendingImageResponse)
+	err := c.cc.Invoke(ctx, BillSplitting_CreateTrendingImage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BillSplittingServer is the server API for BillSplitting service.
 // All implementations must embed UnimplementedBillSplittingServer
 // for forward compatibility.
@@ -130,6 +142,7 @@ type BillSplittingServer interface {
 	GetLineGroup(context.Context, *GetLineGroupRequest) (*GetLineGroupResponse, error)
 	GetMembership(context.Context, *GetMembershipRequest) (*GetMembershipResponse, error)
 	CreateExpense(context.Context, *CreateExpenseRequest) (*CreateExpenseResponse, error)
+	CreateTrendingImage(context.Context, *CreateTrendingImageRequest) (*CreateTrendingImageResponse, error)
 	mustEmbedUnimplementedBillSplittingServer()
 }
 
@@ -160,6 +173,9 @@ func (UnimplementedBillSplittingServer) GetMembership(context.Context, *GetMembe
 }
 func (UnimplementedBillSplittingServer) CreateExpense(context.Context, *CreateExpenseRequest) (*CreateExpenseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateExpense not implemented")
+}
+func (UnimplementedBillSplittingServer) CreateTrendingImage(context.Context, *CreateTrendingImageRequest) (*CreateTrendingImageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateTrendingImage not implemented")
 }
 func (UnimplementedBillSplittingServer) mustEmbedUnimplementedBillSplittingServer() {}
 func (UnimplementedBillSplittingServer) testEmbeddedByValue()                       {}
@@ -308,6 +324,24 @@ func _BillSplitting_CreateExpense_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BillSplitting_CreateTrendingImage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTrendingImageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BillSplittingServer).CreateTrendingImage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BillSplitting_CreateTrendingImage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BillSplittingServer).CreateTrendingImage(ctx, req.(*CreateTrendingImageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BillSplitting_ServiceDesc is the grpc.ServiceDesc for BillSplitting service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -343,7 +377,11 @@ var BillSplitting_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "CreateExpense",
 			Handler:    _BillSplitting_CreateExpense_Handler,
 		},
+		{
+			MethodName: "CreateTrendingImage",
+			Handler:    _BillSplitting_CreateTrendingImage_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "billSplitting.proto",
+	Metadata: "proto/billSplitting.proto",
 }

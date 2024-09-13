@@ -153,3 +153,68 @@ func (s *Server) CreateExpense(ctx context.Context, req *proto.CreateExpenseRequ
 		Description: expense.Description,
 	}, nil
 }
+
+func (s *Server) CreateTrendingImage(ctx context.Context, req *proto.CreateTrendingImageRequest) (*proto.CreateTrendingImageResponse, error) {
+	payload, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.store.GetMembership(ctx, db.GetMembershipParams{
+		GroupID: req.GroupId,
+		UserID:  payload.UserID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+
+	values := make([]map[string]float64, 10)
+	legends := make([]string, 10)
+
+	for i := 0; i < 10; i += 1 {
+		var start, end time.Time
+		switch req.Type {
+		case "week":
+			start = now.AddDate(0, 0, int(time.Sunday)-int(now.Weekday())-7).AddDate(0, 0, -7*i)
+			end = start.AddDate(0, 0, 6)
+		case "month":
+			start = time.Date(now.Year(), now.Month()-1, 1, 0, 0, 0, 0, now.Location()).AddDate(0, -i, 0)
+			end = start.AddDate(0, 1, -1)
+		}
+
+		summary, err := s.store.SummarizeExpensesWithinDate(ctx, db.SummarizeExpensesWithinDateParams{
+			GroupID:   req.GroupId,
+			StartTime: start,
+			EndTime:   end,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		legends[i] = fmt.Sprintf("%s ~ %s", start.Format("2006/01/02"), end.Format("2006/01/02"))
+		values[i] = make(map[string]float64)
+		for _, v := range summary {
+			value, _ := strconv.ParseFloat(v.Total, 64)
+			values[i][v.Category.String] = value
+		}
+	}
+
+	dataStr, err := json.Marshal(values)
+	if err != nil {
+		return nil, err
+	}
+
+	hasher := sha256.New()
+	hasher.Write(dataStr)
+	hashBytes := hasher.Sum(nil)
+
+	title := fmt.Sprintf("%s trend", req.Type)
+	path := fmt.Sprintf("/var/images/%x.html", hashBytes)
+	utils.CreateTrendingChart(values, legends, title, path)
+
+	return &proto.CreateTrendingImageResponse{
+		Url: fmt.Sprintf("%x.html", hashBytes),
+	}, nil
+}

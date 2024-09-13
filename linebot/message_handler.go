@@ -73,6 +73,14 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 			} else {
 				replyMessage = linebot.NewTemplateMessage(imgUrl, linebot.NewButtonsTemplate("", "", "支出圖表", &linebot.URIAction{Label: "查看", URI: imgUrl}))
 			}
+		} else if strings.Contains(msgList[0], "趨勢") {
+			imgUrl, err := s.getTrendingImage(token, groupId, msgList[0])
+			if err != nil {
+				log.Println("getExpenseImage err:", err)
+				replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
+			} else {
+				replyMessage = linebot.NewTemplateMessage(imgUrl, linebot.NewButtonsTemplate("", "", "趨勢圖表", &linebot.URIAction{Label: "查看", URI: imgUrl}))
+			}
 		}
 
 	default:

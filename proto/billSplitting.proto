@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package proto;
 
-import "expense.proto";
-import "auth.proto";
-import "group.proto";
+import "proto/expense.proto";
+import "proto/auth.proto";
+import "proto/group.proto";
 
 option go_package = "github.com/bill-splitting/proto";
 
@@ -16,4 +16,5 @@ service BillSplitting {
     rpc GetLineGroup(GetLineGroupRequest) returns (GetLineGroupResponse);
     rpc GetMembership(GetMembershipRequest) returns (GetMembershipResponse);
     rpc CreateExpense(CreateExpenseRequest) returns (CreateExpenseResponse);
+    rpc CreateTrendingImage(CreateTrendingImageRequest) returns (CreateTrendingImageResponse);
 }
