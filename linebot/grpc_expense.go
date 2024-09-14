@@ -69,7 +69,7 @@ func (s *LineBotServer) getExpenseImage(token string, groupId int32, summaryType
 		return "", err
 	}
 
-	return fmt.Sprintf("https://arensusu.ddns.net/api/v1/images/%s", resp.Url), nil
+	return fmt.Sprintf("https://arensusu.ddns.net/accounting/api/v1/images/%s", resp.Url), nil
 }
 
 func (s *LineBotServer) getTrendingImage(token string, groupId int32, summaryType string) (string, error) {
@@ -91,5 +91,5 @@ func (s *LineBotServer) getTrendingImage(token string, groupId int32, summaryTyp
 		return "", err
 	}
 
-	return fmt.Sprintf("https://arensusu.ddns.net/api/v1/images/%s", resp.Url), nil
+	return fmt.Sprintf("https://arensusu.ddns.net/accounting/api/v1/images/%s", resp.Url), nil
 }
