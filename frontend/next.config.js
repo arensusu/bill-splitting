@@ -5,7 +5,8 @@ const nextConfig = {
           // edit: updated to new key. Was previously `allowedForwardedHosts`
           allowedOrigins: ['localhost'],
         },
-      },
+    },
+    basePath: `${process.env.BASE_PATH}`
 }
 
 module.exports = nextConfig
