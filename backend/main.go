@@ -3,12 +3,10 @@ package main
 import (
 	"bill-splitting/api"
 	"bill-splitting/auth"
-	db "bill-splitting/db/sqlc"
+	"bill-splitting/db"
 	"bill-splitting/gapi"
 	"bill-splitting/proto"
 	"bill-splitting/token"
-	"database/sql"
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -21,21 +19,10 @@ import (
 
 func main() {
 	authSecret := os.Getenv("AUTH_SECRET")
-	dbDriver := "postgres"
-	dbHost := os.Getenv("DATABASE_HOST")
-	dbPort := os.Getenv("DATABASE_PORT")
-	dbUser := os.Getenv("DATABASE_USER")
-	dbPassword := os.Getenv("DATABASE_PASSWORD")
-	dbName := os.Getenv("DATABASE_NAME")
-
-	conn, err := sql.Open(dbDriver, fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=disable", dbDriver, dbUser, dbPassword, dbHost, dbPort, dbName))
-	if err != nil {
-		log.Fatal("cannot connect to db:", err)
-	}
 
 	auth.NewAuth()
 
-	store := db.NewStore(conn)
+	store := db.NewStore()
 	tokenMaker := token.NewJWTMaker(authSecret)
 	server := api.NewServer(store, tokenMaker)
 	go server.Start("0.0.0.0:8080")
