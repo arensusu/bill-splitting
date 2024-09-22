@@ -24,6 +24,7 @@ func NewAuth() {
 
 	store := sessions.NewCookieStore([]byte(key))
 	store.Options.Path = "/"
+	store.Options.Domain = "localhost:8080"
 	store.Options.MaxAge = maxAge
 	store.Options.Secure = isProd
 
