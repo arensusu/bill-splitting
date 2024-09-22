@@ -12,16 +12,14 @@ services:
     build:
       context: .
       dockerfile: backend.dockerfile
+    env_file: ".env"
     depends_on:
       - postgres
   frontend:
     build:
       context: .
       dockerfile: frontend.dockerfile
-    environment:
-      - API_ENDPOINT=${API_ENDPOINT}
-    depends_on:
-      - api
+    
   nginx:
     image: nginx:latest
     ports:
@@ -34,6 +32,7 @@ services:
     build:
       context: .
       dockerfile: linebot.dockerfile
+    env_file: ".env"
     depends_on:
       - api
 
