@@ -146,7 +146,7 @@ func (s *LineBotServer) groupChatPreProcessing(token string, source Source) (int
 func callGemini(ctx context.Context, message string) (string, error) {
 	client, err := genai.NewClient(ctx, option.WithAPIKey(os.Getenv("GEMINI_API_KEY")))
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 	defer client.Close()
 
