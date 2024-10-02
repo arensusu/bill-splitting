@@ -7,6 +7,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -42,6 +43,8 @@ func (s *Server) authorize(ctx context.Context) (*token.JWTPayload, error) {
 	if err != nil {
 		return nil, fmt.Errorf("invalid token")
 	}
+
+	log.Printf("payload: %+v", payload)
 	return payload, nil
 }
 
