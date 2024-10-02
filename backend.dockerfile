@@ -18,10 +18,11 @@ FROM golang:latest
 RUN mkdir /var/images
 WORKDIR /app
 COPY --from=builder /app/main .
-COPY --from=builder /app/migrate ./migrate
-COPY backend/db/migration ./migration
-COPY backend/start.sh .
-RUN chmod +x start.sh
+# COPY --from=builder /app/migrate ./migrate
+# COPY backend/db/migration ./migration
+# COPY backend/start.sh .
+# RUN chmod +x start.sh
 
 EXPOSE 8080 50051
-CMD ["/app/start.sh", "/app/main"]
+# CMD ["/app/start.sh", "/app/main"]
+CMD ["/app/main"]
