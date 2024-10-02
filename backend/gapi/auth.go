@@ -1,7 +1,7 @@
 package gapi
 
 import (
-	db "bill-splitting/db/sqlc"
+	"bill-splitting/model"
 	"bill-splitting/proto"
 	"bill-splitting/token"
 	"context"
@@ -46,31 +46,27 @@ func (s *Server) authorize(ctx context.Context) (*token.JWTPayload, error) {
 }
 
 func (s *Server) GetAuthToken(ctx context.Context, req *proto.GetAuthTokenRequest) (*proto.GetAuthTokenResponse, error) {
-	if req.GetId() == "" || req.GetUsername() == "" {
+	if req.GetLineId() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid id or username")
 	}
-	user, err := s.store.GetUser(ctx, req.GetId())
+	user, err := s.store.GetUserByLineID(req.GetLineId())
 	if err != nil {
 		if err != sql.ErrNoRows {
-			return nil, err
+			return nil, fmt.Errorf("failed to get user: %w", err)
 		}
 
-		user, err = s.store.CreateUser(ctx, db.CreateUserParams{
-			ID:       req.Id,
-			Username: req.Username,
+		err = s.store.CreateUser(&model.User{
+			LineID:   req.GetLineId(),
+			Username: req.GetUsername(),
 		})
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to create user: %w", err)
 		}
 	}
 
-	if user.Username != req.Username {
-		return nil, fmt.Errorf("invalid username")
-	}
-
-	token, _, err := s.tokenMaker.CreateToken(user.ID, time.Hour)
+	token, _, err := s.tokenMaker.CreateToken(user.LineID, time.Hour)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create token: %w", err)
 	}
 	return &proto.GetAuthTokenResponse{Token: token}, nil
 }

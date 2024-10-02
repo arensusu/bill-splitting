@@ -1,10 +1,9 @@
 package gapi
 
 import (
-	db "bill-splitting/db/sqlc"
+	"bill-splitting/model"
 	"bill-splitting/proto"
 	"context"
-	"database/sql"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -20,18 +19,18 @@ func (s *Server) CreateLineGroup(ctx context.Context, req *proto.CreateLineGroup
 		return nil, status.Errorf(codes.InvalidArgument, "invalid line id")
 	}
 
-	group, err := s.store.CreateGroupTx(ctx, db.CreateGroupTxParams{
-		Name:   req.Name,
-		UserID: payload.UserID,
-		LineId: req.LineId,
+	group, err := s.store.CreateGroupTx(model.CreateGroupTxParams{
+		Name:       req.Name,
+		UserLineId: payload.UserID,
+		LineId:     req.LineId,
 	})
 	if err != nil {
 		return nil, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &proto.CreateLineGroupResponse{
-		Id:     group.ID,
-		LineId: group.LineID.String,
+		Id:     0,
+		LineId: group.LineId,
 		Name:   group.Name,
 	}, nil
 }
@@ -46,17 +45,14 @@ func (s *Server) GetLineGroup(ctx context.Context, req *proto.GetLineGroupReques
 		return nil, status.Errorf(codes.InvalidArgument, "invalid line id")
 	}
 
-	group, err := s.store.GetLineGroup(ctx, sql.NullString{
-		String: req.LineId,
-		Valid:  true,
-	})
+	group, err := s.store.GetGroupByLineID(req.LineId)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	}
 
 	return &proto.GetLineGroupResponse{
-		Id:     group.ID,
-		LineId: group.LineID.String,
+		Id:     0,
+		LineId: group.LineId,
 		Name:   group.Name,
 	}, nil
 }
@@ -71,18 +67,23 @@ func (s *Server) AddMembership(ctx context.Context, req *proto.AddMembershipRequ
 		return nil, status.Errorf(codes.InvalidArgument, "invalid group id or user id")
 	}
 
-	member, err := s.store.CreateMember(ctx, db.CreateMemberParams{
-		GroupID: req.GroupId,
-		UserID:  payload.UserID,
+	user, err := s.store.GetUserByLineID(payload.UserID)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, err.Error())
+	}
+
+	err = s.store.CreateMember(&model.Member{
+		GroupID: uint(req.GroupId),
+		UserID:  user.ID,
 	})
 	if err != nil {
 		return nil, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &proto.AddMembershipResponse{
-		Id:      member.ID,
-		GroupId: member.GroupID,
-		UserId:  member.UserID,
+		Id:      0,
+		GroupId: uint32(req.GroupId),
+		UserId:  user.LineID,
 	}, nil
 }
 
@@ -96,17 +97,19 @@ func (s *Server) GetMembership(ctx context.Context, req *proto.GetMembershipRequ
 		return nil, status.Errorf(codes.InvalidArgument, "invalid group id or user id")
 	}
 
-	member, err := s.store.GetMembership(ctx, db.GetMembershipParams{
-		GroupID: req.GroupId,
-		UserID:  payload.UserID,
-	})
+	user, err := s.store.GetUserByLineID(payload.UserID)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, err.Error())
+	}
+
+	member, err := s.store.GetMembership(uint(req.GroupId), user.ID)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	}
 
 	return &proto.GetMembershipResponse{
-		Id:      member.ID,
-		GroupId: member.GroupID,
-		UserId:  member.UserID,
+		Id:      0,
+		GroupId: uint32(member.GroupID),
+		UserId:  user.LineID,
 	}, nil
 }

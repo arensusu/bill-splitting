@@ -1,18 +1,18 @@
 package gapi
 
 import (
-	db "bill-splitting/db/sqlc"
+	"bill-splitting/model"
 	"bill-splitting/proto"
 	"bill-splitting/token"
 )
 
 type Server struct {
 	proto.UnimplementedBillSplittingServer
-	store      db.Store
+	store      *model.Store
 	tokenMaker *token.JWTMaker
 }
 
-func NewServer(store db.Store, tokenMaker *token.JWTMaker) *Server {
+func NewServer(store *model.Store, tokenMaker *token.JWTMaker) *Server {
 	return &Server{
 		store:      store,
 		tokenMaker: tokenMaker,
