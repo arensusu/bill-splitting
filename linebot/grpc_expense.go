@@ -21,7 +21,7 @@ func (s *LineBotServer) createExpense(token string, groupId uint32, category, de
 		return "新增失敗"
 	}
 
-	expense, err := s.GrpcClient.CreateExpense(ctx, &proto.CreateExpenseRequest{
+	_, err = s.GrpcClient.CreateExpense(ctx, &proto.CreateExpenseRequest{
 		GroupId:        groupId,
 		Category:       category,
 		Description:    description,
