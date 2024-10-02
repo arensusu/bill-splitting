@@ -60,7 +60,7 @@ func (s *Store) DeleteExpense(id uint) error {
 
 func (s *Store) ListExpensesWithinDate(groupID uint, startTime, endTime time.Time) ([]Expense, error) {
 	var expenses []Expense
-	err := s.db.Joins("Member").Where("Member.group_id = ? AND date BETWEEN ? AND ?", groupID, startTime, endTime).Find(&expenses).Error
+	err := s.db.Raw("SELECT * FROM expenses, (SELECT id FROM members WHERE group_id = ?) AS members WHERE expenses.member_id = members.id AND date BETWEEN ? AND ?;", groupID, startTime, endTime).Scan(&expenses).Error
 	if err != nil {
 		return nil, err
 	}

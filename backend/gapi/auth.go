@@ -5,7 +5,6 @@ import (
 	"bill-splitting/proto"
 	"bill-splitting/token"
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"strings"
@@ -14,6 +13,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"gorm.io/gorm"
 )
 
 func (s *Server) authorize(ctx context.Context) (*token.JWTPayload, error) {
@@ -54,7 +54,7 @@ func (s *Server) GetAuthToken(ctx context.Context, req *proto.GetAuthTokenReques
 	}
 	user, err := s.store.GetUserByLineID(req.GetLineId())
 	if err != nil {
-		if err != sql.ErrNoRows {
+		if err != gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("failed to get user: %w", err)
 		}
 
