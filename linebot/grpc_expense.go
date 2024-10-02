@@ -33,9 +33,6 @@ func (s *LineBotServer) createExpense(token string, groupId uint32, category, de
 		return "新增失敗"
 	}
 
-	if expense.Id == 0 {
-		return "新增失敗"
-	}
 	return "新增成功"
 }
 
