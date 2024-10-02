@@ -51,7 +51,7 @@ func (s *Server) GetLineGroup(ctx context.Context, req *proto.GetLineGroupReques
 	}
 
 	return &proto.GetLineGroupResponse{
-		Id:     0,
+		Id:     uint32(group.ID),
 		LineId: group.LineId,
 		Name:   group.Name,
 	}, nil
