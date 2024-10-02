@@ -22,6 +22,8 @@ func main() {
 	auth.NewAuth()
 
 	store := model.NewStore(model.InitGorm())
+	store.Migrate()
+
 	tokenMaker := token.NewJWTMaker(authSecret)
 	// server := api.NewServer(store, tokenMaker)
 	// go server.Start("0.0.0.0:8080")
