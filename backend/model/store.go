@@ -13,7 +13,7 @@ type Store struct {
 	db *gorm.DB
 }
 
-func NewStore() *Store {
+func InitGorm() *gorm.DB {
 	dbHost := os.Getenv("DATABASE_HOST")
 	dbPort := os.Getenv("DATABASE_PORT")
 	dbUser := os.Getenv("DATABASE_USER")
@@ -26,6 +26,10 @@ func NewStore() *Store {
 		log.Fatal("cannot connect to db:", err)
 	}
 
+	return db
+}
+
+func NewStore(db *gorm.DB) *Store {
 	return &Store{db: db}
 }
 

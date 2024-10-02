@@ -1,1 +1,0 @@
-ALTER TABLE "expenses" ALTER COLUMN "date" TYPE date;

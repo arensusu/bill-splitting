@@ -1,16 +1,14 @@
 package gapi
 
 import (
-	db "bill-splitting/db/sqlc"
+	"bill-splitting/model"
 	"bill-splitting/proto"
 	"bill-splitting/utils"
 	"context"
 	"crypto/sha256"
-	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 	"time"
 
 	"google.golang.org/grpc/codes"
@@ -20,50 +18,44 @@ import (
 func (s *Server) CreateExpenseSummaryChart(ctx context.Context, req *proto.CreateExpenseSummaryChartRequest) (*proto.CreateExpenseSummaryChartResponse, error) {
 	payload, err := s.authorize(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to authorize: %w", err)
+	}
+
+	user, err := s.store.GetUserByLineID(payload.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
 
 	startDate, err := time.Parse("2006-01-02", req.StartDate)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse start date: %w", err)
 	}
 
 	endDate, err := time.Parse("2006-01-02", req.EndDate)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse end date: %w", err)
 	}
 
 	endDate = endDate.AddDate(0, 0, 1)
 
-	_, err = s.store.GetMembership(ctx, db.GetMembershipParams{
-		GroupID: req.GroupId,
-		UserID:  payload.UserID,
-	})
+	_, err = s.store.GetMembership(uint(req.GroupId), user.ID)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("not a member of the group")
 	}
 
-	expenses, err := s.store.ListExpensesWithinDate(ctx, db.ListExpensesWithinDateParams{
-		GroupID:   req.GroupId,
-		StartTime: startDate,
-		EndTime:   endDate,
-	})
+	expenses, err := s.store.ListExpensesWithinDate(uint(req.GroupId), startDate, endDate)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to list expenses: %w", err)
 	}
 
-	summary, err := s.store.SummarizeExpensesWithinDate(ctx, db.SummarizeExpensesWithinDateParams{
-		GroupID:   req.GroupId,
-		StartTime: startDate,
-		EndTime:   endDate,
-	})
+	summary, err := s.store.SummarizeExpensesWithinDate(uint(req.GroupId), startDate, endDate)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to summarize expenses: %w", err)
 	}
 
 	dataStr, err := json.Marshal(summary)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to marshal summary: %w", err)
 	}
 
 	hasher := sha256.New()
@@ -74,20 +66,18 @@ func (s *Server) CreateExpenseSummaryChart(ctx context.Context, req *proto.Creat
 	legends := make([]string, len(summary))
 	total := 0.0
 	for i, v := range summary {
-		value, _ := strconv.ParseFloat(v.Total, 64)
-
-		total += value
-		values[i] = value
-		legends[i] = v.Category.String
+		total += v.Total
+		values[i] = v.Total
+		legends[i] = v.Category
 	}
 
 	data := make([][4]string, len(expenses))
 	for i, expense := range expenses {
 		data[i] = [4]string{
 			expense.Date.Format("2006/01/02"),
-			expense.Category.String,
+			expense.Category,
 			expense.Description,
-			strings.Split(expense.Amount, ".")[0],
+			fmt.Sprintf("%.0f", expense.OriginalAmount),
 		}
 	}
 
@@ -108,50 +98,46 @@ func (s *Server) CreateExpenseSummaryChart(ctx context.Context, req *proto.Creat
 func (s *Server) CreateExpense(ctx context.Context, req *proto.CreateExpenseRequest) (*proto.CreateExpenseResponse, error) {
 	payload, err := s.authorize(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to authorize: %w", err)
 	}
 
 	if req.GroupId == 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid group id")
 	}
 
-	group, err := s.store.GetGroup(ctx, req.GroupId)
+	group, err := s.store.GetGroup(uint(req.GroupId))
 	if err != nil {
 		return nil, fmt.Errorf("group not found: %w", err)
 	}
 
-	member, err := s.store.GetMembership(ctx, db.GetMembershipParams{
-		GroupID: req.GroupId,
-		UserID:  payload.UserID,
-	})
+	user, err := s.store.GetUserByLineID(payload.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	member, err := s.store.GetMembership(uint(req.GroupId), user.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	amount, err := utils.GetExchangeAmount(req.OriginCurrency, group.Currency.String, req.OriginAmount)
+	amount, err := utils.GetExchangeAmount(req.OriginCurrency, group.Currency, req.OriginAmount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get exchanged amount: %w", err)
 	}
 
-	expense, err := s.store.CreateExpense(ctx, db.CreateExpenseParams{
-		MemberID:       member.ID,
-		Amount:         fmt.Sprint(amount),
-		OriginCurrency: sql.NullString{String: req.OriginCurrency, Valid: true},
-		OriginAmount:   sql.NullString{String: fmt.Sprint(req.OriginAmount), Valid: true},
-		Description:    req.Description,
-		Category:       sql.NullString{String: req.Category, Valid: req.Category != ""},
-		Date:           time.Now(),
+	err = s.store.CreateExpense(&model.Expense{
+		Member:           *member,
+		Category:         req.Category,
+		ConvertedAmount:  amount,
+		OriginalAmount:   req.OriginAmount,
+		OriginalCurrency: req.OriginCurrency,
+		Date:             time.Now(),
+		Description:      req.Description,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &proto.CreateExpenseResponse{
-		Id:          expense.ID,
-		Category:    expense.Category.String,
-		Date:        expense.Date.Format("2006-01-02"),
-		Amount:      amount,
-		Description: expense.Description,
-	}, nil
+	return &proto.CreateExpenseResponse{}, nil
 }
 
 func (s *Server) CreateTrendingImage(ctx context.Context, req *proto.CreateTrendingImageRequest) (*proto.CreateTrendingImageResponse, error) {
@@ -160,10 +146,12 @@ func (s *Server) CreateTrendingImage(ctx context.Context, req *proto.CreateTrend
 		return nil, err
 	}
 
-	_, err = s.store.GetMembership(ctx, db.GetMembershipParams{
-		GroupID: req.GroupId,
-		UserID:  payload.UserID,
-	})
+	user, err := s.store.GetUserByLineID(payload.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	_, err = s.store.GetMembership(uint(req.GroupId), user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -184,11 +172,7 @@ func (s *Server) CreateTrendingImage(ctx context.Context, req *proto.CreateTrend
 			end = start.AddDate(0, 1, -1)
 		}
 
-		summary, err := s.store.SummarizeExpensesWithinDate(ctx, db.SummarizeExpensesWithinDateParams{
-			GroupID:   req.GroupId,
-			StartTime: start,
-			EndTime:   end,
-		})
+		summary, err := s.store.SummarizeExpensesWithinDate(uint(req.GroupId), start, end)
 		if err != nil {
 			return nil, err
 		}
@@ -196,8 +180,7 @@ func (s *Server) CreateTrendingImage(ctx context.Context, req *proto.CreateTrend
 		legends[i] = fmt.Sprintf("%s ~ %s", start.Format("2006/01/02"), end.Format("2006/01/02"))
 		values[i] = make(map[string]float64)
 		for _, v := range summary {
-			value, _ := strconv.ParseFloat(v.Total, 64)
-			values[i][v.Category.String] = value
+			values[i][v.Category] = v.Total
 		}
 	}
 

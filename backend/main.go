@@ -1,10 +1,9 @@
 package main
 
 import (
-	"bill-splitting/api"
 	"bill-splitting/auth"
-	"bill-splitting/db"
 	"bill-splitting/gapi"
+	"bill-splitting/model"
 	"bill-splitting/proto"
 	"bill-splitting/token"
 	"log"
@@ -22,10 +21,10 @@ func main() {
 
 	auth.NewAuth()
 
-	store := db.NewStore()
+	store := model.NewStore(model.InitGorm())
 	tokenMaker := token.NewJWTMaker(authSecret)
-	server := api.NewServer(store, tokenMaker)
-	go server.Start("0.0.0.0:8080")
+	// server := api.NewServer(store, tokenMaker)
+	// go server.Start("0.0.0.0:8080")
 
 	lis, err := net.Listen("tcp", "0.0.0.0:50051")
 	if err != nil {
@@ -35,6 +34,7 @@ func main() {
 	grpcServer := gapi.NewServer(store, tokenMaker)
 	proto.RegisterBillSplittingServer(s, grpcServer)
 	reflection.Register(s)
+	log.Println("Server is running on port: 50051")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

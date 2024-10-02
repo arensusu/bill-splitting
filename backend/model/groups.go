@@ -38,6 +38,7 @@ func (s *Store) ListGroupsByUserID(userID uint) ([]Group, error) {
 		Where("members.user_id = ?", userID).
 		Select("groups.id, groups.name").
 		Find(&groups).Error
+
 	if err != nil {
 		return nil, err
 	}
@@ -54,10 +55,11 @@ func (s *Store) DeleteGroup(id uint) error {
 
 type Member struct {
 	gorm.Model
-	User    User
-	UserID  uint
-	Group   Group
-	GroupID uint
+	User     User
+	UserID   uint
+	Group    Group
+	GroupID  uint
+	Expenses []Expense
 }
 
 func (s *Store) CreateMember(member *Member) error {
@@ -82,9 +84,9 @@ func (s *Store) GetMember(id uint) (*Member, error) {
 	return &member, nil
 }
 
-func (s *Store) ListMembersOfGroup(groupID uint) ([]Member, error) {
+func (s *Store) ListUsersOfGroup(groupID uint) ([]Member, error) {
 	var members []Member
-	err := s.db.Joins("User").Where("group_id = ?", groupID).Find(&members).Error
+	err := s.db.Preload("User").Where("group_id = ?", groupID).Find(&members).Error
 	if err != nil {
 		return nil, err
 	}
@@ -93,4 +95,47 @@ func (s *Store) ListMembersOfGroup(groupID uint) ([]Member, error) {
 
 func (s *Store) DeleteMember(groupID, userID uint) error {
 	return s.db.Where("group_id = ? AND user_id = ?", groupID, userID).Delete(&Member{}).Error
+}
+
+type CreateGroupTxParams struct {
+	Name       string
+	LineId     string
+	UserLineId string
+}
+
+func (s *Store) CreateGroupTx(arg CreateGroupTxParams) (Group, error) {
+	var group Group
+
+	err := s.db.Transaction(func(tx *gorm.DB) error {
+		// Create the group
+		group = Group{
+			Name:   arg.Name,
+			LineId: arg.LineId,
+		}
+		if err := tx.Create(&group).Error; err != nil {
+			return err
+		}
+
+		user, err := s.GetUserByLineID(arg.UserLineId)
+		if err != nil {
+			return err
+		}
+
+		// Create the member
+		member := Member{
+			GroupID: group.ID,
+			UserID:  user.ID,
+		}
+		if err := tx.Create(&member).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return Group{}, err
+	}
+
+	return group, nil
 }

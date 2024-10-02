@@ -4,6 +4,7 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model
+	LineID   string `gorm:"unique"`
 	Username string `gorm:"unique"`
 }
 
@@ -11,9 +12,9 @@ func (s *Store) CreateUser(user *User) error {
 	return s.db.Create(user).Error
 }
 
-func (s *Store) GetUser(id uint) (*User, error) {
+func (s *Store) GetUserByLineID(lineId string) (*User, error) {
 	var user User
-	err := s.db.First(&user, id).Error
+	err := s.db.Where("line_id = ?", lineId).First(&user).Error
 	if err != nil {
 		return nil, err
 	}
@@ -27,10 +28,6 @@ func (s *Store) GetUserByUsername(username string) (*User, error) {
 		return nil, err
 	}
 	return &user, nil
-}
-
-func (s *Store) UpdateUser(user *User) error {
-	return s.db.Save(user).Error
 }
 
 func (s *Store) DeleteUser(id uint) error {
