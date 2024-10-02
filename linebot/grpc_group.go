@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func (s *LineBotServer) getGroup(token, lineGroupId string) (int32, error) {
+func (s *LineBotServer) getGroup(token, lineGroupId string) (uint32, error) {
 	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
@@ -22,7 +22,7 @@ func (s *LineBotServer) getGroup(token, lineGroupId string) (int32, error) {
 	return group.GetId(), nil
 }
 
-func (s *LineBotServer) createGroup(token, lineGroupId, groupName string) (int32, error) {
+func (s *LineBotServer) createGroup(token, lineGroupId, groupName string) (uint32, error) {
 	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
@@ -41,7 +41,7 @@ func (s *LineBotServer) createGroup(token, lineGroupId, groupName string) (int32
 	return createGroupResp.Id, nil
 }
 
-func (s *LineBotServer) checkMembership(token string, groupId int32) error {
+func (s *LineBotServer) checkMembership(token string, groupId uint32) error {
 	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
@@ -51,7 +51,7 @@ func (s *LineBotServer) checkMembership(token string, groupId int32) error {
 	return err
 }
 
-func (s *LineBotServer) addMembership(token string, groupId int32) error {
+func (s *LineBotServer) addMembership(token string, groupId uint32) error {
 	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 

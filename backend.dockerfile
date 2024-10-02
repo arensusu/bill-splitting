@@ -20,7 +20,6 @@ WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/migrate ./migrate
 COPY backend/db/migration ./migration
-COPY backend/msjh.ttc .
 COPY backend/start.sh .
 RUN chmod +x start.sh
 

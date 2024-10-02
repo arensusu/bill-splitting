@@ -41,7 +41,7 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 			break
 		}
 
-		var groupId int32
+		var groupId uint32
 		if source.IsGroupChat {
 			groupId, err = s.groupChatPreProcessing(token, source)
 			if err != nil {
@@ -121,7 +121,7 @@ func (s *LineBotServer) getSource(source webhook.SourceInterface) (Source, error
 	}
 }
 
-func (s *LineBotServer) groupChatPreProcessing(token string, source Source) (int32, error) {
+func (s *LineBotServer) groupChatPreProcessing(token string, source Source) (uint32, error) {
 	groupId, err := s.getGroup(token, *source.GroupId)
 	if err != nil {
 		group, err := s.MsgApi.GetGroupSummary(*source.GroupId)

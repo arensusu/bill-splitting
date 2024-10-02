@@ -7,7 +7,7 @@ import (
 
 func (s *LineBotServer) getAuthToken(userId string, displayName string) (string, error) {
 	resp, err := s.GrpcClient.GetAuthToken(context.Background(), &proto.GetAuthTokenRequest{
-		Id:       userId,
+		LineId:   userId,
 		Username: displayName,
 	})
 	if err != nil {

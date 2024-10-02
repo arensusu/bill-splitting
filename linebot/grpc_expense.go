@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func (s *LineBotServer) createExpense(token string, groupId int32, category, description, currency, amount string) string {
+func (s *LineBotServer) createExpense(token string, groupId uint32, category, description, currency, amount string) string {
 	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
@@ -39,7 +39,7 @@ func (s *LineBotServer) createExpense(token string, groupId int32, category, des
 	return "新增成功"
 }
 
-func (s *LineBotServer) getExpenseImage(token string, groupId int32, summaryType string) (string, error) {
+func (s *LineBotServer) getExpenseImage(token string, groupId uint32, summaryType string) (string, error) {
 	var startTime, endTime time.Time
 	now := time.Now()
 
@@ -61,7 +61,7 @@ func (s *LineBotServer) getExpenseImage(token string, groupId int32, summaryType
 	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	resp, err := s.GrpcClient.CreateExpenseSummaryChart(ctx, &proto.CreateExpenseSummaryChartRequest{
-		GroupId:   int32(groupId),
+		GroupId:   groupId,
 		StartDate: startTime.Format("2006-01-02"),
 		EndDate:   endTime.Format("2006-01-02"),
 	})
@@ -72,7 +72,7 @@ func (s *LineBotServer) getExpenseImage(token string, groupId int32, summaryType
 	return fmt.Sprintf("https://arensusu.ddns.net/api/v1/images/%s", resp.Url), nil
 }
 
-func (s *LineBotServer) getTrendingImage(token string, groupId int32, summaryType string) (string, error) {
+func (s *LineBotServer) getTrendingImage(token string, groupId uint32, summaryType string) (string, error) {
 	trendingType := ""
 	switch summaryType {
 	case "周趨勢", "週趨勢":
@@ -84,7 +84,7 @@ func (s *LineBotServer) getTrendingImage(token string, groupId int32, summaryTyp
 	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	resp, err := s.GrpcClient.CreateTrendingImage(ctx, &proto.CreateTrendingImageRequest{
-		GroupId: int32(groupId),
+		GroupId: groupId,
 		Type:    trendingType,
 	})
 	if err != nil {
