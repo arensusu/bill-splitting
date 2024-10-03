@@ -2,7 +2,10 @@ package main
 
 import (
 	"bill-splitting-linebot/proto"
+	"bill-splitting-linebot/utils"
 	"context"
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -55,38 +58,120 @@ func (s *LineBotServer) getExpenseImage(token string, groupId uint32, summaryTyp
 		endTime = startTime.AddDate(0, 0, 6)
 	}
 
+	startDate := startTime.Format("2006-01-02")
+	endDate := endTime.Format("2006-01-02")
+
 	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
-	resp, err := s.GrpcClient.CreateExpenseSummaryChart(ctx, &proto.CreateExpenseSummaryChartRequest{
+	summariesResp, err := s.GrpcClient.ListExpenseSummary(ctx, &proto.ListExpenseSummaryRequest{
 		GroupId:   groupId,
-		StartDate: startTime.Format("2006-01-02"),
-		EndDate:   endTime.Format("2006-01-02"),
+		StartDate: startDate,
+		EndDate:   endDate,
 	})
 	if err != nil {
 		return "", err
 	}
+	summaries := summariesResp.Summaries
 
-	return fmt.Sprintf("https://arensusu.ddns.net/api/v1/images/%s", resp.Url), nil
+	expensesResp, err := s.GrpcClient.ListExpense(ctx, &proto.ListExpenseRequest{
+		GroupId:   groupId,
+		StartDate: startDate,
+		EndDate:   endDate,
+	})
+	if err != nil {
+		return "", err
+	}
+	expenses := expensesResp.Expenses
+
+	dataStr, err := json.Marshal(summaries)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal summary: %w", err)
+	}
+
+	hasher := sha256.New()
+	hasher.Write(dataStr)
+	hashBytes := hasher.Sum(nil)
+
+	values := make([]float64, len(summaries))
+	legends := make([]string, len(summaries))
+	total := 0.0
+	for i, v := range summaries {
+		total += v.Total
+		values[i] = v.Total
+		legends[i] = v.Category
+	}
+
+	data := make([][4]string, len(expenses))
+	for i, expense := range expenses {
+		data[i] = [4]string{
+			expense.Date,
+			expense.Category,
+			expense.Description,
+			fmt.Sprintf("%.0f", expense.Amount),
+		}
+	}
+
+	title := fmt.Sprintf("%s ~ %s", startDate, endDate)
+	subtitle := fmt.Sprintf("Total: %.0f", total)
+	path := fmt.Sprintf("/var/images/%x.html", hashBytes)
+
+	err = utils.CreatePieChart(values, legends, title, subtitle, data, path)
+	if err != nil {
+		return "", fmt.Errorf("failed to create pie chart: %w", err)
+	}
+
+	return fmt.Sprintf("https://arensusu.ddns.net/images/%x.html", hashBytes), nil
 }
 
 func (s *LineBotServer) getTrendingImage(token string, groupId uint32, summaryType string) (string, error) {
-	trendingType := ""
-	switch summaryType {
-	case "周趨勢", "週趨勢":
-		trendingType = "week"
-	case "月趨勢":
-		trendingType = "month"
-	}
 
 	md := metadata.New(map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
-	resp, err := s.GrpcClient.CreateTrendingImage(ctx, &proto.CreateTrendingImageRequest{
-		GroupId: groupId,
-		Type:    trendingType,
-	})
+
+	now := time.Now()
+
+	values := make([]map[string]float64, 10)
+	legends := make([]string, 10)
+
+	for i := 0; i < 10; i += 1 {
+		var start, end time.Time
+		switch summaryType {
+		case "周趨勢", "週趨勢":
+			start = now.AddDate(0, 0, int(time.Sunday)-int(now.Weekday())-7).AddDate(0, 0, -7*i)
+			end = start.AddDate(0, 0, 6)
+		case "月趨勢":
+			start = time.Date(now.Year(), now.Month()-1, 1, 0, 0, 0, 0, now.Location()).AddDate(0, -i, 0)
+			end = start.AddDate(0, 1, -1)
+		}
+
+		resp, err := s.GrpcClient.ListExpenseSummary(ctx, &proto.ListExpenseSummaryRequest{
+			GroupId:   groupId,
+			StartDate: start.Format("2006-01-02"),
+			EndDate:   end.Format("2006-01-02"),
+		})
+		if err != nil {
+			return "", err
+		}
+
+		legends[i] = fmt.Sprintf("%s ~ %s", start.Format("2006/01/02"), end.Format("2006/01/02"))
+		values[i] = make(map[string]float64)
+		for _, v := range resp.Summaries {
+			values[i][v.Category] = v.Total
+		}
+	}
+
+	dataStr, err := json.Marshal(values)
 	if err != nil {
 		return "", err
 	}
 
-	return fmt.Sprintf("https://arensusu.ddns.net/api/v1/images/%s", resp.Url), nil
+	hasher := sha256.New()
+	hasher.Write(dataStr)
+	hashBytes := hasher.Sum(nil)
+
+	title := summaryType
+	path := fmt.Sprintf("/var/images/%x.html", hashBytes)
+	utils.CreateTrendingChart(values, legends, title, path)
+
+	return fmt.Sprintf("https://arensusu.ddns.net/images/%x.html", hashBytes), nil
 }

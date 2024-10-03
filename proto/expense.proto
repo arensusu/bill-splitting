@@ -4,16 +4,6 @@ package proto;
 
 option go_package = "github.com/bill-splitting/proto";
 
-message CreateExpenseSummaryChartRequest {
-    uint32 group_id = 1;
-    string start_date = 2;
-    string end_date = 3;
-}
-
-message CreateExpenseSummaryChartResponse {
-    string url = 1;
-}
-
 message CreateExpenseRequest {
     uint32 group_id = 1;
     string category = 2;
@@ -31,11 +21,35 @@ message CreateExpenseResponse {
     string date = 5;
 }
 
-message CreateTrendingImageRequest {
+message ListExpenseRequest {
     uint32 group_id = 1;
-    string type = 2;
+    string start_date = 2;
+    string end_date = 3;
 }
 
-message CreateTrendingImageResponse {
-    string url = 1;
+message ListExpenseResponse {
+    repeated Expense expenses = 1;
+}
+
+message Expense {
+    uint32 id = 1;
+    string category = 2;
+    string description = 3;
+    double amount = 4;
+    string date = 5;
+}
+
+message ListExpenseSummaryRequest {
+    uint32 group_id = 1;
+    string start_date = 2;
+    string end_date = 3;
+}
+
+message ListExpenseSummaryResponse {
+    repeated ExpenseSummary summaries = 1;
+}
+
+message ExpenseSummary {
+    string category = 1;
+    double total = 2;
 }

@@ -9,12 +9,14 @@ import "proto/group.proto";
 option go_package = "github.com/bill-splitting/proto";
 
 service BillSplitting {
-    rpc CreateExpenseSummaryChart(CreateExpenseSummaryChartRequest) returns (CreateExpenseSummaryChartResponse);
     rpc GetAuthToken(GetAuthTokenRequest) returns (GetAuthTokenResponse);
+
     rpc CreateLineGroup(CreateLineGroupRequest) returns (CreateLineGroupResponse);
-    rpc AddMembership(AddMembershipRequest) returns (AddMembershipResponse);
     rpc GetLineGroup(GetLineGroupRequest) returns (GetLineGroupResponse);
+    rpc AddMembership(AddMembershipRequest) returns (AddMembershipResponse);
     rpc GetMembership(GetMembershipRequest) returns (GetMembershipResponse);
+    
     rpc CreateExpense(CreateExpenseRequest) returns (CreateExpenseResponse);
-    rpc CreateTrendingImage(CreateTrendingImageRequest) returns (CreateTrendingImageResponse);
+    rpc ListExpense(ListExpenseRequest) returns (ListExpenseResponse);
+    rpc ListExpenseSummary(ListExpenseSummaryRequest) returns (ListExpenseSummaryResponse);
 }

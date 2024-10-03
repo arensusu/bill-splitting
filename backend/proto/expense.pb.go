@@ -20,116 +20,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type CreateExpenseSummaryChartRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	GroupId   uint32 `protobuf:"varint,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
-	StartDate string `protobuf:"bytes,2,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
-	EndDate   string `protobuf:"bytes,3,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
-}
-
-func (x *CreateExpenseSummaryChartRequest) Reset() {
-	*x = CreateExpenseSummaryChartRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_expense_proto_msgTypes[0]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *CreateExpenseSummaryChartRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateExpenseSummaryChartRequest) ProtoMessage() {}
-
-func (x *CreateExpenseSummaryChartRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_expense_proto_msgTypes[0]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateExpenseSummaryChartRequest.ProtoReflect.Descriptor instead.
-func (*CreateExpenseSummaryChartRequest) Descriptor() ([]byte, []int) {
-	return file_proto_expense_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *CreateExpenseSummaryChartRequest) GetGroupId() uint32 {
-	if x != nil {
-		return x.GroupId
-	}
-	return 0
-}
-
-func (x *CreateExpenseSummaryChartRequest) GetStartDate() string {
-	if x != nil {
-		return x.StartDate
-	}
-	return ""
-}
-
-func (x *CreateExpenseSummaryChartRequest) GetEndDate() string {
-	if x != nil {
-		return x.EndDate
-	}
-	return ""
-}
-
-type CreateExpenseSummaryChartResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Url string `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
-}
-
-func (x *CreateExpenseSummaryChartResponse) Reset() {
-	*x = CreateExpenseSummaryChartResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_expense_proto_msgTypes[1]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *CreateExpenseSummaryChartResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateExpenseSummaryChartResponse) ProtoMessage() {}
-
-func (x *CreateExpenseSummaryChartResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_expense_proto_msgTypes[1]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateExpenseSummaryChartResponse.ProtoReflect.Descriptor instead.
-func (*CreateExpenseSummaryChartResponse) Descriptor() ([]byte, []int) {
-	return file_proto_expense_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *CreateExpenseSummaryChartResponse) GetUrl() string {
-	if x != nil {
-		return x.Url
-	}
-	return ""
-}
-
 type CreateExpenseRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -146,7 +36,7 @@ type CreateExpenseRequest struct {
 func (x *CreateExpenseRequest) Reset() {
 	*x = CreateExpenseRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_expense_proto_msgTypes[2]
+		mi := &file_proto_expense_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -159,7 +49,7 @@ func (x *CreateExpenseRequest) String() string {
 func (*CreateExpenseRequest) ProtoMessage() {}
 
 func (x *CreateExpenseRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_expense_proto_msgTypes[2]
+	mi := &file_proto_expense_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -172,7 +62,7 @@ func (x *CreateExpenseRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateExpenseRequest.ProtoReflect.Descriptor instead.
 func (*CreateExpenseRequest) Descriptor() ([]byte, []int) {
-	return file_proto_expense_proto_rawDescGZIP(), []int{2}
+	return file_proto_expense_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *CreateExpenseRequest) GetGroupId() uint32 {
@@ -232,7 +122,7 @@ type CreateExpenseResponse struct {
 func (x *CreateExpenseResponse) Reset() {
 	*x = CreateExpenseResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_expense_proto_msgTypes[3]
+		mi := &file_proto_expense_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -245,7 +135,7 @@ func (x *CreateExpenseResponse) String() string {
 func (*CreateExpenseResponse) ProtoMessage() {}
 
 func (x *CreateExpenseResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_expense_proto_msgTypes[3]
+	mi := &file_proto_expense_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -258,7 +148,7 @@ func (x *CreateExpenseResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateExpenseResponse.ProtoReflect.Descriptor instead.
 func (*CreateExpenseResponse) Descriptor() ([]byte, []int) {
-	return file_proto_expense_proto_rawDescGZIP(), []int{3}
+	return file_proto_expense_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *CreateExpenseResponse) GetId() uint32 {
@@ -296,17 +186,130 @@ func (x *CreateExpenseResponse) GetDate() string {
 	return ""
 }
 
-type CreateTrendingImageRequest struct {
+type ListExpenseRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	GroupId uint32 `protobuf:"varint,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
-	Type    string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	GroupId   uint32 `protobuf:"varint,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	StartDate string `protobuf:"bytes,2,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
+	EndDate   string `protobuf:"bytes,3,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
 }
 
-func (x *CreateTrendingImageRequest) Reset() {
-	*x = CreateTrendingImageRequest{}
+func (x *ListExpenseRequest) Reset() {
+	*x = ListExpenseRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_expense_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListExpenseRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListExpenseRequest) ProtoMessage() {}
+
+func (x *ListExpenseRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_expense_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListExpenseRequest.ProtoReflect.Descriptor instead.
+func (*ListExpenseRequest) Descriptor() ([]byte, []int) {
+	return file_proto_expense_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ListExpenseRequest) GetGroupId() uint32 {
+	if x != nil {
+		return x.GroupId
+	}
+	return 0
+}
+
+func (x *ListExpenseRequest) GetStartDate() string {
+	if x != nil {
+		return x.StartDate
+	}
+	return ""
+}
+
+func (x *ListExpenseRequest) GetEndDate() string {
+	if x != nil {
+		return x.EndDate
+	}
+	return ""
+}
+
+type ListExpenseResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Expenses []*Expense `protobuf:"bytes,1,rep,name=expenses,proto3" json:"expenses,omitempty"`
+}
+
+func (x *ListExpenseResponse) Reset() {
+	*x = ListExpenseResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_expense_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListExpenseResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListExpenseResponse) ProtoMessage() {}
+
+func (x *ListExpenseResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_expense_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListExpenseResponse.ProtoReflect.Descriptor instead.
+func (*ListExpenseResponse) Descriptor() ([]byte, []int) {
+	return file_proto_expense_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ListExpenseResponse) GetExpenses() []*Expense {
+	if x != nil {
+		return x.Expenses
+	}
+	return nil
+}
+
+type Expense struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id          uint32  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Category    string  `protobuf:"bytes,2,opt,name=category,proto3" json:"category,omitempty"`
+	Description string  `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Amount      float64 `protobuf:"fixed64,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	Date        string  `protobuf:"bytes,5,opt,name=date,proto3" json:"date,omitempty"`
+}
+
+func (x *Expense) Reset() {
+	*x = Expense{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_proto_expense_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -314,13 +317,13 @@ func (x *CreateTrendingImageRequest) Reset() {
 	}
 }
 
-func (x *CreateTrendingImageRequest) String() string {
+func (x *Expense) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateTrendingImageRequest) ProtoMessage() {}
+func (*Expense) ProtoMessage() {}
 
-func (x *CreateTrendingImageRequest) ProtoReflect() protoreflect.Message {
+func (x *Expense) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_expense_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -332,35 +335,58 @@ func (x *CreateTrendingImageRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateTrendingImageRequest.ProtoReflect.Descriptor instead.
-func (*CreateTrendingImageRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use Expense.ProtoReflect.Descriptor instead.
+func (*Expense) Descriptor() ([]byte, []int) {
 	return file_proto_expense_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *CreateTrendingImageRequest) GetGroupId() uint32 {
+func (x *Expense) GetId() uint32 {
 	if x != nil {
-		return x.GroupId
+		return x.Id
 	}
 	return 0
 }
 
-func (x *CreateTrendingImageRequest) GetType() string {
+func (x *Expense) GetCategory() string {
 	if x != nil {
-		return x.Type
+		return x.Category
 	}
 	return ""
 }
 
-type CreateTrendingImageResponse struct {
+func (x *Expense) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *Expense) GetAmount() float64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *Expense) GetDate() string {
+	if x != nil {
+		return x.Date
+	}
+	return ""
+}
+
+type ListExpenseSummaryRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Url string `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	GroupId   uint32 `protobuf:"varint,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	StartDate string `protobuf:"bytes,2,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
+	EndDate   string `protobuf:"bytes,3,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
 }
 
-func (x *CreateTrendingImageResponse) Reset() {
-	*x = CreateTrendingImageResponse{}
+func (x *ListExpenseSummaryRequest) Reset() {
+	*x = ListExpenseSummaryRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_proto_expense_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -368,13 +394,13 @@ func (x *CreateTrendingImageResponse) Reset() {
 	}
 }
 
-func (x *CreateTrendingImageResponse) String() string {
+func (x *ListExpenseSummaryRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateTrendingImageResponse) ProtoMessage() {}
+func (*ListExpenseSummaryRequest) ProtoMessage() {}
 
-func (x *CreateTrendingImageResponse) ProtoReflect() protoreflect.Message {
+func (x *ListExpenseSummaryRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_expense_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -386,34 +412,139 @@ func (x *CreateTrendingImageResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateTrendingImageResponse.ProtoReflect.Descriptor instead.
-func (*CreateTrendingImageResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use ListExpenseSummaryRequest.ProtoReflect.Descriptor instead.
+func (*ListExpenseSummaryRequest) Descriptor() ([]byte, []int) {
 	return file_proto_expense_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *CreateTrendingImageResponse) GetUrl() string {
+func (x *ListExpenseSummaryRequest) GetGroupId() uint32 {
 	if x != nil {
-		return x.Url
+		return x.GroupId
+	}
+	return 0
+}
+
+func (x *ListExpenseSummaryRequest) GetStartDate() string {
+	if x != nil {
+		return x.StartDate
 	}
 	return ""
+}
+
+func (x *ListExpenseSummaryRequest) GetEndDate() string {
+	if x != nil {
+		return x.EndDate
+	}
+	return ""
+}
+
+type ListExpenseSummaryResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Summaries []*ExpenseSummary `protobuf:"bytes,1,rep,name=summaries,proto3" json:"summaries,omitempty"`
+}
+
+func (x *ListExpenseSummaryResponse) Reset() {
+	*x = ListExpenseSummaryResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_expense_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListExpenseSummaryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListExpenseSummaryResponse) ProtoMessage() {}
+
+func (x *ListExpenseSummaryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_expense_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListExpenseSummaryResponse.ProtoReflect.Descriptor instead.
+func (*ListExpenseSummaryResponse) Descriptor() ([]byte, []int) {
+	return file_proto_expense_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ListExpenseSummaryResponse) GetSummaries() []*ExpenseSummary {
+	if x != nil {
+		return x.Summaries
+	}
+	return nil
+}
+
+type ExpenseSummary struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Category string  `protobuf:"bytes,1,opt,name=category,proto3" json:"category,omitempty"`
+	Total    float64 `protobuf:"fixed64,2,opt,name=total,proto3" json:"total,omitempty"`
+}
+
+func (x *ExpenseSummary) Reset() {
+	*x = ExpenseSummary{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_expense_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ExpenseSummary) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExpenseSummary) ProtoMessage() {}
+
+func (x *ExpenseSummary) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_expense_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExpenseSummary.ProtoReflect.Descriptor instead.
+func (*ExpenseSummary) Descriptor() ([]byte, []int) {
+	return file_proto_expense_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ExpenseSummary) GetCategory() string {
+	if x != nil {
+		return x.Category
+	}
+	return ""
+}
+
+func (x *ExpenseSummary) GetTotal() float64 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
 }
 
 var File_proto_expense_proto protoreflect.FileDescriptor
 
 var file_proto_expense_proto_rawDesc = []byte{
 	0x0a, 0x13, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x65, 0x78, 0x70, 0x65, 0x6e, 0x73, 0x65, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x05, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x77, 0x0a, 0x20,
-	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x45, 0x78, 0x70, 0x65, 0x6e, 0x73, 0x65, 0x53, 0x75, 0x6d,
-	0x6d, 0x61, 0x72, 0x79, 0x43, 0x68, 0x61, 0x72, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x12, 0x19, 0x0a, 0x08, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x0d, 0x52, 0x07, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x49, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x73,
-	0x74, 0x61, 0x72, 0x74, 0x5f, 0x64, 0x61, 0x74, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x09, 0x73, 0x74, 0x61, 0x72, 0x74, 0x44, 0x61, 0x74, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x65, 0x6e,
-	0x64, 0x5f, 0x64, 0x61, 0x74, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x65, 0x6e,
-	0x64, 0x44, 0x61, 0x74, 0x65, 0x22, 0x35, 0x0a, 0x21, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x45,
-	0x78, 0x70, 0x65, 0x6e, 0x73, 0x65, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x43, 0x68, 0x61,
-	0x72, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x72,
-	0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72, 0x6c, 0x22, 0xd1, 0x01, 0x0a,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x05, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xd1, 0x01, 0x0a,
 	0x14, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x45, 0x78, 0x70, 0x65, 0x6e, 0x73, 0x65, 0x52, 0x65,
 	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x5f, 0x69,
 	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x07, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x49, 0x64,
@@ -436,17 +567,45 @@ var file_proto_expense_proto_rawDesc = []byte{
 	0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75,
 	0x6e, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74,
 	0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
-	0x64, 0x61, 0x74, 0x65, 0x22, 0x4b, 0x0a, 0x1a, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x54, 0x72,
-	0x65, 0x6e, 0x64, 0x69, 0x6e, 0x67, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x5f, 0x69, 0x64, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x0d, 0x52, 0x07, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x49, 0x64, 0x12, 0x12, 0x0a,
-	0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x79, 0x70,
-	0x65, 0x22, 0x2f, 0x0a, 0x1b, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x54, 0x72, 0x65, 0x6e, 0x64,
-	0x69, 0x6e, 0x67, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x12, 0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75,
-	0x72, 0x6c, 0x42, 0x21, 0x5a, 0x1f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x62, 0x69, 0x6c, 0x6c, 0x2d, 0x73, 0x70, 0x6c, 0x69, 0x74, 0x74, 0x69, 0x6e, 0x67, 0x2f,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x64, 0x61, 0x74, 0x65, 0x22, 0x69, 0x0a, 0x12, 0x4c, 0x69, 0x73, 0x74, 0x45, 0x78, 0x70, 0x65,
+	0x6e, 0x73, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x67, 0x72,
+	0x6f, 0x75, 0x70, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x07, 0x67, 0x72,
+	0x6f, 0x75, 0x70, 0x49, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x73, 0x74, 0x61, 0x72, 0x74, 0x5f, 0x64,
+	0x61, 0x74, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x73, 0x74, 0x61, 0x72, 0x74,
+	0x44, 0x61, 0x74, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x65, 0x6e, 0x64, 0x5f, 0x64, 0x61, 0x74, 0x65,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x65, 0x6e, 0x64, 0x44, 0x61, 0x74, 0x65, 0x22,
+	0x41, 0x0a, 0x13, 0x4c, 0x69, 0x73, 0x74, 0x45, 0x78, 0x70, 0x65, 0x6e, 0x73, 0x65, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2a, 0x0a, 0x08, 0x65, 0x78, 0x70, 0x65, 0x6e, 0x73,
+	0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x2e, 0x45, 0x78, 0x70, 0x65, 0x6e, 0x73, 0x65, 0x52, 0x08, 0x65, 0x78, 0x70, 0x65, 0x6e, 0x73,
+	0x65, 0x73, 0x22, 0x83, 0x01, 0x0a, 0x07, 0x45, 0x78, 0x70, 0x65, 0x6e, 0x73, 0x65, 0x12, 0x0e,
+	0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x02, 0x69, 0x64, 0x12, 0x1a,
+	0x0a, 0x08, 0x63, 0x61, 0x74, 0x65, 0x67, 0x6f, 0x72, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x08, 0x63, 0x61, 0x74, 0x65, 0x67, 0x6f, 0x72, 0x79, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65,
+	0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x16, 0x0a, 0x06,
+	0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x01, 0x52, 0x06, 0x61, 0x6d,
+	0x6f, 0x75, 0x6e, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x65, 0x18, 0x05, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x04, 0x64, 0x61, 0x74, 0x65, 0x22, 0x70, 0x0a, 0x19, 0x4c, 0x69, 0x73, 0x74,
+	0x45, 0x78, 0x70, 0x65, 0x6e, 0x73, 0x65, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x5f, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x07, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x49, 0x64,
+	0x12, 0x1d, 0x0a, 0x0a, 0x73, 0x74, 0x61, 0x72, 0x74, 0x5f, 0x64, 0x61, 0x74, 0x65, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x73, 0x74, 0x61, 0x72, 0x74, 0x44, 0x61, 0x74, 0x65, 0x12,
+	0x19, 0x0a, 0x08, 0x65, 0x6e, 0x64, 0x5f, 0x64, 0x61, 0x74, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x07, 0x65, 0x6e, 0x64, 0x44, 0x61, 0x74, 0x65, 0x22, 0x51, 0x0a, 0x1a, 0x4c, 0x69,
+	0x73, 0x74, 0x45, 0x78, 0x70, 0x65, 0x6e, 0x73, 0x65, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x33, 0x0a, 0x09, 0x73, 0x75, 0x6d, 0x6d,
+	0x61, 0x72, 0x69, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x78, 0x70, 0x65, 0x6e, 0x73, 0x65, 0x53, 0x75, 0x6d, 0x6d, 0x61,
+	0x72, 0x79, 0x52, 0x09, 0x73, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x69, 0x65, 0x73, 0x22, 0x42, 0x0a,
+	0x0e, 0x45, 0x78, 0x70, 0x65, 0x6e, 0x73, 0x65, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x12,
+	0x1a, 0x0a, 0x08, 0x63, 0x61, 0x74, 0x65, 0x67, 0x6f, 0x72, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x08, 0x63, 0x61, 0x74, 0x65, 0x67, 0x6f, 0x72, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x74,
+	0x6f, 0x74, 0x61, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x01, 0x52, 0x05, 0x74, 0x6f, 0x74, 0x61,
+	0x6c, 0x42, 0x21, 0x5a, 0x1f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
+	0x62, 0x69, 0x6c, 0x6c, 0x2d, 0x73, 0x70, 0x6c, 0x69, 0x74, 0x74, 0x69, 0x6e, 0x67, 0x2f, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -461,21 +620,25 @@ func file_proto_expense_proto_rawDescGZIP() []byte {
 	return file_proto_expense_proto_rawDescData
 }
 
-var file_proto_expense_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_proto_expense_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_proto_expense_proto_goTypes = []any{
-	(*CreateExpenseSummaryChartRequest)(nil),  // 0: proto.CreateExpenseSummaryChartRequest
-	(*CreateExpenseSummaryChartResponse)(nil), // 1: proto.CreateExpenseSummaryChartResponse
-	(*CreateExpenseRequest)(nil),              // 2: proto.CreateExpenseRequest
-	(*CreateExpenseResponse)(nil),             // 3: proto.CreateExpenseResponse
-	(*CreateTrendingImageRequest)(nil),        // 4: proto.CreateTrendingImageRequest
-	(*CreateTrendingImageResponse)(nil),       // 5: proto.CreateTrendingImageResponse
+	(*CreateExpenseRequest)(nil),       // 0: proto.CreateExpenseRequest
+	(*CreateExpenseResponse)(nil),      // 1: proto.CreateExpenseResponse
+	(*ListExpenseRequest)(nil),         // 2: proto.ListExpenseRequest
+	(*ListExpenseResponse)(nil),        // 3: proto.ListExpenseResponse
+	(*Expense)(nil),                    // 4: proto.Expense
+	(*ListExpenseSummaryRequest)(nil),  // 5: proto.ListExpenseSummaryRequest
+	(*ListExpenseSummaryResponse)(nil), // 6: proto.ListExpenseSummaryResponse
+	(*ExpenseSummary)(nil),             // 7: proto.ExpenseSummary
 }
 var file_proto_expense_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	4, // 0: proto.ListExpenseResponse.expenses:type_name -> proto.Expense
+	7, // 1: proto.ListExpenseSummaryResponse.summaries:type_name -> proto.ExpenseSummary
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_proto_expense_proto_init() }
@@ -485,30 +648,6 @@ func file_proto_expense_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_proto_expense_proto_msgTypes[0].Exporter = func(v any, i int) any {
-			switch v := v.(*CreateExpenseSummaryChartRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_proto_expense_proto_msgTypes[1].Exporter = func(v any, i int) any {
-			switch v := v.(*CreateExpenseSummaryChartResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_proto_expense_proto_msgTypes[2].Exporter = func(v any, i int) any {
 			switch v := v.(*CreateExpenseRequest); i {
 			case 0:
 				return &v.state
@@ -520,7 +659,7 @@ func file_proto_expense_proto_init() {
 				return nil
 			}
 		}
-		file_proto_expense_proto_msgTypes[3].Exporter = func(v any, i int) any {
+		file_proto_expense_proto_msgTypes[1].Exporter = func(v any, i int) any {
 			switch v := v.(*CreateExpenseResponse); i {
 			case 0:
 				return &v.state
@@ -532,8 +671,32 @@ func file_proto_expense_proto_init() {
 				return nil
 			}
 		}
+		file_proto_expense_proto_msgTypes[2].Exporter = func(v any, i int) any {
+			switch v := v.(*ListExpenseRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_proto_expense_proto_msgTypes[3].Exporter = func(v any, i int) any {
+			switch v := v.(*ListExpenseResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 		file_proto_expense_proto_msgTypes[4].Exporter = func(v any, i int) any {
-			switch v := v.(*CreateTrendingImageRequest); i {
+			switch v := v.(*Expense); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -545,7 +708,31 @@ func file_proto_expense_proto_init() {
 			}
 		}
 		file_proto_expense_proto_msgTypes[5].Exporter = func(v any, i int) any {
-			switch v := v.(*CreateTrendingImageResponse); i {
+			switch v := v.(*ListExpenseSummaryRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_proto_expense_proto_msgTypes[6].Exporter = func(v any, i int) any {
+			switch v := v.(*ListExpenseSummaryResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_proto_expense_proto_msgTypes[7].Exporter = func(v any, i int) any {
+			switch v := v.(*ExpenseSummary); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -563,7 +750,7 @@ func file_proto_expense_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_proto_expense_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
