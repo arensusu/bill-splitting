@@ -64,5 +64,5 @@ func main() {
 	http.HandleFunc("/callback", server.callbackHandler)
 
 	port := os.Getenv("LINEBOT_PORT")
-	server.Start(port)
+	server.Start(fmt.Sprintf(":%s", port))
 }
