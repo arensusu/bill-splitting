@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"strings"
 
@@ -29,14 +30,14 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 
 		profile, err := s.MsgApi.GetProfile(source.UserId)
 		if err != nil {
-			log.Println("GetProfile err:", err)
+			slog.Error("get profile err:", slog.Any("error", err))
 			replyMessage = linebot.NewTextMessage("找不到使用者，請確認使用者是否將官方帳號加入好友")
 			break
 		}
 
 		token, err := s.getAuthToken(source.UserId, profile.DisplayName)
 		if err != nil {
-			log.Println("getAuthToken err:", err)
+			slog.Error("get auth token err:", slog.Any("error", err))
 			replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
 			break
 		}
@@ -45,14 +46,14 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 		if source.IsGroupChat {
 			groupId, err = s.groupChatPreProcessing(token, source)
 			if err != nil {
-				log.Println("groupChatPreProcessing err:", err)
+				slog.Error("group chat preprocessing err:", slog.Any("error", err))
 				replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
 				break
 			}
 		} else {
 			groupId, err = s.getGroup(token, source.UserId)
 			if err != nil {
-				log.Println("getGroup err:", err)
+				slog.Error("get group err:", slog.Any("error", err))
 				replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
 				break
 			}
@@ -72,7 +73,7 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 		} else if strings.Contains(msgList[0], "支出") {
 			imgUrl, err := s.getExpenseImage(token, groupId, msgList[0])
 			if err != nil {
-				log.Println("getExpenseImage err:", err)
+				slog.Error("get expense image err:", slog.Any("error", err))
 				replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
 			} else {
 				replyMessage = linebot.NewTemplateMessage(imgUrl, linebot.NewButtonsTemplate("", "", "支出圖表", &linebot.URIAction{Label: "查看", URI: imgUrl}))
@@ -80,7 +81,7 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 		} else if strings.Contains(msgList[0], "趨勢") {
 			imgUrl, err := s.getTrendingImage(token, groupId, msgList[0])
 			if err != nil {
-				log.Println("getExpenseImage err:", err)
+				slog.Error("get trending image err:", slog.Any("error", err))
 				replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
 			} else {
 				replyMessage = linebot.NewTemplateMessage(imgUrl, linebot.NewButtonsTemplate("", "", "趨勢圖表", &linebot.URIAction{Label: "查看", URI: imgUrl}))
@@ -88,7 +89,7 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 		} else {
 			aiResp, err := callGemini(context.Background(), message.Text)
 			if err != nil {
-				log.Println("callGemini err:", err)
+				slog.Error("call gemini api err:", slog.Any("error", err))
 				replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
 			} else {
 				replyMessage = linebot.NewTextMessage(aiResp)
@@ -96,11 +97,11 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 		}
 
 	default:
-		log.Printf("Unknown message: %v", message)
+		slog.Error("unknown message:", slog.Any("message", message))
 	}
 
 	if _, err := s.Bot.ReplyMessage(event.ReplyToken, replyMessage).Do(); err != nil {
-		log.Print(err)
+		slog.Error("reply message err:", slog.Any("error", err))
 	}
 }
 
@@ -146,7 +147,7 @@ func (s *LineBotServer) groupChatPreProcessing(token string, source Source) (uin
 func callGemini(ctx context.Context, message string) (string, error) {
 	client, err := genai.NewClient(ctx, option.WithAPIKey(os.Getenv("GEMINI_API_KEY")))
 	if err != nil {
-		log.Print(err)
+		return "", fmt.Errorf("create client err: %w", err)
 	}
 	defer client.Close()
 
@@ -161,11 +162,8 @@ func callGemini(ctx context.Context, message string) (string, error) {
 	// Generate content
 	resp, err := model.GenerateContent(ctx, genai.Text(systemPrompt), genai.Text(message))
 	if err != nil {
-		log.Fatal(err)
+		return "", fmt.Errorf("generate content err: %w", err)
 	}
-
-	// Print the response
-	log.Printf("Response: %#v\n", resp)
 
 	content, ok := resp.Candidates[0].Content.Parts[0].(genai.Text)
 	if !ok {

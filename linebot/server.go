@@ -2,7 +2,8 @@ package main
 
 import (
 	"bill-splitting-linebot/proto"
-	"log"
+	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -21,10 +22,16 @@ func NewLineBotServer(bot *linebot.Client, msgApi *messaging_api.MessagingApiAPI
 	return &LineBotServer{Bot: bot, MsgApi: msgApi, GrpcClient: grpcClient}
 }
 
+func (s *LineBotServer) Start(addr string) {
+	slog.Info(fmt.Sprintf("Listening on %s", addr))
+	http.ListenAndServe(addr, nil)
+}
+
 func (s *LineBotServer) callbackHandler(w http.ResponseWriter, r *http.Request) {
 	cb, err := webhook.ParseRequest(os.Getenv("LINEBOT_SECRET"), r)
-	log.Printf("%v", err)
 	if err != nil {
+		slog.Error("parse request err:", slog.Any("error", err))
+
 		if err == linebot.ErrInvalidSignature {
 			w.WriteHeader(400)
 		} else {
