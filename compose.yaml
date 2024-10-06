@@ -16,6 +16,8 @@ services:
     env_file: ".env"
     depends_on:
       - postgres
+    volumes:
+      - /var/log/api:/var/log
 
   frontend:
     build:
@@ -41,6 +43,7 @@ services:
       - api
     volumes:
       - images:/var/images
+      - /var/log/linebot:/var/log
       
 volumes:
   db-data:

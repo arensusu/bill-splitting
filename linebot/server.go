@@ -23,6 +23,7 @@ func NewLineBotServer(bot *linebot.Client, msgApi *messaging_api.MessagingApiAPI
 }
 
 func (s *LineBotServer) Start(addr string) {
+	fmt.Printf("Listening on %s", addr)
 	slog.Info(fmt.Sprintf("Listening on %s", addr))
 	http.ListenAndServe(addr, nil)
 }
