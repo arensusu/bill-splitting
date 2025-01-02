@@ -86,7 +86,7 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 			} else {
 				replyMessage = linebot.NewTemplateMessage(imgUrl, linebot.NewButtonsTemplate("", "", "趨勢圖表", &linebot.URIAction{Label: "查看", URI: imgUrl}))
 			}
-		} else {
+		} else if strings.Contains(message.Text, "馬尼") {
 			aiResp, err := callGemini(context.Background(), message.Text)
 			if err != nil {
 				slog.Error("call gemini api err:", slog.Any("error", err))
