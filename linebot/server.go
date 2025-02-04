@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bill-splitting-linebot/internal/ai"
 	"bill-splitting-linebot/proto"
 	"fmt"
 	"log/slog"
@@ -13,13 +14,16 @@ import (
 )
 
 type LineBotServer struct {
-	Bot        *linebot.Client
-	MsgApi     *messaging_api.MessagingApiAPI
+	Bot    *linebot.Client
+	MsgApi *messaging_api.MessagingApiAPI
+
 	GrpcClient proto.BillSplittingClient
+
+	AiService *ai.AiService
 }
 
-func NewLineBotServer(bot *linebot.Client, msgApi *messaging_api.MessagingApiAPI, grpcClient proto.BillSplittingClient) *LineBotServer {
-	return &LineBotServer{Bot: bot, MsgApi: msgApi, GrpcClient: grpcClient}
+func NewLineBotServer(bot *linebot.Client, msgApi *messaging_api.MessagingApiAPI, grpcClient proto.BillSplittingClient, aiService *ai.AiService) *LineBotServer {
+	return &LineBotServer{Bot: bot, MsgApi: msgApi, GrpcClient: grpcClient, AiService: aiService}
 }
 
 func (s *LineBotServer) Start(addr string) {

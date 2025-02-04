@@ -6,13 +6,10 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
-	"os"
 	"strings"
 
-	"github.com/google/generative-ai-go/genai"
 	"github.com/line/line-bot-sdk-go/v8/linebot"
 	"github.com/line/line-bot-sdk-go/v8/linebot/webhook"
-	"google.golang.org/api/option"
 )
 
 func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
@@ -87,7 +84,7 @@ func (s *LineBotServer) messageHandler(event webhook.MessageEvent) {
 				replyMessage = linebot.NewTemplateMessage(imgUrl, linebot.NewButtonsTemplate("", "", "趨勢圖表", &linebot.URIAction{Label: "查看", URI: imgUrl}))
 			}
 		} else if strings.Contains(message.Text, "馬尼") {
-			aiResp, err := callGemini(context.Background(), message.Text)
+			aiResp, err := s.AiService.CallGemini(context.Background(), message.Text)
 			if err != nil {
 				slog.Error("call gemini api err:", slog.Any("error", err))
 				replyMessage = linebot.NewTextMessage("發生錯誤，請稍後再試")
@@ -142,33 +139,4 @@ func (s *LineBotServer) groupChatPreProcessing(token string, source Source) (uin
 		return 0, fmt.Errorf("addMembership err: %w", err)
 	}
 	return groupId, nil
-}
-
-func callGemini(ctx context.Context, message string) (string, error) {
-	client, err := genai.NewClient(ctx, option.WithAPIKey(os.Getenv("GEMINI_API_KEY")))
-	if err != nil {
-		return "", fmt.Errorf("create client err: %w", err)
-	}
-	defer client.Close()
-
-	// Get the model
-	model := client.GenerativeModel("gemini-1.5-flash")
-
-	systemPrompt, err := os.ReadFile("prompt.txt")
-	if err != nil {
-		return "", fmt.Errorf("failed to read prompt file: %w", err)
-	}
-
-	// Generate content
-	resp, err := model.GenerateContent(ctx, genai.Text(systemPrompt), genai.Text(message))
-	if err != nil {
-		return "", fmt.Errorf("generate content err: %w", err)
-	}
-
-	content, ok := resp.Candidates[0].Content.Parts[0].(genai.Text)
-	if !ok {
-		return "", errors.New("failed to get text from response")
-	}
-
-	return string(content), nil
 }

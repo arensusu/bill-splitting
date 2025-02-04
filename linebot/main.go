@@ -13,7 +13,9 @@
 package main
 
 import (
+	"bill-splitting-linebot/internal/ai"
 	"bill-splitting-linebot/proto"
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -22,6 +24,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/line/line-bot-sdk-go/v8/linebot"
 	"github.com/line/line-bot-sdk-go/v8/linebot/messaging_api"
+	"google.golang.org/genai"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -59,7 +62,17 @@ func main() {
 	defer conn.Close()
 	grpcClient := proto.NewBillSplittingClient(conn)
 
-	server := NewLineBotServer(bot, client, grpcClient)
+	aiClient, err := genai.NewClient(context.Background(), &genai.ClientConfig{
+		APIKey: os.Getenv("GEMINI_API_KEY"),
+	})
+	if err != nil {
+		slog.Error("create client err:", slog.Any("error", err))
+		return
+	}
+
+	aiService := ai.NewAiService(aiClient, "gemini-2.0-flash-exp")
+
+	server := NewLineBotServer(bot, client, grpcClient, aiService)
 
 	http.HandleFunc("/callback", server.callbackHandler)
 
