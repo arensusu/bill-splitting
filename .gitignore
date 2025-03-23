@@ -61,4 +61,5 @@ next-env.d.ts
 
 
 # proto
-proto/
+backend/proto
+linebot/proto
