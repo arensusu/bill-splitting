@@ -1,0 +1,3 @@
+[submodule "module/proto"]
+	path = module/proto
+	url = https://github.com/arensusu/proto.git

@@ -4,8 +4,10 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model
-	LineID   string `gorm:"unique"`
-	Username string `gorm:"unique"`
+	LineID   string `gorm:"uniqueIndex:composite_index"`
+	Username string
+
+	DiscordId string `gorm:"uniqueIndex:composite_index"`
 }
 
 func (s *Store) CreateUser(user *User) error {
@@ -32,4 +34,13 @@ func (s *Store) GetUserByUsername(username string) (*User, error) {
 
 func (s *Store) DeleteUser(id uint) error {
 	return s.db.Delete(&User{}, id).Error
+}
+
+func (s *Store) GetUserByDiscordID(discordId string) (*User, error) {
+	var user User
+	err := s.db.Where("discord_id = ?", discordId).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }

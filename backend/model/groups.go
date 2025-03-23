@@ -4,10 +4,12 @@ import "gorm.io/gorm"
 
 type Group struct {
 	gorm.Model
-	LineId   string
+	LineId   string `gorm:"uniqueIndex:composite_index"`
 	Name     string
 	Currency string `gorm:"default:TWD"`
 	Users    []User `gorm:"many2many:members;"`
+
+	DiscordChannel string `gorm:"uniqueIndex:composite_index"`
 }
 
 func (s *Store) CreateGroup(group *Group) error {
@@ -26,6 +28,15 @@ func (s *Store) GetGroup(id uint) (*Group, error) {
 func (s *Store) GetGroupByLineID(lineID string) (*Group, error) {
 	var group Group
 	err := s.db.Where("line_id = ?", lineID).First(&group).Error
+	if err != nil {
+		return nil, err
+	}
+	return &group, nil
+}
+
+func (s *Store) GetGroupByDiscordChannel(discordChannel string) (*Group, error) {
+	var group Group
+	err := s.db.Where("discord_channel = ?", discordChannel).First(&group).Error
 	if err != nil {
 		return nil, err
 	}

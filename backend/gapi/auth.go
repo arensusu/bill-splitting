@@ -10,9 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 )
 
@@ -49,25 +47,51 @@ func (s *Server) authorize(ctx context.Context) (*token.JWTPayload, error) {
 }
 
 func (s *Server) GetAuthToken(ctx context.Context, req *proto.GetAuthTokenRequest) (*proto.GetAuthTokenResponse, error) {
-	if req.GetLineId() == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid id or username")
-	}
-	user, err := s.store.GetUserByLineID(req.GetLineId())
-	if err != nil {
-		if err != gorm.ErrRecordNotFound {
-			return nil, fmt.Errorf("failed to get user: %w", err)
-		}
-
-		err = s.store.CreateUser(&model.User{
-			LineID:   req.GetLineId(),
-			Username: req.GetUsername(),
-		})
+	var user *model.User
+	var err error
+	if req.GetLineId() != "" {
+		user, err = s.store.GetUserByLineID(req.GetLineId())
 		if err != nil {
-			return nil, fmt.Errorf("failed to create user: %w", err)
+			if err != gorm.ErrRecordNotFound {
+				return nil, fmt.Errorf("failed to get user: %w", err)
+			}
+
+			err = s.store.CreateUser(&model.User{
+				LineID: req.GetLineId(),
+			})
+			if err != nil {
+				return nil, fmt.Errorf("failed to create user: %w", err)
+			}
+
+			user, err = s.store.GetUserByLineID(req.GetLineId())
+			if err != nil {
+				return nil, fmt.Errorf("failed to get user: %w", err)
+			}
 		}
+	} else if req.GetDiscordId() != "" {
+		user, err = s.store.GetUserByDiscordID(req.GetDiscordId())
+		if err != nil {
+			if err != gorm.ErrRecordNotFound {
+				return nil, fmt.Errorf("failed to get user: %w", err)
+			}
+
+			err = s.store.CreateUser(&model.User{
+				DiscordId: req.GetDiscordId(),
+			})
+			if err != nil {
+				return nil, fmt.Errorf("failed to create user: %w", err)
+			}
+
+			user, err = s.store.GetUserByDiscordID(req.GetDiscordId())
+			if err != nil {
+				return nil, fmt.Errorf("failed to get user: %w", err)
+			}
+		}
+	} else {
+		return nil, fmt.Errorf("line id or discord id is not provided")
 	}
 
-	token, _, err := s.tokenMaker.CreateToken(user.LineID, time.Hour)
+	token, _, err := s.tokenMaker.CreateToken(fmt.Sprintf("%d", user.ID), time.Hour)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create token: %w", err)
 	}

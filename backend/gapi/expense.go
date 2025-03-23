@@ -147,3 +147,49 @@ func (s *Server) ListExpenseSummary(ctx context.Context, req *proto.ListExpenseS
 		Summaries: protoSummary,
 	}, nil
 }
+
+func (s *Server) CreateExpenseDiscord(ctx context.Context, req *proto.CreateExpenseDiscordRequest) (*proto.CreateExpenseResponse, error) {
+	expense := req.GetExpense()
+	if expense.GroupId == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid group id")
+	}
+
+	group, err := s.store.GetGroup(uint(expense.GroupId))
+	if err != nil {
+		return nil, fmt.Errorf("group not found: %w", err)
+	}
+
+	user, err := s.store.GetUserByDiscordID(req.GetDiscordId())
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	member, err := s.store.GetMembership(uint(expense.GroupId), user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	amount, err := utils.GetExchangeAmount(expense.OriginCurrency, group.Currency, expense.OriginAmount)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get exchanged amount: %w", err)
+	}
+
+	date, err := time.Parse("2006-01-02", expense.Date)
+	if err != nil {
+		date = time.Now()
+	}
+
+	err = s.store.CreateExpense(&model.Expense{
+		Member:           *member,
+		Category:         expense.Category,
+		ConvertedAmount:  amount,
+		OriginalAmount:   expense.OriginAmount,
+		OriginalCurrency: expense.OriginCurrency,
+		Date:             date,
+		Description:      expense.Description,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &proto.CreateExpenseResponse{}, nil
+}

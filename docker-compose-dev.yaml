@@ -1,0 +1,43 @@
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_NAME}
+    volumes:
+        - db-data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: backend.dockerfile
+    env_file: ".env"
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    depends_on:
+      - postgres
+    volumes:
+      - /var/log/api:/var/log
+
+  # frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: frontend.dockerfile
+    
+  # linebot:
+  #   build:
+  #     context: .
+  #     dockerfile: linebot.dockerfile
+  #   env_file: ".env"
+  #   depends_on:
+  #     - api
+  #   volumes:
+  #     - images:/var/images
+  #     - /var/log/linebot:/var/log
+      
+volumes:
+  db-data:
+  images:
