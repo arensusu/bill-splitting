@@ -193,3 +193,82 @@ func (s *Server) CreateExpenseDiscord(ctx context.Context, req *proto.CreateExpe
 	}
 	return &proto.CreateExpenseResponse{}, nil
 }
+
+func (s *Server) ListExpenseDiscord(ctx context.Context, req *proto.ListExpenseDiscordRequest) (*proto.ListExpenseResponse, error) {
+	if req.DiscordChannel == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid discord channel")
+	}
+
+	discordGroup, err := s.store.GetGroupByDiscordChannel(req.DiscordChannel)
+	if err != nil {
+		return nil, fmt.Errorf("group not found: %w", err)
+	}
+
+	startDate, err := time.Parse("2006-01-02", req.StartDate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse start date: %w", err)
+	}
+
+	endDate, err := time.Parse("2006-01-02", req.EndDate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse end date: %w", err)
+	}
+
+	expenses, err := s.store.ListExpensesWithinDate(discordGroup.ID, startDate, endDate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list expenses: %w", err)
+	}
+
+	protoExpenses := make([]*proto.Expense, len(expenses))
+	for i, expense := range expenses {
+		protoExpenses[i] = &proto.Expense{
+			Id:          uint32(expense.ID),
+			Category:    expense.Category,
+			Description: expense.Description,
+			Amount:      expense.ConvertedAmount,
+			Date:        expense.Date.Format("2006-01-02"),
+		}
+	}
+
+	return &proto.ListExpenseResponse{
+		Expenses: protoExpenses,
+	}, nil
+}
+
+func (s *Server) ListExpenseSummaryDiscord(ctx context.Context, req *proto.ListExpenseSummaryDiscordRequest) (*proto.ListExpenseSummaryResponse, error) {
+	if req.DiscordChannel == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid discord channel")
+	}
+
+	discordGroup, err := s.store.GetGroupByDiscordChannel(req.DiscordChannel)
+	if err != nil {
+		return nil, fmt.Errorf("group not found: %w", err)
+	}
+
+	startDate, err := time.Parse("2006-01-02", req.StartDate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse start date: %w", err)
+	}
+
+	endDate, err := time.Parse("2006-01-02", req.EndDate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse end date: %w", err)
+	}
+
+	summary, err := s.store.SummarizeExpensesWithinDate(discordGroup.ID, startDate, endDate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to summarize expenses: %w", err)
+	}
+
+	protoSummary := make([]*proto.ExpenseSummary, len(summary))
+	for i, s := range summary {
+		protoSummary[i] = &proto.ExpenseSummary{
+			Category: s.Category,
+			Total:    s.Total,
+		}
+	}
+
+	return &proto.ListExpenseSummaryResponse{
+		Summaries: protoSummary,
+	}, nil
+}
