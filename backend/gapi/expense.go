@@ -179,7 +179,7 @@ func (s *Server) CreateExpenseDiscord(ctx context.Context, req *proto.CreateExpe
 		date = time.Now()
 	}
 
-	err = s.store.CreateExpense(&model.Expense{
+	modelExpense := model.Expense{
 		Member:           *member,
 		Category:         expense.Category,
 		ConvertedAmount:  amount,
@@ -187,11 +187,15 @@ func (s *Server) CreateExpenseDiscord(ctx context.Context, req *proto.CreateExpe
 		OriginalCurrency: expense.OriginCurrency,
 		Date:             date,
 		Description:      expense.Description,
-	})
+	}
+
+	err = s.store.CreateExpense(&modelExpense)
 	if err != nil {
 		return nil, err
 	}
-	return &proto.CreateExpenseResponse{}, nil
+	return &proto.CreateExpenseResponse{
+		Id: uint32(modelExpense.ID),
+	}, nil
 }
 
 func (s *Server) ListExpenseDiscord(ctx context.Context, req *proto.ListExpenseDiscordRequest) (*proto.ListExpenseResponse, error) {
@@ -270,5 +274,57 @@ func (s *Server) ListExpenseSummaryDiscord(ctx context.Context, req *proto.ListE
 
 	return &proto.ListExpenseSummaryResponse{
 		Summaries: protoSummary,
+	}, nil
+}
+
+func (s *Server) UpdateExpenseDiscord(ctx context.Context, req *proto.UpdateExpenseDiscordRequest) (*proto.UpdateExpenseResponse, error) {
+	expense, err := s.store.GetExpense(uint(req.Id))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get expense: %w", err)
+	}
+
+	group, err := s.store.GetGroupByDiscordChannel(req.DiscordChannel)
+	if err != nil {
+		return nil, fmt.Errorf("group not found: %w", err)
+	}
+
+	amount, err := utils.GetExchangeAmount(req.OriginCurrency, group.Currency, req.OriginAmount)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get exchanged amount: %w", err)
+	}
+
+	date, err := time.Parse("2006-01-02", req.Date)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse date: %w", err)
+	}
+
+	expense.Category = req.Category
+	expense.ConvertedAmount = amount
+	expense.OriginalAmount = req.OriginAmount
+	expense.OriginalCurrency = req.OriginCurrency
+	expense.Date = date
+	expense.Description = req.Description
+
+	err = s.store.UpdateExpense(expense)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update expense: %w", err)
+	}
+
+	return &proto.UpdateExpenseResponse{}, nil
+}
+
+func (s *Server) GetExpense(ctx context.Context, req *proto.GetExpenseRequest) (*proto.GetExpenseResponse, error) {
+	expense, err := s.store.GetExpense(uint(req.Id))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get expense: %w", err)
+	}
+
+	return &proto.GetExpenseResponse{
+		Id:             uint32(expense.ID),
+		Category:       expense.Category,
+		Description:    expense.Description,
+		OriginAmount:   expense.OriginalAmount,
+		OriginCurrency: expense.OriginalCurrency,
+		Date:           expense.Date.Format("2006-01-02"),
 	}, nil
 }
