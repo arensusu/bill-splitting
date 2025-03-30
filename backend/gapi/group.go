@@ -7,7 +7,6 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"gorm.io/gorm"
 )
 
 func (s *Server) CreateLineGroup(ctx context.Context, req *proto.CreateLineGroupRequest) (*proto.CreateLineGroupResponse, error) {
@@ -137,25 +136,29 @@ func (s *Server) SetDiscordGroup(ctx context.Context, req *proto.SetDiscordGroup
 		return nil, status.Errorf(codes.InvalidArgument, "invalid group id or discord channel")
 	}
 
+	originGroup, err := s.store.GetGroupByDiscordChannel(req.DiscordChannel)
+	if err == nil {
+		originGroup.DiscordChannel = ""
+		err = s.store.UpdateGroup(originGroup)
+		if err != nil {
+			return nil, status.Errorf(codes.Unavailable, err.Error())
+		}
+	}
+
 	discordGroup, err := s.store.GetGroup(uint(req.GroupId))
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	}
+	discordGroup.DiscordChannel = req.DiscordChannel
 
-	err = s.store.UpdateGroup(&model.Group{
-		Model: gorm.Model{
-			ID: discordGroup.ID,
-		},
-		DiscordChannel: req.DiscordChannel,
-	})
+	err = s.store.UpdateGroup(discordGroup)
 	if err != nil {
 		return nil, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &proto.SetDiscordGroupResponse{
-		Id:             uint32(discordGroup.ID),
-		GroupId:        uint32(discordGroup.ID),
-		DiscordChannel: discordGroup.DiscordChannel,
+		Id:   uint32(discordGroup.ID),
+		Name: discordGroup.Name,
 	}, nil
 }
 
@@ -164,7 +167,16 @@ func (s *Server) CreateDiscordGroup(ctx context.Context, req *proto.CreateDiscor
 		return nil, status.Errorf(codes.InvalidArgument, "invalid discord channel")
 	}
 
-	err := s.store.CreateGroup(&model.Group{
+	originGroup, err := s.store.GetGroupByDiscordChannel(req.DiscordChannel)
+	if err == nil {
+		originGroup.DiscordChannel = ""
+		err = s.store.UpdateGroup(originGroup)
+		if err != nil {
+			return nil, status.Errorf(codes.Unavailable, err.Error())
+		}
+	}
+
+	err = s.store.CreateGroup(&model.Group{
 		Name:           req.Name,
 		Currency:       req.Currency,
 		DiscordChannel: req.DiscordChannel,

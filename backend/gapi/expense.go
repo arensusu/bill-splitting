@@ -150,21 +150,18 @@ func (s *Server) ListExpenseSummary(ctx context.Context, req *proto.ListExpenseS
 
 func (s *Server) CreateExpenseDiscord(ctx context.Context, req *proto.CreateExpenseDiscordRequest) (*proto.CreateExpenseResponse, error) {
 	expense := req.GetExpense()
-	if expense.GroupId == 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid group id")
-	}
 
-	group, err := s.store.GetGroup(uint(expense.GroupId))
+	group, err := s.store.GetGroupByDiscordChannel(req.GetDiscordChannelId())
 	if err != nil {
 		return nil, fmt.Errorf("group not found: %w", err)
 	}
 
-	user, err := s.store.GetUserByDiscordID(req.GetDiscordId())
+	user, err := s.store.GetUserByDiscordID(req.GetDiscordUserId())
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
 
-	member, err := s.store.GetMembership(uint(expense.GroupId), user.ID)
+	member, err := s.store.GetMembership(uint(group.ID), user.ID)
 	if err != nil {
 		return nil, err
 	}
