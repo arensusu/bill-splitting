@@ -15,8 +15,6 @@ services:
       context: .
       dockerfile: backend.dockerfile
     env_file: ".env"
-    ports:
-      - "50051:50051"
     depends_on:
       - postgres
     volumes:
@@ -31,6 +29,7 @@ services:
     image: nginx:latest
     ports:
       - "81:81"
+      - "50051:50051"
     depends_on:
       - frontend
     volumes:
