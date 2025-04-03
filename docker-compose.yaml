@@ -17,6 +17,9 @@ services:
     env_file: ".env"
     depends_on:
       - postgres
+    ports:
+      - "8080:8080"
+      - "50051:50051"
     volumes:
       - /var/log/api:/var/log
 
@@ -24,28 +27,32 @@ services:
     build:
       context: .
       dockerfile: frontend.dockerfile
-    
-  nginx:
-    image: nginx:latest
     ports:
-      - "81:81"
-      - "50051:50051"
-    depends_on:
-      - frontend
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-      - images:/var/images
+      - "3000:3000"
+    
+  # nginx:
+  #   image: nginx:latest
+  #   ports:
+  #     - "81:81"
+  #     - "50051:50051"
+  #   depends_on:
+  #     - frontend
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+  #     - images:/var/images
 
-  linebot:
-    build:
-      context: .
-      dockerfile: linebot.dockerfile
-    env_file: ".env"
-    depends_on:
-      - api
-    volumes:
-      - images:/var/images
-      - /var/log/linebot:/var/log
+  # linebot:
+  #   build:
+  #     context: .
+  #     dockerfile: linebot.dockerfile
+  #   env_file: ".env"
+  #   depends_on:
+  #     - api
+  #   volumes:
+  #     - images:/var/images
+  #     - /var/log/linebot:/var/log
+  #   ports:
+  #     - "7000:7000"
       
 volumes:
   db-data:
