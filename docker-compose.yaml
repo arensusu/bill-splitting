@@ -23,12 +23,12 @@ services:
     volumes:
       - /var/log/api:/var/log
 
-  frontend:
-    build:
-      context: .
-      dockerfile: frontend.dockerfile
-    ports:
-      - "3000:3000"
+  # frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: frontend.dockerfile
+  #   ports:
+  #     - "3000:3000"
     
   # nginx:
   #   image: nginx:latest
